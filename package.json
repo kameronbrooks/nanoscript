@@ -1,0 +1,24 @@
+{
+  "name": "nanoscript",
+  "version": "1.0.0",
+  "description": "A server/client javascript-based interpreter for simple custom application specific scripts.",
+  "main": "index.js",
+  "scripts": {
+    "test": "index.test.js",
+    "dev": "tsc & node ./build/main.js",
+    "dev-client": "tsc -w & node client.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kameronbrooks/nanoscript.git"
+  },
+  "author": "Kameron Brooks",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kameronbrooks/nanoscript/issues"
+  },
+  "homepage": "https://github.com/kameronbrooks/nanoscript#readme",
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
