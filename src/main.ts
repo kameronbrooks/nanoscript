@@ -1,11 +1,11 @@
-import {Tokenizer}  from "./nsengine/interpreter";
+import {Tokenizer}  from "./nsengine/tokenizer";
 
 
-let tokenizer = new Tokenizer("1 + 2 * 3");
+let tokenizer = new Tokenizer("1 + 2 * 3;");
 console.log(tokenizer.tokenize());
 
 
-tokenizer = new Tokenizer("(1 + 2) * 10");
+tokenizer = new Tokenizer("(1 + 2) * 10;");
 console.log(tokenizer.tokenize());
 
 tokenizer = new Tokenizer("let x = 10;");
