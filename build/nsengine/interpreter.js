@@ -1,88 +1,7 @@
-
-
-export interface ASTNode {
-    type: string;
-}
-
-export interface NumberNode extends ASTNode {
-    type: "Number";
-    value: number;
-}
-
-export interface UnaryOpNode extends ASTNode {
-    type: "UnaryOp";
-    operator: string; // "+" or "-"
-    operand: ASTNode;
-}
-
-export interface BinaryOpNode extends ASTNode {
-    type: "BinaryOp";
-    operator: string; // "+" or "-"
-    left: ASTNode;
-    right: ASTNode;
-}
-
-// -------------------- Tokenizer --------------------
-
-export type TokenType = (
-    "NUMBER" | 
-    "IDENTIFIER" | 
-    "STRINGLITERAL" |
-    "BOOLEAN" |
-
-    "ASSIGN" |
-    "PLUS" | 
-    "MINUS" |
-    "MULTIPLY" |
-    "DIVIDE" |
-    "MODULO" |
-    "POWER" |
-
-    "NOT" |
-    "AND" |
-    "OR" |
-    
-    "INCREMENT" |
-    "DECREMENT" |
-
-    "INCREMENT_ASSIGN" |
-    "DECREMENT_ASSIGN" |
-    "MULTIPLY_ASSIGN" |
-    "DIVIDE_ASSIGN" |
-    "MODULO_ASSIGN" |
-
-    "EQUALITY" |
-    "INEQUALITY" |
-    "LESS_THAN" |
-    "GREATER_THAN" |
-    "LESS_THAN_OR_EQUAL" |
-    "GREATER_THAN_OR_EQUAL" |
-
-    "LPAREN" | 
-    "RPAREN" |
-    "LBRACKET" |
-    "RBRACKET" |
-    "LBRACE" |
-    "RBRACE" |
-
-    "MEMBER_ACCESS" |
-
-    "IF" |
-    "ELSE" |
-    "WHILE" |
-    "RETURN" |
-    "FOR" |
-    "IN" |
-    "DECLARE_VARIABLE" |
-    "DECLARE_CONSTANT" |
-    "FUNCTION" |
-    "TRY" |
-    "CATCH" |
-    "EOS" |
-    "EOF"
-);
-
-export const keywordTokenMap: { [key: string]: TokenType } = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Tokenizer = exports.keywordTokenMap = void 0;
+exports.keywordTokenMap = {
     "true": "BOOLEAN",
     "false": "BOOLEAN",
     "let": "DECLARE_VARIABLE",
@@ -97,31 +16,18 @@ export const keywordTokenMap: { [key: string]: TokenType } = {
     "in": "IN",
     "try": "TRY",
     "catch": "CATCH",
-}
-
-export interface Token {
-    type: TokenType;
-    value?: string;
-}
-
-export class Tokenizer {
-    private input: string;
-    private index: number;
-    private tokens: Token[];
-
-    constructor(input: string) {
+};
+class Tokenizer {
+    constructor(input) {
         this.input = input;
         this.index = 0;
         this.tokens = [];
     }
-
-    tokenize(): Token[] {
+    tokenize() {
         this.index = 0;
         this.tokens = [];
-
         while (this.index < this.input.length) {
             const i = this.index;
-            
             if (this.tryParseEOS()) {
                 continue;
             }
@@ -137,15 +43,12 @@ export class Tokenizer {
             if (this.tryParseIdentifier()) {
                 continue;
             }
-            
             throw new Error(`Unexpected token at index ${i}`);
         }
-
         this.tokens.push({ type: "EOF" });
         return this.tokens;
     }
-
-    tryParseEOS(): boolean {
+    tryParseEOS() {
         const char = this.input[this.index];
         if (char === ";") {
             this.tokens.push({ type: "EOS" });
@@ -154,8 +57,7 @@ export class Tokenizer {
         }
         return false;
     }
-
-    tryParseWhiteSpace(): boolean {
+    tryParseWhiteSpace() {
         const char = this.input[this.index];
         if (/\s/.test(char)) {
             this.index++;
@@ -163,7 +65,7 @@ export class Tokenizer {
         }
         return false;
     }
-    tryParseNumber(): boolean {
+    tryParseNumber() {
         const char = this.input[this.index];
         if ("0123456789".includes(char)) {
             let numStr = char;
@@ -177,9 +79,7 @@ export class Tokenizer {
         }
         return false;
     }
-
-
-    tryParseOperator(): boolean {
+    tryParseOperator() {
         let char = this.input[this.index];
         if (char === "(") {
             this.tokens.push({ type: "LPAREN" });
@@ -274,7 +174,7 @@ export class Tokenizer {
             return true;
         }
         // Divide
-        if (char === "/") {                 
+        if (char === "/") {
             this.index++;
             char = this.input[this.index];
             // Comment
@@ -287,7 +187,7 @@ export class Tokenizer {
             // Block comment
             if (char === "*") {
                 this.index++;
-                while (this.index < this.input.length-1) {
+                while (this.index < this.input.length - 1) {
                     if (this.input[this.index] === "*" && this.input[this.index + 1] === "/") {
                         this.index += 2;
                         break;
@@ -307,7 +207,6 @@ export class Tokenizer {
             }
             return true;
         }
-
         if (char === "%") {
             this.index++;
             char = this.input[this.index];
@@ -321,7 +220,6 @@ export class Tokenizer {
             }
             return true;
         }
-
         if (char === "=") {
             this.index++;
             char = this.input[this.index];
@@ -335,7 +233,6 @@ export class Tokenizer {
             }
             return true;
         }
-
         if (char === "<") {
             this.index++;
             char = this.input[this.index];
@@ -349,7 +246,6 @@ export class Tokenizer {
             }
             return true;
         }
-
         if (char === ">") {
             this.index++;
             char = this.input[this.index];
@@ -363,7 +259,6 @@ export class Tokenizer {
             }
             return true;
         }
-
         if (char === "!") {
             this.index++;
             char = this.input[this.index];
@@ -378,12 +273,10 @@ export class Tokenizer {
         }
         return false;
     }
-
-    tryParseIdentifier(): boolean {
+    tryParseIdentifier() {
         const char = this.input[this.index];
         const allowedFirstChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';
         const allowedChars = allowedFirstChars + '0123456789';
-
         if (allowedFirstChars.includes(char)) {
             let identifier = char;
             this.index++;
@@ -391,110 +284,92 @@ export class Tokenizer {
                 identifier += this.input[this.index];
                 this.index++;
             }
-
-            if (keywordTokenMap[identifier]) {
-                this.tokens.push({ type: keywordTokenMap[identifier] });
+            if (exports.keywordTokenMap[identifier]) {
+                this.tokens.push({ type: exports.keywordTokenMap[identifier] });
                 return true;
             }
             else {
                 this.tokens.push({ type: "IDENTIFIER", value: identifier });
             }
-            
             return true;
         }
         return false;
     }
 }
-
-
-
+exports.Tokenizer = Tokenizer;
 // -------------------- Parser --------------------
-
 // A simple recursive descent parser
-
 class Parser {
-    private tokens: Token[];
-    private current: number = 0;
-  
-    constructor(tokens: Token[]) {
-      this.tokens = tokens;
+    constructor(tokens) {
+        this.current = 0;
+        this.tokens = tokens;
     }
-  
-    private peek(): Token {
-      return this.tokens[this.current];
+    peek() {
+        return this.tokens[this.current];
     }
-  
-    private consume(type: TokenType): Token {
-      const token = this.peek();
-      if (token.type === type) {
-        this.current++;
-        return token;
-      }
-      throw new Error(`Expected token ${type} but got ${token.type}`);
-    }
-  
-    private match(...types: TokenType[]): boolean {
-      const token = this.peek();
-      if (types.includes(token.type)) {
-        this.current++;
-        return true;
-      }
-      return false;
-    }
-  
-    // Expression -> Term (("+" | "-") Term)*
-    parseExpression(): ASTNode {
-      let node = this.parseTerm();
-  
-      while (this.peek().type === "PLUS" || this.peek().type === "MINUS") {
-        const operatorToken = this.peek();
-        if (this.match("PLUS")) {
-          const right = this.parseTerm();
-          node = {
-            type: "BinaryOp",
-            operator: "+",
-            left: node,
-            right: right
-          } as BinaryOpNode;
-        } else if (this.match("MINUS")) {
-          const right = this.parseTerm();
-          node = {
-            type: "BinaryOp",
-            operator: "-",
-            left: node,
-            right: right
-          } as BinaryOpNode;
+    consume(type) {
+        const token = this.peek();
+        if (token.type === type) {
+            this.current++;
+            return token;
         }
-      }
-  
-      return node;
+        throw new Error(`Expected token ${type} but got ${token.type}`);
     }
-  
-    // Term -> Number | "(" Expression ")"
-    parseTerm(): ASTNode {
-      const token = this.peek();
-  
-      if (token.type === "NUMBER") {
-        this.consume("NUMBER");
-        return {
-          type: "Number",
-          value: parseInt(token.value!, 10)
-        } as NumberNode;
-      }
-  
-      if (token.type === "LPAREN") {
-        this.consume("LPAREN");
-        const node = this.parseExpression();
-        this.consume("RPAREN");
+    match(...types) {
+        const token = this.peek();
+        if (types.includes(token.type)) {
+            this.current++;
+            return true;
+        }
+        return false;
+    }
+    // Expression -> Term (("+" | "-") Term)*
+    parseExpression() {
+        let node = this.parseTerm();
+        while (this.peek().type === "PLUS" || this.peek().type === "MINUS") {
+            const operatorToken = this.peek();
+            if (this.match("PLUS")) {
+                const right = this.parseTerm();
+                node = {
+                    type: "BinaryOp",
+                    operator: "+",
+                    left: node,
+                    right: right
+                };
+            }
+            else if (this.match("MINUS")) {
+                const right = this.parseTerm();
+                node = {
+                    type: "BinaryOp",
+                    operator: "-",
+                    left: node,
+                    right: right
+                };
+            }
+        }
         return node;
-      }
-  
-      throw new Error(`Unexpected token: ${token.type}`);
     }
-  
-    parse(): ASTNode {
-      const node = this.parseExpression();
-      this.consume("EOF");
-      return node;
+    // Term -> Number | "(" Expression ")"
+    parseTerm() {
+        const token = this.peek();
+        if (token.type === "NUMBER") {
+            this.consume("NUMBER");
+            return {
+                type: "Number",
+                value: parseInt(token.value, 10)
+            };
+        }
+        if (token.type === "LPAREN") {
+            this.consume("LPAREN");
+            const node = this.parseExpression();
+            this.consume("RPAREN");
+            return node;
+        }
+        throw new Error(`Unexpected token: ${token.type}`);
     }
-  }
+    parse() {
+        const node = this.parseExpression();
+        this.consume("EOF");
+        return node;
+    }
+}
