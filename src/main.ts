@@ -1,6 +1,16 @@
 import {Tokenizer}  from "./nsengine/tokenizer";
+import {Interpreter} from "./nsengine/interpreter";
 
+function runCode(code: string) {
+    let tokenizer = new Tokenizer(code);
+    let tokens = tokenizer.tokenize();
+    let interpreter = new Interpreter(tokens);
+    return interpreter.parse();
+}
 
+console.log(runCode("1"));
+
+/*
 let tokenizer = new Tokenizer("1 + 2 * 3;");
 console.log(tokenizer.tokenize());
 
@@ -20,3 +30,4 @@ for (let i = 0; i < 10; i++) {
 }
 `);
 console.log(tokenizer.tokenize());
+*/

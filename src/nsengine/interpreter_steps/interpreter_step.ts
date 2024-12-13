@@ -14,7 +14,15 @@ export abstract class InterpreterStep {
         this.interpreter = interpreter;
     }
 
-    execute(): ASTNode | null {
+    log(message?: string) {
+        if (message == undefined) {
+            message = '';
+        }
+        console.log(`${this.name}: ${message}  : current_token = ${this.interpreter.peek().type}`);
+    }
+
+    execute(): ASTNode | null | undefined {
+        this.log();
         return null;
     }
 }

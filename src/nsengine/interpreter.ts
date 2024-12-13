@@ -1,20 +1,73 @@
 import { Token, TokenType } from "./tokenizer";
 import { InterpreterStep } from "./interpreter_steps/interpreter_step";
 import { ASTNode, ConditionNode } from "./ast";
+import { InterpretStringLiteral } from "./interpreter_steps/interpret_stringliteral";
+import * as ist from "./interpreter_steps/interpreter_step_types";
+
 
 
 
 // -------------------- Parser --------------------
 // A simple recursive descent parser
 
+export type InterpreterSteps = {
+    stringLiteral: InterpreterStep;
+    primative: InterpreterStep;
+    identifier: InterpreterStep;
+    functionCall: InterpreterStep;
+    preUnary: InterpreterStep;
+    postUnary: InterpreterStep;
+    powRoot: InterpreterStep;
+    mulDiv: InterpreterStep;
+    addSub: InterpreterStep;
+    comparison: InterpreterStep;
+    equality: InterpreterStep;
+    andOr: InterpreterStep;
+    assignment: InterpreterStep;
+    expression: InterpreterStep;
+}
+
 export class Interpreter {
     private tokens: Token[];
     private current: number = 0;
-    private steps: InterpreterStep[] = [];
+    public readonly expressionSteps: InterpreterSteps;
+
   
     constructor(tokens: Token[]) {
-      this.tokens = tokens;
-      this.steps = [];
+        this.tokens = tokens;
+
+        // Initialize the expression steps
+        const stringLiteral = new InterpretStringLiteral(this, null);
+        const primative = new ist.InterpretPrimative(this, stringLiteral);
+        const identifier = new ist.InterpretIdentifier(this, primative);
+        const functionCall = new ist.InterpretFunctionCall(this, identifier);
+        const preUnary = new ist.InterpretPreUnary(this, functionCall);
+        const postUnary = new ist.InterpretPostUnary(this, preUnary);
+        const powRoot = new ist.InterpretPowRoot(this, postUnary);
+        const mulDiv = new ist.InterpretMulDiv(this, powRoot);
+        const addSub = new ist.InterpretAddSub(this, mulDiv);
+        const comparison = new ist.InterpretComparison(this, addSub);
+        const equality = new ist.InterpretEquality(this, comparison);
+        const andOr = new ist.InterpretAndOr(this, equality);
+        const assignment = new ist.InterpretAssignment(this, andOr);
+
+        
+
+        this.expressionSteps = {
+            stringLiteral: stringLiteral,
+            primative: primative,
+            identifier: identifier,
+            functionCall: functionCall,
+            preUnary: preUnary,
+            postUnary: postUnary,
+            powRoot: powRoot,
+            mulDiv: mulDiv,
+            addSub: addSub,
+            comparison: comparison,
+            equality: equality,
+            andOr: andOr,
+            assignment: assignment
+        } as InterpreterSteps;
     }
     
     /**
@@ -22,7 +75,7 @@ export class Interpreter {
      * @returns the current token
      */
     public peek(): Token {
-      return this.tokens[this.current];
+        return this.tokens[this.current];
     }
     
     /**
@@ -58,12 +111,12 @@ export class Interpreter {
         return this.tokens[this.current - 1];
     }
 
-    public parseExpression(): ASTNode|null {
-        return null;
+    public parseExpression(): ASTNode|null|undefined {
+        return this.expressionSteps.assignment.execute();
     }
 
 
-    private parseIfStatement(): ASTNode|null {
+    private parseIfStatement(): ASTNode|null|undefined {
         /// TODO: Implement the parseIfStatement method
         if (this.match("IF")) {
             this.consume("LPAREN");     // Parentheses required
@@ -84,12 +137,12 @@ export class Interpreter {
         return null;
     }
 
-    private parseWhileStatement(): ASTNode|null {
+    private parseWhileStatement(): ASTNode|null|undefined {
         /// TODO: Implement the parseWhileStatement method
         return null;
     }
 
-    public parseStatement(): ASTNode|null {
+    public parseStatement(): ASTNode|null|undefined {
         let node = this.parseIfStatement();
         if (node) return node;
         node = this.parseWhileStatement();
@@ -115,7 +168,7 @@ export class Interpreter {
      * Parse the given tokens
      * @returns the AST
      */
-    parse(): ASTNode|null {
+    parse(): ASTNode|null|undefined {
       const node = this.parseExpression();
       this.consume("EOF");
       return node;
