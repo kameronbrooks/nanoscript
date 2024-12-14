@@ -83,37 +83,37 @@ class Tokenizer {
     tryParseOperator() {
         let char = this.input[this.index];
         if (char === "(") {
-            this.tokens.push({ type: "LPAREN" });
+            this.tokens.push({ type: "LPAREN", value: char });
             this.index++;
             return true;
         }
         if (char === ")") {
-            this.tokens.push({ type: "RPAREN" });
+            this.tokens.push({ type: "RPAREN", value: char });
             this.index++;
             return true;
         }
         if (char === "[") {
-            this.tokens.push({ type: "LBRACKET" });
+            this.tokens.push({ type: "LBRACKET", value: char });
             this.index++;
             return true;
         }
         if (char === "]") {
-            this.tokens.push({ type: "RBRACKET" });
+            this.tokens.push({ type: "RBRACKET", value: char });
             this.index++;
             return true;
         }
         if (char === "{") {
-            this.tokens.push({ type: "LBRACE" });
+            this.tokens.push({ type: "LBRACE", value: char });
             this.index++;
             return true;
         }
         if (char === "}") {
-            this.tokens.push({ type: "RBRACE" });
+            this.tokens.push({ type: "RBRACE", value: char });
             this.index++;
             return true;
         }
         if (char === ".") {
-            this.tokens.push({ type: "MEMBER_ACCESS" });
+            this.tokens.push({ type: "MEMBER_ACCESS", value: char });
             this.index++;
             return true;
         }
@@ -121,17 +121,17 @@ class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "+") {
-                this.tokens.push({ type: "INCREMENT" });
+                this.tokens.push({ type: "INCREMENT", value: "++" });
                 this.index++;
                 return true;
             }
             else if (char === "=") {
-                this.tokens.push({ type: "INCREMENT_ASSIGN" });
+                this.tokens.push({ type: "INCREMENT_ASSIGN", value: "+=" });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "PLUS" });
+                this.tokens.push({ type: "PLUS", value: '+' });
             }
             return true;
         }
@@ -139,17 +139,17 @@ class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "-") {
-                this.tokens.push({ type: "DECREMENT" });
+                this.tokens.push({ type: "DECREMENT", value: "--" });
                 this.index++;
                 return true;
             }
             else if (char === "=") {
-                this.tokens.push({ type: "DECREMENT_ASSIGN" });
+                this.tokens.push({ type: "DECREMENT_ASSIGN", value: "-=" });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "MINUS" });
+                this.tokens.push({ type: "MINUS", value: '-' });
             }
             return true;
         }
@@ -159,18 +159,18 @@ class Tokenizer {
             char = this.input[this.index];
             // Power
             if (char === "*") {
-                this.tokens.push({ type: "POWER" });
+                this.tokens.push({ type: "POWER", value: "**" });
                 this.index++;
                 return true;
             }
             // Multiply assign
             else if (char === "=") {
-                this.tokens.push({ type: "MULTIPLY_ASSIGN" });
+                this.tokens.push({ type: "MULTIPLY_ASSIGN", value: "*=" });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "MULTIPLY" });
+                this.tokens.push({ type: "MULTIPLY", value: '*' });
             }
             return true;
         }
@@ -197,14 +197,20 @@ class Tokenizer {
                 }
                 return true;
             }
+            // sqrt
+            else if (char === "/") {
+                this.tokens.push({ type: "SQRT", value: "*/" });
+                this.index++;
+                return true;
+            }
             // Divide assign
             else if (char === "=") {
-                this.tokens.push({ type: "DIVIDE_ASSIGN" });
+                this.tokens.push({ type: "DIVIDE_ASSIGN", value: "/=" });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "DIVIDE" });
+                this.tokens.push({ type: "DIVIDE", value: '/' });
             }
             return true;
         }
@@ -212,12 +218,12 @@ class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "MODULO_ASSIGN" });
+                this.tokens.push({ type: "MODULO_ASSIGN", value: "%=" });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "MODULO" });
+                this.tokens.push({ type: "MODULO", value: "%" });
             }
             return true;
         }
@@ -225,12 +231,12 @@ class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "EQUALITY" });
+                this.tokens.push({ type: "EQUALITY", value: "==" });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "ASSIGN" });
+                this.tokens.push({ type: "ASSIGN", value: "=" });
             }
             return true;
         }
@@ -238,12 +244,12 @@ class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "LESS_THAN_OR_EQUAL" });
+                this.tokens.push({ type: "LESS_THAN_OR_EQUAL", value: "<=" });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "LESS_THAN" });
+                this.tokens.push({ type: "LESS_THAN", value: "<" });
             }
             return true;
         }
@@ -251,12 +257,12 @@ class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "GREATER_THAN_OR_EQUAL" });
+                this.tokens.push({ type: "GREATER_THAN_OR_EQUAL", value: ">=" });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "GREATER_THAN" });
+                this.tokens.push({ type: "GREATER_THAN", value: ">" });
             }
             return true;
         }
@@ -264,12 +270,12 @@ class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "INEQUALITY" });
+                this.tokens.push({ type: "INEQUALITY", value: "!=" });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "NOT" });
+                this.tokens.push({ type: "NOT", value: "!" });
             }
         }
         return false;

@@ -77,6 +77,9 @@ class Interpreter {
     peek() {
         return this.tokens[this.current];
     }
+    isEOF() {
+        return this.peek().type === "EOF" || this.current >= this.tokens.length;
+    }
     /**
      * Consume the current token if it matches the given type
      * Otherwise, throw an error

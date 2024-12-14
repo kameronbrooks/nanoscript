@@ -4,11 +4,15 @@ import {Interpreter} from "./nsengine/interpreter";
 function runCode(code: string) {
     let tokenizer = new Tokenizer(code);
     let tokens = tokenizer.tokenize();
+
+    console.log(tokens);
+
     let interpreter = new Interpreter(tokens);
     return interpreter.parse();
 }
 
-console.log(runCode("1"));
+//console.log(runCode("1 + (2 + 3) * 5"));
+console.log(runCode("1 + + 1 + 3 + 5 * 5 * 5 + 4"));
 
 /*
 let tokenizer = new Tokenizer("1 + 2 * 3;");

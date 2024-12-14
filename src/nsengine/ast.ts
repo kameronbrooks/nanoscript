@@ -20,6 +20,16 @@ export interface BinaryOpNode extends ASTNode {
     left: ASTNode;
     right: ASTNode;
 }
+export interface IdentifierNode extends ASTNode {
+    type: "Identifier";
+    value: string;
+}
+export interface AssignmentNode extends ASTNode {
+    type: "Assignment";
+    operator: string;
+    left: ASTNode;
+    right: ASTNode;
+}
 export interface StatementNode extends ASTNode {
     type: "Statement";
     body: ASTNode;
@@ -32,4 +42,16 @@ export interface ConditionNode extends ASTNode {
     type: "Condition";
     condition: ASTNode;
     body: ASTNode|null;
+}
+
+export function createNumberNode(value: number): NumberNode {
+    return { type: "Number", value };
+}
+
+export function createUnaryOpNode(operator: string, operand: ASTNode): UnaryOpNode {
+    return { type: "UnaryOp", operator, operand };
+}
+
+export function createBinaryOpNode(operator: string, left?: ASTNode, right?: ASTNode): BinaryOpNode {
+    return { type: "BinaryOp", operator: operator, left: left as ASTNode, right: right as ASTNode};
 }
