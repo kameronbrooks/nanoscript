@@ -18,7 +18,7 @@ export abstract class InterpreterStep {
         if (message == undefined) {
             message = '';
         }
-        console.log(`${this.name}: ${message}  : current_token = ${this.interpreter.peek().type}`);
+        console.log(`${this.name}: ${message}  : current_token = ${this.interpreter.peek().type} ${this.interpreter.peek()?.value}`);
     }
 
     execute(): ASTNode | null | undefined {

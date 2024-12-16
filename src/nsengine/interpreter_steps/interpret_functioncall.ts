@@ -7,10 +7,10 @@ export class InterpretFunctionCall extends InterpreterStep {
         super("InterpretFunctionCall", "Interpreting a function call", interpreter, nextStep);
     }
 
-    execute() {
+    execute(backwardLookingNode: ASTNode | null = null) {
         this.log();
-        // Capture the left node
-        let lnode = this.nextStep?.execute();
+        // Capture the left node, if we are not backward looking
+        let lnode = backwardLookingNode || this.nextStep?.execute();
 
         // Loop while there are more assignments
         if (this.interpreter.match("LPAREN")) {

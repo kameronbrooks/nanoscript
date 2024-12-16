@@ -17,7 +17,9 @@ function runCode(code: string) {
 
 //console.log(astToString(runCode("1 + -(-1 + 2) * 10 + 2") as any));
 //console.log(astToString(runCode("x.func1.m + 1") as any));
-console.log(astToString(runCode("f(x+1, y(x+2), (2+5))") as any));
+//console.log(astToString(runCode("f(x+1, y(x+2), (2+5))") as any));
+console.log(astToString(runCode("o.g.f(x.y()).bb(x)") as any));
+console.log(astToString(runCode("o.g.f(x)") as any));
 /*
 let tokenizer = new Tokenizer("1 + 2 * 3;");
 console.log(tokenizer.tokenize());

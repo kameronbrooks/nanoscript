@@ -14,7 +14,7 @@ export type InterpreterSteps = {
     primative: InterpreterStep;
     identifier: InterpreterStep;
     memberAccess: InterpreterStep;
-    functionCall: InterpreterStep;
+    functionCall: ist.InterpretFunctionCall;
     preUnary: InterpreterStep;
     postUnary: InterpreterStep;
     powRoot: InterpreterStep;

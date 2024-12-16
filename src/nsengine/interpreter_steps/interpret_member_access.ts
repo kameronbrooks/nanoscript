@@ -17,11 +17,19 @@ export class InterpretMemberAccess extends InterpreterStep {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute();
+            //const rnode = this.interpreter.expressionSteps.functionCall.execute();
             lnode = {
                 type: "MemberAccess",
                 object: lnode as ASTNode, 
                 member: rnode as ASTNode
             } as MemberAccessNode;
+
+
+            // Requires a special case for function calls
+            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute(lnode);
+            if (funcCallNode) {
+                lnode = funcCallNode;
+            }
 
         }
 

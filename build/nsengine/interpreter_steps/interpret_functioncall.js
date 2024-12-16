@@ -6,11 +6,11 @@ class InterpretFunctionCall extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {
         super("InterpretFunctionCall", "Interpreting a function call", interpreter, nextStep);
     }
-    execute() {
+    execute(backwardLookingNode = null) {
         var _a;
         this.log();
-        // Capture the left node
-        let lnode = (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();
+        // Capture the left node, if we are not backward looking
+        let lnode = backwardLookingNode || ((_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute());
         // Loop while there are more assignments
         if (this.interpreter.match("LPAREN")) {
             // Fetch the operator and right node

@@ -4,7 +4,7 @@
   "description": "A server/client javascript-based interpreter for simple custom application specific scripts.",
   "main": "index.js",
   "scripts": {
-    "test": "index.test.js",
+    "test": "jest",
     "dev": "tsc & node ./build/main.js",
     "dev-client": "tsc -w & node client.js"
   },
@@ -19,6 +19,9 @@
   },
   "homepage": "https://github.com/kameronbrooks/nanoscript#readme",
   "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.7.2"
   }
 }

@@ -10,10 +10,11 @@ class InterpreterStep {
         this.interpreter = interpreter;
     }
     log(message) {
+        var _a;
         if (message == undefined) {
             message = '';
         }
-        console.log(`${this.name}: ${message}  : current_token = ${this.interpreter.peek().type}`);
+        console.log(`${this.name}: ${message}  : current_token = ${this.interpreter.peek().type} ${(_a = this.interpreter.peek()) === null || _a === void 0 ? void 0 : _a.value}`);
     }
     execute() {
         this.log();
