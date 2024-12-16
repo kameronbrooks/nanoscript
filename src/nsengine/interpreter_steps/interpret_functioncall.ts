@@ -1,5 +1,6 @@
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
+import { createBinaryOpNode, BinaryOpNode, ASTNode, FunctionCallNode } from "../ast";
 
 export class InterpretFunctionCall extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
@@ -8,7 +9,30 @@ export class InterpretFunctionCall extends InterpreterStep {
 
     execute() {
         this.log();
-        // TODO: Implement function call interpretation
-        return this.nextStep?.execute();
+        // Capture the left node
+        let lnode = this.nextStep?.execute();
+
+        // Loop while there are more assignments
+        if (this.interpreter.match("LPAREN")) {
+            // Fetch the operator and right node
+            const argNodes: ASTNode[] = [];
+
+            while(!this.interpreter.isEOF() && !this.interpreter.match("RPAREN")) {
+                let argNode = this.interpreter.parseExpression();
+                argNodes.push(argNode as ASTNode);
+                console.log(argNode);
+                if (this.interpreter.match("COMMA")) {
+                    continue;
+                }
+            }
+
+            lnode = {
+                type: "FunctionCall",
+                left: lnode as ASTNode,
+                arguments: argNodes
+            } as FunctionCallNode;
+        }
+
+        return lnode;
     }
 }

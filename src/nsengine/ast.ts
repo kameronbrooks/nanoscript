@@ -74,6 +74,12 @@ export interface MemberAccessNode extends ASTNode {
     member: ASTNode;
 }
 
+export interface FunctionCallNode extends ASTNode {
+    type: "FunctionCall";
+    left: ASTNode;
+    arguments: ASTNode[];
+}
+
 export function createNumberNode(value: number): NumberNode {
     return { type: "Number", value };
 }
@@ -103,6 +109,8 @@ export function astToString(node: ASTNode, level:number=0): string {
             return indent+`[${(node as IdentifierNode).value}]\n`;
         case "MemberAccess":
             return indent+`[.]:\n${astToString((node as MemberAccessNode).object, level+1)}${astToString((node as MemberAccessNode).member, level+1)}`;
+        case "FunctionCall":
+            return indent+`[()->{}]:\n${astToString((node as FunctionCallNode).left, level+1)}` + (node as FunctionCallNode).arguments.map((arg) => astToString(arg, level+1)).join("");
         default:
             return "Unknown ASTNode";
     }

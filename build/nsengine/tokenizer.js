@@ -306,6 +306,11 @@ class Tokenizer {
             }
             return true;
         }
+        if (char === ",") {
+            this.tokens.push({ type: "COMMA", value: "," });
+            this.index++;
+            return true;
+        }
         return false;
     }
     tryParseIdentifier() {

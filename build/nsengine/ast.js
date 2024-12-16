@@ -31,6 +31,8 @@ function astToString(node, level = 0) {
             return indent + `[${node.value}]\n`;
         case "MemberAccess":
             return indent + `[.]:\n${astToString(node.object, level + 1)}${astToString(node.member, level + 1)}`;
+        case "FunctionCall":
+            return indent + `[()->{}]:\n${astToString(node.left, level + 1)}` + node.arguments.map((arg) => astToString(arg, level + 1)).join("");
         default:
             return "Unknown ASTNode";
     }

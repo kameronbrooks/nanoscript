@@ -9,8 +9,27 @@ class InterpretFunctionCall extends interpreter_step_1.InterpreterStep {
     execute() {
         var _a;
         this.log();
-        // TODO: Implement function call interpretation
-        return (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();
+        // Capture the left node
+        let lnode = (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();
+        // Loop while there are more assignments
+        if (this.interpreter.match("LPAREN")) {
+            // Fetch the operator and right node
+            const argNodes = [];
+            while (!this.interpreter.isEOF() && !this.interpreter.match("RPAREN")) {
+                let argNode = this.interpreter.parseExpression();
+                argNodes.push(argNode);
+                console.log(argNode);
+                if (this.interpreter.match("COMMA")) {
+                    continue;
+                }
+            }
+            lnode = {
+                type: "FunctionCall",
+                left: lnode,
+                arguments: argNodes
+            };
+        }
+        return lnode;
     }
 }
 exports.InterpretFunctionCall = InterpretFunctionCall;

@@ -155,7 +155,10 @@ class Interpreter {
         //node = this.parsePrintStatement();
         //if (node) return node;
         if (this.peek().type !== "EOS") {
-            return this.parseExpression();
+            node = this.parseExpression();
+            // Dont worry about this yet
+            //this.consume("EOS");
+            return node;
         }
         throw new Error("Unknown statement");
     }
