@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tokenizer_1 = require("./nsengine/tokenizer");
 const interpreter_1 = require("./nsengine/interpreter");
+const ast_1 = require("./nsengine/ast");
 function runCode(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     let tokens = tokenizer.tokenize();
@@ -10,7 +11,9 @@ function runCode(code) {
     return interpreter.parse();
 }
 //console.log(runCode("1 + (2 + 3) * 5"));
-console.log(runCode("1 + + 1 + 3 + 5 * 5 * 5 + 4"));
+//console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
+//console.log(astToString(runCode("1 + -(-1 + 2) * 10 + 2") as any));
+console.log((0, ast_1.astToString)(runCode("x.func1.m + 1")));
 /*
 let tokenizer = new Tokenizer("1 + 2 * 3;");
 console.log(tokenizer.tokenize());

@@ -2,13 +2,13 @@ import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { TokenType } from "../tokenizer";
 
-export class InterpretPrimative extends InterpreterStep {
+export class InterpretPrimitive extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
         super("InterpretPrimative", "Interpreting a primative value", interpreter, nextStep);
     }
 
     execute() {
-        super.execute();
+        this.log();
         if (this.interpreter.match("LPAREN")) {
             let node = this.interpreter.parseExpression();
             this.interpreter.consume("RPAREN");
@@ -20,6 +20,9 @@ export class InterpretPrimative extends InterpreterStep {
         }
         else if (this.interpreter.match("NUMBER")) {
             return { type: "Number", value: parseFloat(this.interpreter.previous().value as string) };
+        }
+        else if(this.interpreter.match('NULL')) {
+            return { type: "Null", value: null };
         }
         else {
             return this.nextStep?.execute();

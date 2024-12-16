@@ -8,14 +8,13 @@ class InterpretStringLiteral extends interpreter_step_1.InterpreterStep {
     }
     execute() {
         var _a;
-        super.execute();
+        this.log();
         if (this.interpreter.match("STRINGLITERAL")) {
             return { type: "String", value: this.interpreter.previous().value };
         }
         else {
             return (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();
         }
-        return null;
     }
 }
 exports.InterpretStringLiteral = InterpretStringLiteral;

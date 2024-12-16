@@ -1,5 +1,6 @@
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
+import { ASTNode } from "../ast";
 
 export class InterpretIdentifier extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
@@ -7,9 +8,9 @@ export class InterpretIdentifier extends InterpreterStep {
     }
 
     execute() {
-        super.execute();
+        this.log();
         if (this.interpreter.match("IDENTIFIER")) {
-            return { type: "Identifier", value: this.interpreter.previous().value };
+            return { type: "Identifier", value: this.interpreter.previous().value } as ASTNode;
         }
         else {
             return this.nextStep?.execute();

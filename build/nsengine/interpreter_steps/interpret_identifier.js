@@ -8,7 +8,7 @@ class InterpretIdentifier extends interpreter_step_1.InterpreterStep {
     }
     execute() {
         var _a;
-        super.execute();
+        this.log();
         if (this.interpreter.match("IDENTIFIER")) {
             return { type: "Identifier", value: this.interpreter.previous().value };
         }

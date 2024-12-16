@@ -5,6 +5,7 @@ exports.Tokenizer = exports.keywordTokenMap = void 0;
 exports.keywordTokenMap = {
     "true": "BOOLEAN",
     "false": "BOOLEAN",
+    "null": "NULL",
     "let": "DECLARE_VARIABLE",
     "const": "DECLARE_CONSTANT",
     "function": "FUNCTION",
@@ -214,6 +215,7 @@ class Tokenizer {
             }
             return true;
         }
+        // Modulo
         if (char === "%") {
             this.index++;
             char = this.input[this.index];
@@ -277,6 +279,32 @@ class Tokenizer {
             else {
                 this.tokens.push({ type: "NOT", value: "!" });
             }
+        }
+        if (char === "&") {
+            this.index++;
+            char = this.input[this.index];
+            if (char === "&") {
+                this.tokens.push({ type: "AND", value: "&&" });
+                this.index++;
+                return true;
+            }
+            else {
+                this.tokens.push({ type: "BITWISE_AND", value: "&" });
+            }
+            return true;
+        }
+        if (char === "|") {
+            this.index++;
+            char = this.input[this.index];
+            if (char === "|") {
+                this.tokens.push({ type: "OR", value: "||" });
+                this.index++;
+                return true;
+            }
+            else {
+                this.tokens.push({ type: "BITWISE_OR", value: "|" });
+            }
+            return true;
         }
         return false;
     }

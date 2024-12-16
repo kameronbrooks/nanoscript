@@ -7,7 +7,7 @@ export class InterpretFunctionCall extends InterpreterStep {
     }
 
     execute() {
-        super.execute();
+        this.log();
         // TODO: Implement function call interpretation
         return this.nextStep?.execute();
     }

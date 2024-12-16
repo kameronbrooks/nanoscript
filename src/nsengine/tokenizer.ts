@@ -7,6 +7,7 @@ export type TokenType = (
     "IDENTIFIER" | 
     "STRINGLITERAL" |
     "BOOLEAN" |
+    "NULL" |
 
     "ASSIGN" |
     "PLUS" | 
@@ -20,6 +21,9 @@ export type TokenType = (
     "NOT" |
     "AND" |
     "OR" |
+
+    "BITWISE_AND" |
+    "BITWISE_OR" |
     
     "INCREMENT" |
     "DECREMENT" |
@@ -64,6 +68,7 @@ export type TokenType = (
 export const keywordTokenMap: { [key: string]: TokenType } = {
     "true": "BOOLEAN",
     "false": "BOOLEAN",
+    "null": "NULL",
     "let": "DECLARE_VARIABLE",
     "const": "DECLARE_CONSTANT",
     "function": "FUNCTION",
@@ -292,7 +297,7 @@ export class Tokenizer {
             }
             return true;
         }
-
+        // Modulo
         if (char === "%") {
             this.index++;
             char = this.input[this.index];
@@ -361,6 +366,35 @@ export class Tokenizer {
                 this.tokens.push({ type: "NOT", value: "!" });
             }
         }
+
+        if (char === "&") {
+            this.index++;
+            char = this.input[this.index];
+            if (char === "&") {
+                this.tokens.push({ type: "AND", value: "&&" });
+                this.index++;
+                return true;
+            }
+            else {
+                this.tokens.push({ type: "BITWISE_AND", value: "&" });
+            }
+            return true;
+        }
+
+        if (char === "|") {
+            this.index++;
+            char = this.input[this.index];
+            if (char === "|") {
+                this.tokens.push({ type: "OR", value: "||" });
+                this.index++;
+                return true;
+            }
+            else {
+                this.tokens.push({ type: "BITWISE_OR", value: "|" });
+            }
+            return true;
+        }
+        
         return false;
     }
 

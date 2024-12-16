@@ -34,17 +34,17 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Interpreter = void 0;
-const interpret_stringliteral_1 = require("./interpreter_steps/interpret_stringliteral");
 const ist = __importStar(require("./interpreter_steps/interpreter_step_types"));
 class Interpreter {
     constructor(tokens) {
         this.current = 0;
         this.tokens = tokens;
         // Initialize the expression steps
-        const stringLiteral = new interpret_stringliteral_1.InterpretStringLiteral(this, null);
+        const stringLiteral = new ist.InterpretStringLiteral(this, null);
         const primative = new ist.InterpretPrimative(this, stringLiteral);
         const identifier = new ist.InterpretIdentifier(this, primative);
-        const functionCall = new ist.InterpretFunctionCall(this, identifier);
+        const memberAccess = new ist.InterpretMemberAccess(this, identifier);
+        const functionCall = new ist.InterpretFunctionCall(this, memberAccess);
         const preUnary = new ist.InterpretPreUnary(this, functionCall);
         const postUnary = new ist.InterpretPostUnary(this, preUnary);
         const powRoot = new ist.InterpretPowRoot(this, postUnary);
@@ -58,6 +58,7 @@ class Interpreter {
             stringLiteral: stringLiteral,
             primative: primative,
             identifier: identifier,
+            memberAccess: memberAccess,
             functionCall: functionCall,
             preUnary: preUnary,
             postUnary: postUnary,

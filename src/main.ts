@@ -1,5 +1,6 @@
 import {Tokenizer}  from "./nsengine/tokenizer";
 import {Interpreter} from "./nsengine/interpreter";
+import { astToString } from "./nsengine/ast";
 
 function runCode(code: string) {
     let tokenizer = new Tokenizer(code);
@@ -12,8 +13,10 @@ function runCode(code: string) {
 }
 
 //console.log(runCode("1 + (2 + 3) * 5"));
-console.log(runCode("1 + + 1 + 3 + 5 * 5 * 5 + 4"));
+//console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
 
+//console.log(astToString(runCode("1 + -(-1 + 2) * 10 + 2") as any));
+console.log(astToString(runCode("x.func1.m + 1") as any));
 /*
 let tokenizer = new Tokenizer("1 + 2 * 3;");
 console.log(tokenizer.tokenize());

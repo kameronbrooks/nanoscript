@@ -1,22 +1,28 @@
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
-import { ASTNode, BinaryOpNode, createBinaryOpNode } from "../ast";
+import { ASTNode, BinaryOpNode, createBinaryOpNode , MemberAccessNode} from "../ast";
 
-export class InterpretComparison extends InterpreterStep {
+export class InterpretMemberAccess extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
-        super("InterpretComparison", "Interpreting a comparison operator", interpreter, nextStep);
+        super("InterpretMemberAccess", "Interpreting member access", interpreter, nextStep);
     }
-    
+
     execute() {
+        this.log();
         // Capture the left node
         let lnode = this.nextStep?.execute();
 
         // Loop while there are more assignments
-        while (!this.interpreter.isEOF() && this.interpreter.match("GREATER_THAN", "LESS_THAN", "GREATER_THAN_OR_EQUAL", "LESS_THAN_OR_EQUAL")) {
+        while (!this.interpreter.isEOF() && this.interpreter.match("MEMBER_ACCESS")) {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute();
-            lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
+            lnode = {
+                type: "MemberAccess",
+                object: lnode as ASTNode, 
+                member: rnode as ASTNode
+            } as MemberAccessNode;
+
         }
 
         return lnode;

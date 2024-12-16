@@ -9,7 +9,8 @@ export { InterpretMulDiv } from "./interpret_muldiv";
 export { InterpretPostUnary } from "./interpret_postunary";
 export { InterpretPowRoot } from "./interpret_powroot";
 export { InterpretPreUnary } from "./interpret_preunary";
-export { InterpretPrimative } from "./interpret_primative";
+export { InterpretPrimitive as InterpretPrimative } from "./interpret_primitive";
 export { InterpretStringLiteral } from "./interpret_stringliteral";
+export { InterpretMemberAccess } from "./interpret_member_access";
 
 

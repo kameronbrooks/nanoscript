@@ -8,14 +8,12 @@ export class InterpretStringLiteral extends InterpreterStep {
     }
 
     execute() {
-        super.execute();
+        this.log();
         if (this.interpreter.match("STRINGLITERAL")) {
             return { type: "String", value: this.interpreter.previous().value };
         }
         else {
             return this.nextStep?.execute();
         }
-
-        return null;
     }
 }

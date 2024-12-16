@@ -8,6 +8,7 @@ export class InterpretMulDiv extends InterpreterStep {
     }
     
     execute() {
+        this.log();
         // Capture the left node
         let lnode = this.nextStep?.execute();
 

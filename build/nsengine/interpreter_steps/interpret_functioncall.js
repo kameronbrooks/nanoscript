@@ -8,7 +8,7 @@ class InterpretFunctionCall extends interpreter_step_1.InterpreterStep {
     }
     execute() {
         var _a;
-        super.execute();
+        this.log();
         // TODO: Implement function call interpretation
         return (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();
     }
