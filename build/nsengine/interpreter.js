@@ -44,7 +44,8 @@ class Interpreter {
         const primative = new ist.InterpretPrimative(this, stringLiteral);
         const identifier = new ist.InterpretIdentifier(this, primative);
         const memberAccess = new ist.InterpretMemberAccess(this, identifier);
-        const functionCall = new ist.InterpretFunctionCall(this, memberAccess);
+        const indexer = new ist.InterpretIndexer(this, memberAccess);
+        const functionCall = new ist.InterpretFunctionCall(this, indexer);
         const preUnary = new ist.InterpretPreUnary(this, functionCall);
         const postUnary = new ist.InterpretPostUnary(this, preUnary);
         const powRoot = new ist.InterpretPowRoot(this, postUnary);
@@ -59,6 +60,7 @@ class Interpreter {
             primative: primative,
             identifier: identifier,
             memberAccess: memberAccess,
+            indexer: indexer,
             functionCall: functionCall,
             preUnary: preUnary,
             postUnary: postUnary,
@@ -70,6 +72,9 @@ class Interpreter {
             andOr: andOr,
             assignment: assignment
         };
+    }
+    createSubInterpreter(tokens) {
+        return new Interpreter(tokens);
     }
     /**
      * Peek at the current token

@@ -1,23 +1,23 @@
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
-import { createBinaryOpNode, BinaryOpNode, ASTNode, FunctionCallNode } from "../ast";
+import { ASTNode, IndexerNode} from "../ast";
 
-export class InterpretFunctionCall extends InterpreterStep {
+export class InterpretIndexer extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
-        super("InterpretFunctionCall", "Interpreting a function call", interpreter, nextStep);
+        super("InterpretIndexer", "Interpreting indexing", interpreter, nextStep);
     }
 
-    execute(backwardLookingNode?: ASTNode) {
+    execute(backwardsLookingNode?: ASTNode) {
         this.log();
-        // Capture the left node, if we are not backward looking
-        let lnode = backwardLookingNode || this.nextStep?.execute();
+        // Capture the left node
+        let lnode = backwardsLookingNode || this.nextStep?.execute();
 
         // Loop while there are more assignments
-        if (this.interpreter.match("LPAREN")) {
+        if (this.interpreter.match("LBRACKET")) {
             // Fetch the operator and right node
             const argNodes: ASTNode[] = [];
 
-            while(!this.interpreter.isEOF() && !this.interpreter.match("RPAREN")) {
+            while(!this.interpreter.isEOF() && !this.interpreter.match("RBRACKET")) {
                 let argNode = this.interpreter.parseExpression();
                 argNodes.push(argNode as ASTNode);
                 console.log(argNode);
@@ -25,22 +25,22 @@ export class InterpretFunctionCall extends InterpreterStep {
                     continue;
                 }
             }
-            
+
             lnode = {
-                type: "FunctionCall",
-                left: lnode as ASTNode,
-                arguments: argNodes
-            } as FunctionCallNode;
+                type: "Indexer",
+                object: lnode as ASTNode,
+                indices: argNodes
+            } as IndexerNode;
             
             // Special case for member access
             let memberAccessNode = this.interpreter.expressionSteps.memberAccess.execute(lnode) as ASTNode;
             if (memberAccessNode) {
                 lnode = memberAccessNode;
             }
-            // Special case for indexer
-            let indexerNode = this.interpreter.expressionSteps.indexer.execute(lnode) as ASTNode;
-            if (indexerNode) {
-                lnode = indexerNode;
+            // Special case for function calls
+            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute(lnode) as ASTNode;
+            if (funcCallNode) {
+                lnode = funcCallNode;
             }
         }
 

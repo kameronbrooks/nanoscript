@@ -7,17 +7,17 @@ export class InterpretMemberAccess extends InterpreterStep {
         super("InterpretMemberAccess", "Interpreting member access", interpreter, nextStep);
     }
 
-    execute() {
+    execute(backwardLookingNode?: ASTNode) {
         this.log();
         // Capture the left node
-        let lnode = this.nextStep?.execute();
+        let lnode = backwardLookingNode || this.nextStep?.execute();
 
         // Loop while there are more assignments
         while (!this.interpreter.isEOF() && this.interpreter.match("MEMBER_ACCESS")) {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute();
-            //const rnode = this.interpreter.expressionSteps.functionCall.execute();
+            
             lnode = {
                 type: "MemberAccess",
                 object: lnode as ASTNode, 
@@ -26,9 +26,14 @@ export class InterpretMemberAccess extends InterpreterStep {
 
 
             // Requires a special case for function calls
-            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute(lnode);
+            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute(lnode) as ASTNode;
             if (funcCallNode) {
                 lnode = funcCallNode;
+            }
+            // Requires a special case for indexer
+            let indexerNode = this.interpreter.expressionSteps.indexer.execute(lnode) as ASTNode;
+            if (indexerNode) {
+                lnode = indexerNode;
             }
 
         }

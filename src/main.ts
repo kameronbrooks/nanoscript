@@ -11,6 +11,12 @@ function runCode(code: string) {
     let interpreter = new Interpreter(tokens);
     return interpreter.parse();
 }
+function tokenize(code: string) {
+    let tokenizer = new Tokenizer(code);
+    return tokenizer.tokenize();
+}
+
+console.log(astToString(runCode("`Hello, ${name} ${name2+1}`") as any));
 
 //console.log(runCode("1 + (2 + 3) * 5"));
 //console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
@@ -18,8 +24,8 @@ function runCode(code: string) {
 //console.log(astToString(runCode("1 + -(-1 + 2) * 10 + 2") as any));
 //console.log(astToString(runCode("x.func1.m + 1") as any));
 //console.log(astToString(runCode("f(x+1, y(x+2), (2+5))") as any));
-console.log(astToString(runCode("o.g.f(x.y()).bb(x)") as any));
-console.log(astToString(runCode("o.g.f(x)") as any));
+//console.log(astToString(runCode("o[0]") as any));
+//console.log(astToString(runCode("o[0,1].g") as any));
 /*
 let tokenizer = new Tokenizer("1 + 2 * 3;");
 console.log(tokenizer.tokenize());

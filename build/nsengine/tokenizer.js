@@ -45,6 +45,9 @@ class Tokenizer {
             if (this.tryParseIdentifier()) {
                 continue;
             }
+            if (this.tryParseStringLiteral()) {
+                continue;
+            }
             throw new Error(`Unexpected token at index ${i}`);
         }
         this.tokens.push({ type: "EOF" });
@@ -331,6 +334,104 @@ class Tokenizer {
             else {
                 this.tokens.push({ type: "IDENTIFIER", value: identifier });
             }
+            return true;
+        }
+        return false;
+    }
+    tryParseSpecialChar() {
+        let localIndex = this.index;
+        let char = this.input[localIndex];
+        if (char === "\\") {
+            localIndex++;
+            char += this.input[localIndex];
+            return char;
+        }
+        return null;
+    }
+    tryParseStringLiteral() {
+        const char = this.input[this.index];
+        if (char === '"') {
+            let str = '';
+            this.index++;
+            while (this.index < this.input.length && this.input[this.index] !== '"') {
+                if (this.tryParseSpecialChar() == '\\"') {
+                    this.index += 2;
+                    str += '"';
+                }
+                str += this.input[this.index];
+                this.index++;
+            }
+            this.index++;
+            this.tokens.push({ type: "STRINGLITERAL", value: str });
+            return true;
+        }
+        else if (char === "'") {
+            let str = '';
+            this.index++;
+            while (this.index < this.input.length && this.input[this.index] !== "'") {
+                if (this.tryParseSpecialChar() == "\\'") {
+                    this.index += 2;
+                    str += "'";
+                }
+                str += this.input[this.index];
+                this.index++;
+            }
+            this.index++;
+            this.tokens.push({ type: "STRINGLITERAL", value: str });
+            return true;
+        }
+        else if (char === "`") {
+            let str = '';
+            this.index++;
+            let terminatorStack = ['`'];
+            while (this.index < this.input.length) {
+                let currentChar = this.input[this.index];
+                // Handle escaped backtick: \`
+                if (currentChar === '\\' && this.input[this.index + 1] === '`') {
+                    str += '`';
+                    this.index += 2;
+                    continue;
+                }
+                // Check if we're starting a template expression: ${
+                if (currentChar === '$' && this.input[this.index + 1] === '{') {
+                    // Push the closing brace onto the stack
+                    terminatorStack.push('}');
+                    str += '${';
+                    this.index += 2;
+                    continue;
+                }
+                // If we encounter a '{' inside a template expression block,
+                // we might want to track balanced braces. If you want strictly JS-like nesting:
+                if (terminatorStack.at(-1) === '}' && currentChar === '{') {
+                    // Another nested block inside the template expression
+                    terminatorStack.push('}');
+                    str += '{';
+                    this.index++;
+                    continue;
+                }
+                // If we see a '}' and the top of stack is '}', this might close a template block
+                if (currentChar === '}' && terminatorStack.at(-1) === '}') {
+                    terminatorStack.pop();
+                    str += '}';
+                    this.index++;
+                    continue;
+                }
+                // Check if we reached an unescaped backtick while not inside any template expressions
+                if (currentChar === '`' &&
+                    terminatorStack.length === 1 &&
+                    terminatorStack[0] === '`') {
+                    // We've found the terminating backtick
+                    this.index++;
+                    this.tokens.push({ type: "STRINGBUILDER", value: str });
+                    return true;
+                }
+                // Otherwise, just append the current character
+                str += currentChar;
+                this.index++;
+            }
+            // If we got here, no closing backtick was found
+            // You can decide how to handle this scenario, e.g. push a partial token or throw an error
+            this.tokens.push({ type: "STRINGBUILDER", value: str });
             return true;
         }
         return false;

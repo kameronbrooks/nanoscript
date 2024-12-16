@@ -74,6 +74,12 @@ export interface MemberAccessNode extends ASTNode {
     member: ASTNode;
 }
 
+export interface IndexerNode extends ASTNode {
+    type: "Indexer";
+    object: ASTNode;
+    indices: ASTNode[];
+}
+
 export interface FunctionCallNode extends ASTNode {
     type: "FunctionCall";
     left: ASTNode;
@@ -111,6 +117,12 @@ export function astToString(node: ASTNode, level:number=0): string {
             return indent+`[.]:\n${astToString((node as MemberAccessNode).object, level+1)}${astToString((node as MemberAccessNode).member, level+1)}`;
         case "FunctionCall":
             return indent+`[()->{}]:\n${astToString((node as FunctionCallNode).left, level+1)}` + (node as FunctionCallNode).arguments.map((arg) => astToString(arg, level+1)).join("");
+        case "Indexer":
+            return indent+`[[]]:\n${astToString((node as IndexerNode).object, level+1)}` + (node as IndexerNode).indices.map((arg) => astToString(arg, level+1)).join("");
+        case "StringLiteral":
+            return indent+`[${(node as StringNode).value}]\n`;
+        case "StringBuilder":
+            return indent+`[StringBuilder (${(node as StringBuilderNode).string})]:\n${(node as StringBuilderNode).expressions.map((expr) => astToString(expr, level+1)).join("")}`;
         default:
             return "Unknown ASTNode";
     }
