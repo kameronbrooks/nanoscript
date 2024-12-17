@@ -422,16 +422,30 @@ class Tokenizer {
                     terminatorStack[0] === '`') {
                     // We've found the terminating backtick
                     this.index++;
-                    this.tokens.push({ type: "STRINGBUILDER", value: str });
-                    return true;
+                    break;
                 }
                 // Otherwise, just append the current character
                 str += currentChar;
                 this.index++;
             }
+            const re = /\$\{(.+?)\}/g;
+            const originalString = str;
+            const expressions = [...originalString.matchAll(re)].map((match) => match[1]);
+            let index = 0;
+            const newString = originalString.replace(re, () => {
+                return `\${${index++}}`;
+            });
+            console.log(expressions);
+            console.log(newString);
             // If we got here, no closing backtick was found
             // You can decide how to handle this scenario, e.g. push a partial token or throw an error
-            this.tokens.push({ type: "STRINGBUILDER", value: str });
+            this.tokens.push({
+                type: "STRINGBUILDER",
+                value: newString,
+                subExpressions: expressions.map((expression) => {
+                    return new Tokenizer(expression).tokenize();
+                })
+            });
             return true;
         }
         return false;

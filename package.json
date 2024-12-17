@@ -4,7 +4,7 @@
   "description": "A server/client javascript-based interpreter for simple custom application specific scripts.",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --verbose",
     "dev": "tsc & node ./build/main.js",
     "dev-client": "tsc -w & node client.js"
   },

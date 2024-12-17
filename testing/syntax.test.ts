@@ -29,6 +29,9 @@ const validScripts = [
 `o.g.f(x)`,
 `(1 + 2) * 10`,
 `let x = 10`,
+"'Hello world'",
+"'Hello world' + '!'",
+"' Hello \\' world '",
 "`Hello, ${name}`",
 `console.log(x)`,
 `for (let i = 0; i < 10; i++) { 
@@ -42,16 +45,25 @@ const validScripts = [
 
 
 
-for (let script of validScripts) {
-    test("Tokenize (Valid): " + script.substring(100), () => {
-        expect(()=>tokenize(script)).not.toThrow();
-    });
-}
+describe('Tokenize Valid Script', () => {
+    for (let script of validScripts) {
+        test(script, () => {
+            expect(()=>tokenize(script)).not.toThrow();
+        });
+    }
+});
+
+
+describe('Parse Valid Script', () => {
+    for (let script of validScripts) {
+        test(script, () => {
+            expect(()=>runCode(script)).not.toThrow();
+        });
+    }
+});
 
 
 
-for (let script of validScripts) {
-    test("Compile (Valid): " + script.substring(100), () => {
-        expect(()=>runCode(script)).not.toThrow();
-    });
-}
+
+
+
