@@ -1,6 +1,8 @@
 import {Tokenizer}  from "./nsengine/tokenizer";
 import {Interpreter} from "./nsengine/interpreter";
 import { astToString } from "./nsengine/ast";
+import { Compiler } from "./nsengine/compiler";
+import { Nenv } from "./nsengine/nenv";
 
 function runCode(code: string) {
     let tokenizer = new Tokenizer(code);
@@ -16,8 +18,24 @@ function tokenize(code: string) {
     return tokenizer.tokenize();
 }
 
-console.log(astToString(runCode("`Hello, ${name} ${name2+1}`") as any));
+function compile(code: string) {
+    let nenv = new Nenv();
+    let tokenizer = new Tokenizer(code);
+    let tokens = tokenizer.tokenize();
+    let compiler = new Compiler(nenv);
+    let interpreter = new Interpreter(tokens);
+    let ast = interpreter.parse();
 
+    return compiler.compile(ast as any);
+}
+
+
+
+console.log(
+    compile(`
+        1 + 2
+    `)
+)
 //console.log(runCode("1 + (2 + 3) * 5"));
 //console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
 

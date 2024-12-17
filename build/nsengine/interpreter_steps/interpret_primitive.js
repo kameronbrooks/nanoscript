@@ -15,13 +15,34 @@ class InterpretPrimitive extends interpreter_step_1.InterpreterStep {
             return node;
         }
         else if (this.interpreter.match("BOOLEAN")) {
-            return { type: "Boolean", value: this.interpreter.previous().value === "true" };
+            return {
+                type: "Boolean",
+                value: this.interpreter.previous().value === "true",
+                dtype: "bool"
+            };
         }
         else if (this.interpreter.match("NUMBER")) {
-            return { type: "Number", value: parseFloat(this.interpreter.previous().value) };
+            const valueStr = this.interpreter.previous().value;
+            if (valueStr.includes('.')) {
+                return {
+                    type: "Number",
+                    value: parseFloat(valueStr),
+                    dtype: "float"
+                };
+            }
+            else {
+                return {
+                    type: "Number",
+                    value: parseInt(valueStr),
+                    dtype: "int"
+                };
+            }
         }
         else if (this.interpreter.match('NULL')) {
-            return { type: "Null", value: null };
+            return {
+                type: "Null",
+                value: null
+            };
         }
         else {
             return (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();

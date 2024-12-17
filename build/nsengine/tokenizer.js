@@ -428,17 +428,16 @@ class Tokenizer {
                 str += currentChar;
                 this.index++;
             }
+            // Tokenize the sub-expressions in the string
+            // Start by extracting the expressions
             const re = /\$\{(.+?)\}/g;
             const originalString = str;
             const expressions = [...originalString.matchAll(re)].map((match) => match[1]);
+            // Replace the expressions with placeholders
             let index = 0;
             const newString = originalString.replace(re, () => {
                 return `\${${index++}}`;
             });
-            console.log(expressions);
-            console.log(newString);
-            // If we got here, no closing backtick was found
-            // You can decide how to handle this scenario, e.g. push a partial token or throw an error
             this.tokens.push({
                 type: "STRINGBUILDER",
                 value: newString,

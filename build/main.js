@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tokenizer_1 = require("./nsengine/tokenizer");
 const interpreter_1 = require("./nsengine/interpreter");
-const ast_1 = require("./nsengine/ast");
+const compiler_1 = require("./nsengine/compiler");
+const nenv_1 = require("./nsengine/nenv");
 function runCode(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     let tokens = tokenizer.tokenize();
@@ -14,7 +15,18 @@ function tokenize(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     return tokenizer.tokenize();
 }
-console.log((0, ast_1.astToString)(runCode("`Hello, ${name} ${name2+1}`")));
+function compile(code) {
+    let nenv = new nenv_1.Nenv();
+    let tokenizer = new tokenizer_1.Tokenizer(code);
+    let tokens = tokenizer.tokenize();
+    let compiler = new compiler_1.Compiler(nenv);
+    let interpreter = new interpreter_1.Interpreter(tokens);
+    let ast = interpreter.parse();
+    return compiler.compile(ast);
+}
+console.log(compile(`
+        1 + 2
+    `));
 //console.log(runCode("1 + (2 + 3) * 5"));
 //console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
 //console.log(astToString(runCode("1 + -(-1 + 2) * 10 + 2") as any));

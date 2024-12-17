@@ -6,6 +6,7 @@ export interface ASTNode {
 export interface NumberNode extends ASTNode {
     type: "Number";
     value: number;
+    dtype?: string;
 }
 export interface StringNode extends ASTNode {
     type: "String";
@@ -14,6 +15,7 @@ export interface StringNode extends ASTNode {
 export interface BooleanNode extends ASTNode {
     type: "Boolean";
     value: boolean;
+    dtype: "bool";
 }
 export interface NullNode extends ASTNode {
     type: "Null";
@@ -28,6 +30,7 @@ export interface UnaryOpNode extends ASTNode {
     type: "UnaryOp";
     operator: string; // "+" or "-"
     operand: ASTNode;
+    postfix?: boolean;
 }
 
 export interface BinaryOpNode extends ASTNode {

@@ -5,6 +5,7 @@ export interface NenvExport {
     description?: string;
     object: any;
     type: "function" | "object" | "class" | "constant";
+    datatype?: string;
 }
 
 export interface NenvModule {
@@ -30,7 +31,7 @@ export class Nenv {
         this.references = {};
 
     }
-    
+
     addModule(module: NenvModule) {
         if (this.modules[module.name]) {
             throw new Error(`Module ${module.name} already exists`);

@@ -1,6 +1,7 @@
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { TokenType } from "../tokenizer";
+import { NumberNode, NullNode, BooleanNode, StringNode } from "../ast";
 
 export class InterpretPrimitive extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
@@ -16,13 +17,34 @@ export class InterpretPrimitive extends InterpreterStep {
             return node;
         }
         else if (this.interpreter.match("BOOLEAN")) {
-            return { type: "Boolean", value: this.interpreter.previous().value === "true" };
+            return { 
+                type: "Boolean", 
+                value: this.interpreter.previous().value === "true",
+                dtype: "bool"
+            } as BooleanNode;
         }
         else if (this.interpreter.match("NUMBER")) {
-            return { type: "Number", value: parseFloat(this.interpreter.previous().value as string) };
+            const valueStr = this.interpreter.previous().value as string;
+            if(valueStr.includes('.')) {
+                return { 
+                    type: "Number", 
+                    value: parseFloat(valueStr),
+                    dtype: "float"
+                } as NumberNode;
+            }
+            else {
+                return { 
+                    type: "Number", 
+                    value: parseInt(valueStr),
+                    dtype: "int"
+                } as NumberNode;
+            }
         }
         else if(this.interpreter.match('NULL')) {
-            return { type: "Null", value: null };
+            return { 
+                type: "Null", 
+                value: null 
+            } as NullNode;
         }
         else {
             return this.nextStep?.execute();
