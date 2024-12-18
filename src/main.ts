@@ -48,13 +48,18 @@ console.log(result + " in " + (end - start) + "ms");
 */
 
 const script = `
-if (x > 10) {
-    console.log('x is greater than 10');
+if (1 > 10) {
+    //console.log('x is greater than 10');
+    1+1;
 } else {
-    console.log('x is greater less than 10');
+    //console.log('x is greater less than 10');
+    2+2;
 }
 `;
 console.log(astToString(runCode(script) as any));
+
+
+console.log(compile(script));
 //console.log(runCode("1 + (2 + 3) * 5"));
 //console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
 

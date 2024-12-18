@@ -107,6 +107,14 @@ class Compiler {
             opcode,
             operand
         });
+        return this.program.instructions.at(-1);
+    }
+    insertInstruction(index, opcode, operand = null) {
+        this.program.instructions.splice(index, 0, {
+            opcode,
+            operand
+        });
+        return this.program.instructions.at(index);
     }
     compile(ast) {
         this.program = {
@@ -145,6 +153,16 @@ class Compiler {
                 break;
             case "Identifier":
                 this.compileIdentifier(node);
+                break;
+            case "Block":
+                this.state.pushScope();
+                for (let statement of node.statements) {
+                    this.compileNode(statement);
+                }
+                this.state.popScope();
+                break;
+            case "Condition":
+                this.compileCondition(node);
                 break;
             default:
                 throw new Error(`Unknown node type: ${node.type}`);
@@ -217,6 +235,32 @@ class Compiler {
         // Load the value
         // TODO: Figure out the opcode based on the object type
         // Also figure out if this should be a load or a store
+    }
+    compileCondition(node) {
+        this.compileNode(node.condition);
+        const conditionIndex = this.getTailIndex();
+        // Add a placeholder for the jump instruction
+        const branchInstruction = this.addInstruction(prg.OP_BRANCH_FALSE, null);
+        const jumpIndex = this.getTailIndex();
+        if (node.body) {
+            this.compileNode(node.body);
+        }
+        const falseBranchIndex = this.getTailIndex();
+        let elseJumpInstruction = null;
+        if (node.elseBody) {
+            elseJumpInstruction = this.addInstruction(prg.OP_JUMP, null);
+            this.compileNode(node.elseBody);
+        }
+        const endOfConditionIndex = this.getTailIndex();
+        // Update the branch instruction
+        if (!branchInstruction) {
+            throw new Error("Branch instruction not found");
+        }
+        branchInstruction.operand = falseBranchIndex;
+        // Update the jump instruction
+        if (elseJumpInstruction) {
+            elseJumpInstruction.operand = endOfConditionIndex;
+        }
     }
     compileAssignment(node) {
         this.compileNode(node.right);

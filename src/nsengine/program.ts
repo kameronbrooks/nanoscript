@@ -30,15 +30,32 @@ export const OP_MODf                     = 0x2A;
 export const OP_POWf                     = 0x2B;
 export const OP_ADDs                     = 0x2C;
 
+export const OP_GREATER_THANi            = 0x2D;
+export const OP_LESS_THANi               = 0x2E;
+export const OP_GREATER_THAN_OR_EQUALi   = 0x2F;
+export const OP_LESS_THAN_OR_EQUALi      = 0x30;
+export const OP_EQUALi                   = 0x31;
+export const OP_NOT_EQUALi               = 0x32;
+export const OP_GREATER_THANf            = 0x33;
+export const OP_LESS_THANf               = 0x34;
+export const OP_GREATER_THAN_OR_EQUALf   = 0x35;
+export const OP_LESS_THAN_OR_EQUALf      = 0x36;
+export const OP_EQUALf                   = 0x37;
+export const OP_NOT_EQUALf               = 0x38;
+export const OP_EQUALb                   = 0x39;
+export const OP_NOT_EQUALb               = 0x3A;
+export const OP_EQUALs                   = 0x3B;
+export const OP_NOT_EQUALs               = 0x3C;
+
 // ============= UNARY OPERATIONS =============
-export const OP_NEGi                     = 0x30;
-export const OP_NEGf                     = 0x31;
+export const OP_NEGi                     = 0x40;
+export const OP_NEGf                     = 0x41;
 
 // ============= CONVERSION OPERATIONS =============
-export const OP_INT_TO_FLOAT             = 0x40;
-export const OP_FLOAT_TO_INT             = 0x41;
-export const OP_INT_TO_STRING            = 0x42;
-export const OP_FLOAT_TO_STRING          = 0x43;
+export const OP_INT_TO_FLOAT             = 0x50;
+export const OP_FLOAT_TO_INT             = 0x51;
+export const OP_INT_TO_STRING            = 0x52;
+export const OP_FLOAT_TO_STRING          = 0x53;
 
 
 // 
@@ -69,6 +86,22 @@ export const OP_MAP: { [key: string]: OPResult } = {
     '(int)float': { opcode: OP_FLOAT_TO_INT, returnDtype: 'int' },
     '(string)int': { opcode: OP_INT_TO_STRING, returnDtype: 'string' },
     '(string)float': { opcode: OP_FLOAT_TO_STRING, returnDtype: 'string' },
+    'int==int': { opcode: OP_EQUALi, returnDtype: 'bool' },
+    'int!=int': { opcode: OP_NOT_EQUALi, returnDtype: 'bool' },
+    'int>int': { opcode: OP_GREATER_THANi, returnDtype: 'bool' },
+    'int<int': { opcode: OP_LESS_THANi, returnDtype: 'bool' },
+    'int>=int': { opcode: OP_GREATER_THAN_OR_EQUALi, returnDtype: 'bool' },
+    'int<=int': { opcode: OP_LESS_THAN_OR_EQUALi, returnDtype: 'bool' },
+    'float==float': { opcode: OP_EQUALf, returnDtype: 'bool' },
+    'float!=float': { opcode: OP_NOT_EQUALf, returnDtype: 'bool' },
+    'float>float': { opcode: OP_GREATER_THANf, returnDtype: 'bool' },
+    'float<float': { opcode: OP_LESS_THANf, returnDtype: 'bool' },
+    'float>=float': { opcode: OP_GREATER_THAN_OR_EQUALf, returnDtype: 'bool' },
+    'float<=float': { opcode: OP_LESS_THAN_OR_EQUALf, returnDtype: 'bool' },
+    'bool==bool': { opcode: OP_EQUALb, returnDtype: 'bool' },
+    'bool!=bool': { opcode: OP_NOT_EQUALb, returnDtype: 'bool' },
+    'string==string': { opcode: OP_EQUALs, returnDtype: 'bool' },
+    'string!=string': { opcode: OP_NOT_EQUALs, returnDtype: 'bool' },
 };
 
 export const IMPLICIT_CONVERSION_MAP: { [key: string]: OPResult } = {
@@ -94,6 +127,7 @@ export interface Instruction {
 }
 
 export interface Program {
+    engineVersion: string;
     nenv: Nenv;
     instructions: Instruction[];
 }

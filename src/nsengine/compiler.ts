@@ -81,6 +81,7 @@ class CompilerState {
 }
 
 export class Compiler {
+    private engineVersion = "0.0.1";
     private nenv: Nenv;
     private program: prg.Program;
     private state: CompilerState;
@@ -91,6 +92,7 @@ export class Compiler {
         this.nenv = nenv;
         
         this.program = {
+            engineVersion: this.engineVersion,
             nenv: this.nenv,
             instructions: [],
         };
@@ -105,14 +107,25 @@ export class Compiler {
 
 
     addInstruction(opcode: number, operand:any = null) {
+        
         this.program.instructions.push({
             opcode,
             operand
         });
+        return this.program.instructions.at(-1);
+    }
+    insertInstruction(index:number, opcode: number, operand:any = null) {
+        
+        this.program.instructions.splice(index, 0, {
+            opcode,
+            operand
+        });
+        return this.program.instructions.at(index);
     }
 
     compile(ast: ast.ASTNode[]) {
         this.program = {
+            engineVersion: this.engineVersion,
             nenv: this.nenv,
             instructions: [],
         };
@@ -153,6 +166,17 @@ export class Compiler {
             case "Identifier":
                 this.compileIdentifier(node as ast.IdentifierNode);
                 break;
+            case "Block":
+                this.state.pushScope();
+                for (let statement of (node as ast.BlockNode).statements) {
+                    this.compileNode(statement);
+                }
+                this.state.popScope();
+                break;
+            case "Condition":
+                this.compileCondition(node as ast.ConditionNode);
+                break;
+                
             default:
                 throw new Error(`Unknown node type: ${node.type}`);
         }
@@ -235,10 +259,43 @@ export class Compiler {
         if (!target) {
             throw new Error(`Unknown identifier: ${node.value}`);
         }
-        
+
         // Load the value
         // TODO: Figure out the opcode based on the object type
         // Also figure out if this should be a load or a store
+    }
+
+    private compileCondition(node: ast.ConditionNode) {
+        this.compileNode(node.condition);
+        const conditionIndex = this.getTailIndex();
+
+        // Add a placeholder for the jump instruction
+        const branchInstruction = this.addInstruction(prg.OP_BRANCH_FALSE, null);
+        const jumpIndex = this.getTailIndex();
+
+        if(node.body) {
+            this.compileNode(node.body);
+        }
+        const falseBranchIndex = this.getTailIndex();
+        
+        let elseJumpInstruction = null;
+        if(node.elseBody) {
+            elseJumpInstruction = this.addInstruction(prg.OP_JUMP, null);
+            this.compileNode(node.elseBody);
+        }
+        const endOfConditionIndex = this.getTailIndex();
+
+        // Update the branch instruction
+        if (!branchInstruction) {
+            throw new Error("Branch instruction not found");
+        }
+
+        branchInstruction.operand = falseBranchIndex;
+
+        // Update the jump instruction
+        if (elseJumpInstruction) {
+            elseJumpInstruction.operand = endOfConditionIndex;
+        }
     }
 
 
