@@ -111,13 +111,15 @@ export class Compiler {
         });
     }
 
-    compile(ast: ast.ASTNode) {
+    compile(ast: ast.ASTNode[]) {
         this.program = {
             nenv: this.nenv,
             instructions: [],
         };
 
-        this.compileNode(ast);
+        for (let node of ast) {
+            this.compileNode(node);
+        }
 
         // Terminate the program
         this.addInstruction(prg.OP_TERM);
@@ -229,8 +231,16 @@ export class Compiler {
     }
 
     private compileIdentifier(node: ast.IdentifierNode) {
-        let target = this.nenv.getObject(node.value);
+        let target = this.state.currentScope?.getObject(node.value);
+        if (!target) {
+            throw new Error(`Unknown identifier: ${node.value}`);
+        }
+        
+        // Load the value
+        // TODO: Figure out the opcode based on the object type
+        // Also figure out if this should be a load or a store
     }
+
 
     private compileAssignment(node: ast.AssignmentNode) {
         this.compileNode(node.right);

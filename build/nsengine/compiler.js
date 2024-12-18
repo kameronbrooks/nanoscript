@@ -35,31 +35,89 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Compiler = void 0;
 const prg = __importStar(require("./program"));
+class ScopeObject {
+    constructor(name, datatype, value, type) {
+        this.name = name;
+        this.datatype = datatype;
+        this.value = value;
+        this.type = type;
+    }
+}
+class Scope {
+    constructor(parent = null, nenv) {
+        this.nenv = nenv;
+        this.parent = parent;
+        this.objects = new Map();
+    }
+    getObject(name) {
+        let obj = this.objects.get(name);
+        if (obj) {
+            return obj;
+        }
+        if (this.parent) {
+            return this.parent.getObject(name);
+        }
+        if (this.nenv) {
+            let ref = this.nenv.getObject(name);
+            if (ref) {
+                return {
+                    name: ref.export.name,
+                    datatype: ref.export.datatype || 'any',
+                    value: ref.export.object,
+                    type: ref.export.type
+                };
+            }
+        }
+        return obj;
+    }
+    isGlobal() {
+        return this.parent === null;
+    }
+}
 class CompilerState {
-    constructor() {
+    constructor(currentScope) {
         this.currentDatatype = 'none';
+        this.isLValue = false;
+        this.currentScope = currentScope;
+    }
+    pushScope() {
+        this.currentScope = new Scope(this.currentScope);
+    }
+    popScope() {
+        if (this.currentScope && !this.currentScope.isGlobal()) {
+            this.currentScope = this.currentScope.parent;
+        }
     }
 }
 class Compiler {
     constructor(nenv) {
         this.nenv = nenv;
-        this.state = new CompilerState();
         this.program = {
             nenv: this.nenv,
             instructions: [],
         };
+        this.globalScope = new Scope(null, nenv);
+        this.state = new CompilerState(this.globalScope);
+    }
+    getTailIndex() {
+        return this.program.instructions.length;
+    }
+    addInstruction(opcode, operand = null) {
+        this.program.instructions.push({
+            opcode,
+            operand
+        });
     }
     compile(ast) {
         this.program = {
             nenv: this.nenv,
             instructions: [],
         };
-        this.compileNode(ast);
+        for (let node of ast) {
+            this.compileNode(node);
+        }
         // Terminate the program
-        this.program.instructions.push({
-            opcode: prg.OP_TERM,
-            operand: null,
-        });
+        this.addInstruction(prg.OP_TERM);
         return this.program;
     }
     compileNode(node) {
@@ -93,10 +151,17 @@ class Compiler {
         }
     }
     compileBinaryOp(node) {
+        const rightInsertionIndex = this.getTailIndex();
         this.compileNode(node.right);
         const rightDataType = this.state.currentDatatype;
+        const leftInsertionIndex = this.getTailIndex();
         this.compileNode(node.left);
         const leftDataType = this.state.currentDatatype;
+        // Check for type mismatch
+        // TODO: Implement type coercion
+        if (leftDataType !== rightDataType) {
+            throw new Error(`Type mismatch: ${leftDataType} and ${rightDataType}`);
+        }
         // Look up the opcode based on the left and right datatypes
         const opKey = leftDataType + node.operator + rightDataType;
         const result = prg.searchOpMap(opKey);
@@ -104,54 +169,54 @@ class Compiler {
             throw new Error(`Unknown operator: ${opKey}`);
         }
         // Add the instruction
-        this.program.instructions.push({
-            opcode: result.opcode,
-            operand: null,
-        });
+        this.addInstruction(result.opcode, null);
+        this.state.currentDatatype = result.returnDtype;
     }
     compileUnaryOp(node) {
         this.compileNode(node.operand);
+        const datatype = this.state.currentDatatype;
+        const opKey = node.postfix ? datatype + node.operator : node.operator + datatype;
+        const result = prg.searchOpMap(opKey);
+        if (!result) {
+            throw new Error(`Unknown operator: ${opKey}`);
+        }
+        // Add the instruction
+        this.addInstruction(result.opcode);
+        this.state.currentDatatype = result.returnDtype;
     }
     compileBoolean(node) {
-        this.program.instructions.push({
-            opcode: prg.OP_LOAD_CONST_BOOL,
-            operand: node.value
-        });
+        this.addInstruction(prg.OP_LOAD_CONST_BOOL, node.value);
         this.state.currentDatatype = 'bool';
     }
     compileNumber(node) {
         // Float
         if (node.dtype === 'float') {
-            this.program.instructions.push({
-                opcode: prg.OP_LOAD_CONST_FLOAT,
-                operand: node.value
-            });
+            this.addInstruction(prg.OP_LOAD_CONST_FLOAT, node.value);
         }
         // Int
         else if (node.dtype === 'int') {
-            this.program.instructions.push({
-                opcode: prg.OP_LOAD_CONST_INT,
-                operand: node.value
-            });
+            this.addInstruction(prg.OP_LOAD_CONST_INT, node.value);
         }
         // Set the current datatype
         this.state.currentDatatype = node.dtype || 'float';
     }
     compileString(node) {
-        this.program.instructions.push({
-            opcode: prg.OP_LOAD_CONST_STRING,
-            operand: node.value
-        });
+        this.addInstruction(prg.OP_LOAD_CONST_STRING, node.value);
         this.state.currentDatatype = 'string';
     }
     compileNull(node) {
-        this.program.instructions.push({
-            opcode: prg.OP_LOAD_CONST_NULL,
-            operand: null,
-        });
+        this.addInstruction(prg.OP_LOAD_CONST_NULL, null);
         this.state.currentDatatype = 'null';
     }
     compileIdentifier(node) {
+        var _a;
+        let target = (_a = this.state.currentScope) === null || _a === void 0 ? void 0 : _a.getObject(node.value);
+        if (!target) {
+            throw new Error(`Unknown identifier: ${node.value}`);
+        }
+        // Load the value
+        // TODO: Figure out the opcode based on the object type
+        // Also figure out if this should be a load or a store
     }
     compileAssignment(node) {
         this.compileNode(node.right);

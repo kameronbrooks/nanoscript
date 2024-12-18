@@ -28,8 +28,7 @@ export class InterpretStringLiteral extends InterpreterStep {
                 expressions: (subExpressions as Token[][]).map((tokens) => {
                     const createSubInterpreter = this.interpreter.createSubInterpreter(tokens);
                     return createSubInterpreter.parseExpression();
-                }
-            )
+                })
             } as StringBuilderNode;
         }
         else {

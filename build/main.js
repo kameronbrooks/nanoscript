@@ -4,6 +4,7 @@ const tokenizer_1 = require("./nsengine/tokenizer");
 const interpreter_1 = require("./nsengine/interpreter");
 const compiler_1 = require("./nsengine/compiler");
 const nenv_1 = require("./nsengine/nenv");
+const executor_1 = require("./nsengine/executor");
 function runCode(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     let tokens = tokenizer.tokenize();
@@ -22,11 +23,15 @@ function compile(code) {
     let compiler = new compiler_1.Compiler(nenv);
     let interpreter = new interpreter_1.Interpreter(tokens);
     let ast = interpreter.parse();
-    return compiler.compile(ast);
+    return compiler.compile([ast]);
 }
-console.log(compile(`
-        1 + 2
-    `));
+const script = `
+    (1 + 2) * 10
+`;
+const program = compile(script);
+console.log(program);
+const executor = new executor_1.Executor();
+console.log(executor.execute(program));
 //console.log(runCode("1 + (2 + 3) * 5"));
 //console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
 //console.log(astToString(runCode("1 + -(-1 + 2) * 10 + 2") as any));

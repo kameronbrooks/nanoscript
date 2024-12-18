@@ -3,6 +3,7 @@ import {Interpreter} from "./nsengine/interpreter";
 import { astToString } from "./nsengine/ast";
 import { Compiler } from "./nsengine/compiler";
 import { Nenv } from "./nsengine/nenv";
+import { Executor } from "./nsengine/executor";
 
 function runCode(code: string) {
     let tokenizer = new Tokenizer(code);
@@ -26,16 +27,20 @@ function compile(code: string) {
     let interpreter = new Interpreter(tokens);
     let ast = interpreter.parse();
 
-    return compiler.compile(ast as any);
+    return compiler.compile([ast] as any);
 }
 
+const script = `
+    (1 + 2) * 10
+`;
 
+const program = compile(script);
 
-console.log(
-    compile(`
-        1 + 2
-    `)
-)
+console.log(program);
+
+const executor = new Executor();
+
+console.log(executor.execute(program));
 //console.log(runCode("1 + (2 + 3) * 5"));
 //console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
 

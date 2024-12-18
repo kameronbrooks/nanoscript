@@ -19,7 +19,7 @@ export class InterpretPowRoot extends InterpreterStep {
             const rnode = this.nextStep?.execute();
             lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
         }
-
+        
         return lnode;
     }
 }
