@@ -1,6 +1,6 @@
 import { Token, TokenType } from "./tokenizer";
 import { InterpreterStep } from "./interpreter_steps/interpreter_step";
-import { ASTNode, ConditionNode } from "./ast";
+import { ASTNode, ConditionNode, BlockNode } from "./ast";
 import * as ist from "./interpreter_steps/interpreter_step_types";
 
 
@@ -133,7 +133,7 @@ export class Interpreter {
         /// TODO: Implement the parseIfStatement method
         if (this.match("IF")) {
             this.consume("LPAREN");     // Parentheses required
-            const condition = this.parseStatement();
+            const condition = this.parseExpression();
             this.consume("RPAREN");     // Parentheses required
             const body = this.parseStatement();
             
@@ -141,11 +141,42 @@ export class Interpreter {
             if (!condition || !body) {
                 throw new Error("Invalid if statement");
             }
+
+            if (this.match("ELSE")) {
+                const elseBody = this.parseStatement();
+                if (!elseBody) {
+                    throw new Error("Invalid else statement");
+                }
+                return {
+                    type: "Condition",
+                    condition,
+                    body,
+                    elseBody
+                } as ConditionNode;
+            }
+
             return {
                 type: "Condition",
                 condition,
                 body
             } as ConditionNode;
+        }
+        return null;
+    }
+
+    private parseBlock(): ASTNode|null|undefined {
+        if (this.match("LBRACE")) {
+            const statements = [];
+            while (!this.match("RBRACE")) {
+                const statement = this.parseStatement();
+                if (statement) {
+                    statements.push(statement);
+                }
+            }
+            return {
+                type: "Block",
+                statements
+            } as BlockNode;
         }
         return null;
     }
@@ -166,14 +197,14 @@ export class Interpreter {
         //if (node) return node;
         //node = this.parseForEachStatement();
         //if (node) return node;
-        //node = this.parseBlock();
-        //if (node) return node;
+        node = this.parseBlock();
+        if (node) return node;
         //node = this.parsePrintStatement();
         //if (node) return node;
         if (this.peek().type !== "EOS") {
             node = this.parseExpression();
             // Dont worry about this yet
-            //this.consume("EOS");
+            this.consume("EOS");
             return node;
         }
 
@@ -186,7 +217,7 @@ export class Interpreter {
      * @returns the AST
      */
     parse(): ASTNode|null|undefined {
-      const node = this.parseExpression();
+      const node = this.parseStatement();
       this.consume("EOF");
       return node;
     }

@@ -56,12 +56,13 @@ export interface StatementNode extends ASTNode {
 }
 export interface BlockNode extends ASTNode {
     type: "Block";
-    body: ASTNode[];
+    statements: ASTNode[];
 }
 export interface ConditionNode extends ASTNode {
     type: "Condition";
     condition: ASTNode;
     body?: ASTNode;
+    elseBody?: ASTNode;
 }
 export interface LoopNode extends ASTNode {
     type: "Loop";
@@ -102,31 +103,49 @@ export function createBinaryOpNode(operator: string, left?: ASTNode, right?: AST
 }
 
 export function astToString(node: ASTNode, level:number=0): string {
-    const indent = "--".repeat(level);
+    let indent = `\x1b[${level+32}m` + "--".repeat(level);
+    let postfix = level==0 ? "\x1b[0m" : "";
     const arrow = (level>1) ? "↳" : "";
     if(!node) return "";
+
+    let a, b, c, d, e;
     switch(node.type) {
         case "Number":
-            return indent+`[${(node as NumberNode).value.toString()}]\n`;
+            return indent+`[${(node as NumberNode).value.toString()}]\n` + postfix;
         case "UnaryOp":
-            return indent+`[${(node as UnaryOpNode).operator}]:\n${astToString((node as UnaryOpNode).operand, level+1)}`;
+            return indent+`[${(node as UnaryOpNode).operator}]:\n${astToString((node as UnaryOpNode).operand, level+1)}` + postfix;
         case "BinaryOp":
-            return indent+`[${(node as BinaryOpNode).operator}]:\n${astToString((node as BinaryOpNode).left, level+1)}${astToString((node as BinaryOpNode).right, level+1)}`;
+            return indent+`[${(node as BinaryOpNode).operator}]:\n${astToString((node as BinaryOpNode).left, level+1)}${astToString((node as BinaryOpNode).right, level+1)}` + postfix;
         case "Assignment":
-            return indent+`[${(node as AssignmentNode).operator}]:\n${astToString((node as AssignmentNode).left, level+1)}${astToString((node as AssignmentNode).right, level+1)}`;
+            return indent+`[${(node as AssignmentNode).operator}]:\n${astToString((node as AssignmentNode).left, level+1)}${astToString((node as AssignmentNode).right, level+1)}` + postfix;
         case "Identifier":
-            return indent+`[${(node as IdentifierNode).value}]\n`;
+            return indent+`[${(node as IdentifierNode).value}]\n` + postfix;
         case "MemberAccess":
-            return indent+`[.]:\n${astToString((node as MemberAccessNode).object, level+1)}${astToString((node as MemberAccessNode).member, level+1)}`;
+            return indent+`[.]:\n${astToString((node as MemberAccessNode).object, level+1)}${astToString((node as MemberAccessNode).member, level+1)}` + postfix;
         case "FunctionCall":
-            return indent+`[()->{}]:\n${astToString((node as FunctionCallNode).left, level+1)}` + (node as FunctionCallNode).arguments.map((arg) => astToString(arg, level+1)).join("");
+            return indent+`[()->{}]:\n${astToString((node as FunctionCallNode).left, level+1)}` + (node as FunctionCallNode).arguments.map((arg) => astToString(arg, level+1)).join("") + postfix;
         case "Indexer":
-            return indent+`[[]]:\n${astToString((node as IndexerNode).object, level+1)}` + (node as IndexerNode).indices.map((arg) => astToString(arg, level+1)).join("");
-        case "StringLiteral":
-            return indent+`[${(node as StringNode).value}]\n`;
+            return indent+`[[]]:\n${astToString((node as IndexerNode).object, level+1)}` + (node as IndexerNode).indices.map((arg) => astToString(arg, level+1)).join("") + postfix;
+        case "String":
+            return indent+`["${(node as StringNode).value}"]\n` + postfix;
         case "StringBuilder":
-            return indent+`[StringBuilder (${(node as StringBuilderNode).string})]:\n${(node as StringBuilderNode).expressions.map((expr) => astToString(expr, level+1)).join("")}`;
+            return indent+`[StringBuilder (${(node as StringBuilderNode).string})]:\n${(node as StringBuilderNode).expressions.map((expr) => astToString(expr, level+1)).join("")}` + postfix;
+        case "Block":
+            return indent+`[Block]:\n${(node as BlockNode).statements.map((stmt) => astToString(stmt, level+1)).join("")}` + postfix;
+        case "Condition":
+            a = indent+`[If]:\n`;
+            a += astToString((node as ConditionNode).condition, level+1);
+            if((node as ConditionNode).body) {
+                a += indent+`[Then]:\n`;
+                a += astToString((node as ConditionNode).body as ASTNode, level+1);
+            }
+            if((node as ConditionNode).elseBody) {
+                a += indent+`[Else]:\n`;
+                a += astToString((node as ConditionNode).elseBody as ASTNode, level+1);
+            }
+            return a + postfix;
+
         default:
-            return "Unknown ASTNode";
+            return `Unknown ASTNode type ${node.type}`;
     }
 }

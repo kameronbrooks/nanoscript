@@ -30,6 +30,7 @@ function compile(code: string) {
     return compiler.compile([ast] as any);
 }
 
+/*
 const script = `
     (1 + 2) * 10
 `;
@@ -40,7 +41,20 @@ console.log(program);
 
 const executor = new Executor();
 
-console.log(executor.execute(program));
+const start = performance.now();
+const result = executor.execute(program);
+const end = performance.now();
+console.log(result + " in " + (end - start) + "ms");
+*/
+
+const script = `
+if (x > 10) {
+    console.log('x is greater than 10');
+} else {
+    console.log('x is greater less than 10');
+}
+`;
+console.log(astToString(runCode(script) as any));
 //console.log(runCode("1 + (2 + 3) * 5"));
 //console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
 

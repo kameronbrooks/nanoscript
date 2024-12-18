@@ -123,17 +123,45 @@ class Interpreter {
         /// TODO: Implement the parseIfStatement method
         if (this.match("IF")) {
             this.consume("LPAREN"); // Parentheses required
-            const condition = this.parseStatement();
+            const condition = this.parseExpression();
             this.consume("RPAREN"); // Parentheses required
             const body = this.parseStatement();
             // Body
             if (!condition || !body) {
                 throw new Error("Invalid if statement");
             }
+            if (this.match("ELSE")) {
+                const elseBody = this.parseStatement();
+                if (!elseBody) {
+                    throw new Error("Invalid else statement");
+                }
+                return {
+                    type: "Condition",
+                    condition,
+                    body,
+                    elseBody
+                };
+            }
             return {
                 type: "Condition",
                 condition,
                 body
+            };
+        }
+        return null;
+    }
+    parseBlock() {
+        if (this.match("LBRACE")) {
+            const statements = [];
+            while (!this.match("RBRACE")) {
+                const statement = this.parseStatement();
+                if (statement) {
+                    statements.push(statement);
+                }
+            }
+            return {
+                type: "Block",
+                statements
             };
         }
         return null;
@@ -155,14 +183,15 @@ class Interpreter {
         //if (node) return node;
         //node = this.parseForEachStatement();
         //if (node) return node;
-        //node = this.parseBlock();
-        //if (node) return node;
+        node = this.parseBlock();
+        if (node)
+            return node;
         //node = this.parsePrintStatement();
         //if (node) return node;
         if (this.peek().type !== "EOS") {
             node = this.parseExpression();
             // Dont worry about this yet
-            //this.consume("EOS");
+            this.consume("EOS");
             return node;
         }
         throw new Error("Unknown statement");
@@ -172,7 +201,7 @@ class Interpreter {
      * @returns the AST
      */
     parse() {
-        const node = this.parseExpression();
+        const node = this.parseStatement();
         this.consume("EOF");
         return node;
     }
