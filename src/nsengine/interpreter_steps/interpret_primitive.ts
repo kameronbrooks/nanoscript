@@ -9,7 +9,7 @@ export class InterpretPrimitive extends InterpreterStep {
     }
 
     execute() {
-        this.log();
+        if(this.verboseMode) this.log();
         if (this.interpreter.match("LPAREN")) {
             let node = this.interpreter.parseExpression();
             this.interpreter.consume("RPAREN");

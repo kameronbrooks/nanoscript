@@ -66,7 +66,7 @@ class Executor {
         this.ip = 0;
         this.fp = 0;
         while (program.instructions[this.ip].opcode != prg.OP_TERM) {
-            this.printStack();
+            //this.printStack();
             this.executeInstruction(program.instructions[this.ip]);
         }
         if (this.stack.length > 0) {
@@ -328,6 +328,45 @@ class Executor {
             case prg.OP_STORE_MEMBER:
                 a = this.stack.pop();
                 a[instruction.operand] = this.stack.pop();
+                this.ip++;
+                break;
+            case prg.OP_LOAD_ELEMENT:
+                a = this.stack.pop();
+                b = this.stack.pop();
+                this.stack.push(a[b]);
+                this.ip++;
+                break;
+            case prg.OP_STORE_ELEMENT:
+                a = this.stack.pop();
+                b = this.stack.pop();
+                c = this.stack.pop();
+                a[b] = c;
+                this.ip++;
+                break;
+            case prg.OP_CALL_INTERNAL:
+                // call other functions in the program
+                this.ip++;
+                break;
+            case prg.OP_CALL_EXTERNAL:
+                a = this.stack.pop();
+                if (instruction.operand < 1) {
+                    this.stack.push(a());
+                }
+                else {
+                    b = [];
+                    for (let i = 0; i < instruction.operand; i++) {
+                        b.push(this.stack.pop());
+                    }
+                    this.stack.push(a(...b.reverse()));
+                }
+                this.ip++;
+                break;
+            case prg.OP_INCREMENT_LOCAL_POST:
+                this.stack[this.fp + instruction.operand]++;
+                this.ip++;
+                break;
+            case prg.OP_DECREMENT_LOCAL_POST:
+                this.stack[this.fp + instruction.operand]--;
                 this.ip++;
                 break;
             default:

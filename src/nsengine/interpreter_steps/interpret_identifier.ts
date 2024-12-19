@@ -8,7 +8,7 @@ export class InterpretIdentifier extends InterpreterStep {
     }
 
     execute() {
-        this.log();
+        if(this.verboseMode) this.log();
         if (this.interpreter.match("IDENTIFIER")) {
             return { type: "Identifier", value: this.interpreter.previous().value } as ASTNode;
         }

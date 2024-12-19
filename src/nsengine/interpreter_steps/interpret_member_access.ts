@@ -8,7 +8,7 @@ export class InterpretMemberAccess extends InterpreterStep {
     }
 
     execute(backwardLookingNode?: ASTNode) {
-        this.log();
+        if(this.verboseMode) this.log();
         // Capture the left node
         let lnode = backwardLookingNode || this.nextStep?.execute();
 

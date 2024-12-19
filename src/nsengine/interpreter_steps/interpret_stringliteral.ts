@@ -10,7 +10,7 @@ export class InterpretStringLiteral extends InterpreterStep {
     }
 
     execute() {
-        this.log();
+        if(this.verboseMode) this.log();
         if (this.interpreter.match("STRINGLITERAL")) {
             return { 
                 type: "String", 

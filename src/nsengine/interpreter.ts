@@ -1,6 +1,6 @@
 import { Token, TokenType } from "./tokenizer";
 import { InterpreterStep } from "./interpreter_steps/interpreter_step";
-import { ASTNode, ConditionNode, BlockNode, DeclarationNode } from "./ast";
+import { ASTNode, ConditionNode, BlockNode, DeclarationNode, LoopNode } from "./ast";
 import * as ist from "./interpreter_steps/interpreter_step_types";
 
 
@@ -182,8 +182,49 @@ export class Interpreter {
     }
 
     private parseWhileStatement(): ASTNode|null|undefined {
-        /// TODO: Implement the parseWhileStatement method
+        if (this.match("WHILE")) {
+            this.consume("LPAREN");     // Parentheses required
+            const condition = this.parseExpression();
+            this.consume("RPAREN");     // Parentheses required
+            const body = this.parseStatement();
+            
+            // Body
+            if (!condition || !body) {
+                throw new Error("Invalid while statement");
+            }
+
+            return {
+                type: "Loop",
+                condition,
+                body
+            } as LoopNode;
+        }
         return null;
+    }
+
+    private parseForStatement(): ASTNode|null|undefined {
+        if (this.match("FOR")) {
+            this.consume("LPAREN");     // Parentheses required
+            const initializer = this.parseStatement();
+            const condition = this.parseExpression();
+            this.consume("EOS");
+            const increment = this.parseExpression();
+            this.consume("RPAREN");     // Parentheses required
+            const body = this.parseStatement();
+            
+            // Body
+            if (!initializer || !condition || !increment || !body) {
+                throw new Error("Invalid for statement");
+            }
+
+            return {
+                type: "Loop",
+                initializer,
+                condition,
+                increment,
+                body
+            } as LoopNode;
+        }
     }
 
     private parseDeclaration(): ASTNode|null|undefined {
@@ -231,8 +272,10 @@ export class Interpreter {
         if (node) return node;
         node = this.parseDeclaration();
         if (node) return node;
-        //node = this.parseForStatement();
-        //if (node) return node;
+        node = this.parseForStatement();
+        if (node) return node;
+        node = this.parseWhileStatement();
+        if (node) return node;
         //node = this.parseForStatement();
         //if (node) return node;
         //node = this.parseForEachStatement();

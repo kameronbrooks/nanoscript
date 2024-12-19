@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OP_LOAD_EXTERNAL = exports.OP_STORE_MEMBER = exports.OP_LOAD_MEMBER = exports.OP_STORE_LOCAL = exports.OP_LOAD_LOCAL = exports.OP_FLOAT_TO_STRING = exports.OP_INT_TO_STRING = exports.OP_FLOAT_TO_INT = exports.OP_INT_TO_FLOAT = exports.OP_NEGf = exports.OP_NEGi = exports.OP_NOT_EQUALs = exports.OP_EQUALs = exports.OP_NOT_EQUALb = exports.OP_EQUALb = exports.OP_NOT_EQUALf = exports.OP_EQUALf = exports.OP_LESS_THAN_OR_EQUALf = exports.OP_GREATER_THAN_OR_EQUALf = exports.OP_LESS_THANf = exports.OP_GREATER_THANf = exports.OP_NOT_EQUALi = exports.OP_EQUALi = exports.OP_LESS_THAN_OR_EQUALi = exports.OP_GREATER_THAN_OR_EQUALi = exports.OP_LESS_THANi = exports.OP_GREATER_THANi = exports.OP_ADDs = exports.OP_POWf = exports.OP_MODf = exports.OP_DIVf = exports.OP_MULf = exports.OP_SUBf = exports.OP_ADDf = exports.OP_POWi = exports.OP_MODi = exports.OP_DIVi = exports.OP_MULi = exports.OP_SUBi = exports.OP_ADDi = exports.OP_LOAD_CONST_STRING = exports.OP_LOAD_CONST_NULL = exports.OP_LOAD_CONST_FLOAT = exports.OP_LOAD_CONST_INT = exports.OP_LOAD_CONST_BOOL = exports.OP_BRANCH_FALSE = exports.OP_BRANCH_TRUE = exports.OP_JUMP = exports.OP_TERM = exports.OP_NOOP = void 0;
-exports.IMPLICIT_CONVERSION_MAP = exports.OP_MAP = exports.OP_CALL_EXTERNAL = exports.OP_CALL_INTERNAL = exports.OP_POP_HEAP = exports.OP_ALLOC_HEAP = exports.OP_POP_STACK = exports.OP_ALLOC_STACK = exports.OP_STORE_ELEMENT = exports.OP_LOAD_ELEMENT = void 0;
+exports.OP_LOAD_MEMBER = exports.OP_STORE_LOCAL = exports.OP_LOAD_LOCAL = exports.OP_FLOAT_TO_STRING = exports.OP_INT_TO_STRING = exports.OP_FLOAT_TO_INT = exports.OP_INT_TO_FLOAT = exports.OP_DECREMENT_LOCAL_POST = exports.OP_INCREMENT_LOCAL_POST = exports.OP_NEGf = exports.OP_NEGi = exports.OP_NOT_EQUALs = exports.OP_EQUALs = exports.OP_NOT_EQUALb = exports.OP_EQUALb = exports.OP_NOT_EQUALf = exports.OP_EQUALf = exports.OP_LESS_THAN_OR_EQUALf = exports.OP_GREATER_THAN_OR_EQUALf = exports.OP_LESS_THANf = exports.OP_GREATER_THANf = exports.OP_NOT_EQUALi = exports.OP_EQUALi = exports.OP_LESS_THAN_OR_EQUALi = exports.OP_GREATER_THAN_OR_EQUALi = exports.OP_LESS_THANi = exports.OP_GREATER_THANi = exports.OP_ADDs = exports.OP_POWf = exports.OP_MODf = exports.OP_DIVf = exports.OP_MULf = exports.OP_SUBf = exports.OP_ADDf = exports.OP_POWi = exports.OP_MODi = exports.OP_DIVi = exports.OP_MULi = exports.OP_SUBi = exports.OP_ADDi = exports.OP_LOAD_CONST_STRING = exports.OP_LOAD_CONST_NULL = exports.OP_LOAD_CONST_FLOAT = exports.OP_LOAD_CONST_INT = exports.OP_LOAD_CONST_BOOL = exports.OP_BRANCH_FALSE = exports.OP_BRANCH_TRUE = exports.OP_JUMP = exports.OP_TERM = exports.OP_NOOP = void 0;
+exports.IMPLICIT_CONVERSION_MAP = exports.OP_MAP = exports.OP_CALL_EXTERNAL = exports.OP_CALL_INTERNAL = exports.OP_POP_HEAP = exports.OP_ALLOC_HEAP = exports.OP_POP_STACK = exports.OP_ALLOC_STACK = exports.OP_STORE_ELEMENT = exports.OP_LOAD_ELEMENT = exports.OP_LOAD_EXTERNAL = exports.OP_STORE_MEMBER = void 0;
 exports.getOpName = getOpName;
 exports.searchOpMap = searchOpMap;
 exports.createProgram = createProgram;
@@ -52,6 +52,8 @@ exports.OP_NOT_EQUALs = 0x3C;
 // ============= UNARY OPERATIONS =============
 exports.OP_NEGi = 0x40;
 exports.OP_NEGf = 0x41;
+exports.OP_INCREMENT_LOCAL_POST = 0x42;
+exports.OP_DECREMENT_LOCAL_POST = 0x43;
 // ============= CONVERSION OPERATIONS =============
 exports.OP_INT_TO_FLOAT = 0x50;
 exports.OP_FLOAT_TO_INT = 0x51;
@@ -114,6 +116,8 @@ const OP_NAMES = {
     0x3C: 'NOT_EQUALs',
     0x40: 'NEGi',
     0x41: 'NEGf',
+    0x42: 'INCREMENT_POST',
+    0x43: 'DECREMENT_POST',
     0x50: 'INT_TO_FLOAT',
     0x51: 'FLOAT_TO_INT',
     0x52: 'INT_TO_STRING',
@@ -137,12 +141,28 @@ function getOpName(opcode) {
 }
 exports.OP_MAP = {
     '-int': { opcode: exports.OP_NEGi, returnDtype: 'int' },
+    // This is for the any case (kind of a hack)
+    'any+any': { opcode: exports.OP_ADDi, returnDtype: 'int' },
+    'any-any': { opcode: exports.OP_SUBi, returnDtype: 'int' },
+    'any*any': { opcode: exports.OP_MULi, returnDtype: 'int' },
+    'any/any': { opcode: exports.OP_DIVi, returnDtype: 'int' },
+    'any%any': { opcode: exports.OP_MODi, returnDtype: 'int' },
+    'any==any': { opcode: exports.OP_EQUALi, returnDtype: 'bool' },
+    'any!=any': { opcode: exports.OP_NOT_EQUALi, returnDtype: 'bool' },
+    'any>any': { opcode: exports.OP_GREATER_THANi, returnDtype: 'bool' },
+    'any<any': { opcode: exports.OP_LESS_THANi, returnDtype: 'bool' },
+    'any>=any': { opcode: exports.OP_GREATER_THAN_OR_EQUALi, returnDtype: 'bool' },
+    'any<=any': { opcode: exports.OP_LESS_THAN_OR_EQUALi, returnDtype: 'bool' },
+    'any++': { opcode: exports.OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
+    'any--': { opcode: exports.OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
+    // Int
     'int+int': { opcode: exports.OP_ADDi, returnDtype: 'int' },
     'int-int': { opcode: exports.OP_SUBi, returnDtype: 'int' },
     'int*int': { opcode: exports.OP_MULi, returnDtype: 'int' },
     'int/int': { opcode: exports.OP_DIVi, returnDtype: 'int' },
     'int%int': { opcode: exports.OP_MODi, returnDtype: 'int' },
     'int**int': { opcode: exports.OP_POWi, returnDtype: 'int' },
+    // Float
     '-float': { opcode: exports.OP_NEGf, returnDtype: 'float' },
     'float+float': { opcode: exports.OP_ADDf, returnDtype: 'float' },
     'float-float': { opcode: exports.OP_SUBf, returnDtype: 'float' },
@@ -171,6 +191,10 @@ exports.OP_MAP = {
     'bool!=bool': { opcode: exports.OP_NOT_EQUALb, returnDtype: 'bool' },
     'string==string': { opcode: exports.OP_EQUALs, returnDtype: 'bool' },
     'string!=string': { opcode: exports.OP_NOT_EQUALs, returnDtype: 'bool' },
+    'int++': { opcode: exports.OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
+    'int--': { opcode: exports.OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
+    'float++': { opcode: exports.OP_INCREMENT_LOCAL_POST, returnDtype: 'float' },
+    'float--': { opcode: exports.OP_DECREMENT_LOCAL_POST, returnDtype: 'float' },
 };
 exports.IMPLICIT_CONVERSION_MAP = {
     '(float)int': { opcode: exports.OP_INT_TO_FLOAT, returnDtype: 'float' },
@@ -205,7 +229,7 @@ function createProgram(engineVersion, instructions, nenv) {
  * @returns
  */
 function programToString(program) {
-    let output = `nanoscript v${program.engineVersion}\n`;
+    let output = `nscrpt v${program.engineVersion}\n`;
     for (let i = 0; i < program.instructions.length; i++) {
         let instruction = program.instructions[i];
         output += `[${i}]\t${getOpName(instruction.opcode)} ${instruction.operand}\n`;
@@ -217,7 +241,7 @@ function programToString(program) {
  * @param program
  */
 function printProgram(program) {
-    console.log(`nanoscript v${program.engineVersion}`);
+    console.log(`nscrpt v${program.engineVersion}`);
     for (let i = 0; i < program.instructions.length; i++) {
         let instruction = program.instructions[i];
         let operandDisplay = instruction.operand;

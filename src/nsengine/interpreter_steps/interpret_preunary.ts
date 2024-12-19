@@ -9,7 +9,7 @@ export class InterpretPreUnary extends InterpreterStep {
     }
     
     execute() : ASTNode | null | undefined {
-        this.log();
+        if(this.verboseMode) this.log();
         let wasSatisfied = false;
         if (this.interpreter.match('MINUS', 'NOT')) {
             wasSatisfied = true;

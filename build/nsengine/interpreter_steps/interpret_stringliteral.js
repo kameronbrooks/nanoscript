@@ -8,7 +8,8 @@ class InterpretStringLiteral extends interpreter_step_1.InterpreterStep {
     }
     execute() {
         var _a;
-        this.log();
+        if (this.verboseMode)
+            this.log();
         if (this.interpreter.match("STRINGLITERAL")) {
             return {
                 type: "String",

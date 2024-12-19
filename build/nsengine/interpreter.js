@@ -167,8 +167,44 @@ class Interpreter {
         return null;
     }
     parseWhileStatement() {
-        /// TODO: Implement the parseWhileStatement method
+        if (this.match("WHILE")) {
+            this.consume("LPAREN"); // Parentheses required
+            const condition = this.parseExpression();
+            this.consume("RPAREN"); // Parentheses required
+            const body = this.parseStatement();
+            // Body
+            if (!condition || !body) {
+                throw new Error("Invalid while statement");
+            }
+            return {
+                type: "Loop",
+                condition,
+                body
+            };
+        }
         return null;
+    }
+    parseForStatement() {
+        if (this.match("FOR")) {
+            this.consume("LPAREN"); // Parentheses required
+            const initializer = this.parseStatement();
+            const condition = this.parseExpression();
+            this.consume("EOS");
+            const increment = this.parseExpression();
+            this.consume("RPAREN"); // Parentheses required
+            const body = this.parseStatement();
+            // Body
+            if (!initializer || !condition || !increment || !body) {
+                throw new Error("Invalid for statement");
+            }
+            return {
+                type: "Loop",
+                initializer,
+                condition,
+                increment,
+                body
+            };
+        }
     }
     parseDeclaration() {
         if (this.match("DECLARE_VARIABLE")) {
@@ -213,8 +249,12 @@ class Interpreter {
         node = this.parseDeclaration();
         if (node)
             return node;
-        //node = this.parseForStatement();
-        //if (node) return node;
+        node = this.parseForStatement();
+        if (node)
+            return node;
+        node = this.parseWhileStatement();
+        if (node)
+            return node;
         //node = this.parseForStatement();
         //if (node) return node;
         //node = this.parseForEachStatement();

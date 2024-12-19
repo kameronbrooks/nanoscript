@@ -6,6 +6,7 @@ export abstract class InterpreterStep {
     description: string;
     nextStep: InterpreterStep | null;
     interpreter: Interpreter;
+    verboseMode: boolean = false;
 
     constructor(name: string, description: string, interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
         this.name = name;

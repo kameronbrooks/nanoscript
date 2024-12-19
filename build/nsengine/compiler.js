@@ -204,19 +204,28 @@ class Compiler {
             case "Declaration":
                 this.compileDeclaration(node);
                 break;
+            case "FunctionCall":
+                this.compileFunctionCall(node);
+                break;
+            case "Loop":
+                this.compileLoopStatement(node);
+                break;
             default:
                 throw new Error(`Unknown node type: ${node.type}`);
         }
     }
     compileBinaryOp(node) {
-        const rightInsertionIndex = this.getTailIndex();
-        this.compileNode(node.right);
-        const rightDataType = this.state.currentDatatype;
         const leftInsertionIndex = this.getTailIndex();
         this.compileNode(node.left);
-        const leftDataType = this.state.currentDatatype;
+        let leftDataType = this.state.currentDatatype;
+        const rightInsertionIndex = this.getTailIndex();
+        this.compileNode(node.right);
+        let rightDataType = this.state.currentDatatype;
         // Check for type mismatch
         // TODO: Implement type coercion
+        if (leftDataType === 'any' || rightDataType === 'any') {
+            rightDataType = leftDataType = 'any';
+        }
         if (leftDataType !== rightDataType) {
             throw new Error(`Type mismatch: ${leftDataType} and ${rightDataType}`);
         }
@@ -239,8 +248,19 @@ class Compiler {
         if (!result) {
             throw new Error(`Unknown operator: ${opKey}`);
         }
-        // Add the instruction
-        this.addInstruction(result.opcode);
+        // if this is a post increment or decrement, we need to change the last instruction
+        // need to add cases for member access and element access
+        if (result.opcode == prg.OP_INCREMENT_LOCAL_POST || result.opcode == prg.OP_DECREMENT_LOCAL_POST) {
+            const lastInstruction = this.program.instructions.at(-1);
+            if (!lastInstruction) {
+                throw new Error("There is no lvalue");
+            }
+            lastInstruction.opcode = result.opcode;
+        }
+        else {
+            // Add the instruction
+            this.addInstruction(result.opcode);
+        }
         this.state.currentDatatype = result.returnDtype;
     }
     compileBoolean(node) {
@@ -310,6 +330,7 @@ class Compiler {
                     this.addInstruction(prg.OP_LOAD_CONST_FLOAT, target.localStackIndex);
                 }
                 this.state.isLValue = true;
+                this.state.currentDatatype = target.datatype;
             }
         }
         else {
@@ -372,6 +393,7 @@ class Compiler {
             lastInstruction.opcode = prg.OP_STORE_ELEMENT;
         }
         this.state.isLValue = false;
+        this.state.currentDatatype = rightDataType;
     }
     compileDeclaration(node) {
         var _a;
@@ -385,7 +407,54 @@ class Compiler {
         if (node.initializer) {
             this.compileNode(node.initializer);
             this.addInstruction(prg.OP_STORE_LOCAL, obj === null || obj === void 0 ? void 0 : obj.localStackIndex);
+            const initializerDataType = this.state.currentDatatype;
+            console.log(`initializerDataType: ${initializerDataType} node.dtype: ${node.dtype}`);
+            if (node.dtype == 'any') {
+                console.log(`Setting datatype to ${initializerDataType}`);
+                node.dtype = initializerDataType;
+            }
+            else if (initializerDataType !== node.dtype) {
+                throw new Error(`Type mismatch: ${initializerDataType} and ${node.dtype}`);
+            }
         }
+    }
+    compileFunctionCall(node) {
+        // Compile the arguments
+        for (let arg of node.arguments) {
+            this.compileNode(arg);
+        }
+        // Compile the left node
+        this.compileNode(node.left);
+        // Add the instruction
+        this.addInstruction(prg.OP_CALL_EXTERNAL, node.arguments.length);
+    }
+    compileLoopStatement(node) {
+        if (!node.condition) {
+            throw new Error("Missing condition in while loop");
+        }
+        if (!node.body) {
+            throw new Error("Missing body in while loop");
+        }
+        // Compile the initializer if there is one (for loop)
+        if (node.initializer) {
+            this.compileNode(node.initializer);
+        }
+        const conditionIndex = this.getTailIndex();
+        this.compileNode(node.condition);
+        const branchInstruction = this.addInstruction(prg.OP_BRANCH_FALSE, null);
+        const jumpIndex = this.getTailIndex();
+        this.compileNode(node.body);
+        // Compile the increment if there is one (for loop)
+        if (node.increment) {
+            this.compileNode(node.increment);
+        }
+        // Jump back to the condition
+        this.addInstruction(prg.OP_JUMP, conditionIndex);
+        const endOfLoopIndex = this.getTailIndex();
+        if (!branchInstruction) {
+            throw new Error("Branch instruction not found");
+        }
+        branchInstruction.operand = endOfLoopIndex;
     }
 }
 exports.Compiler = Compiler;

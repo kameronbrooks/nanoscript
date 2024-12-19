@@ -8,6 +8,7 @@ export class InterpretAddSub extends InterpreterStep {
     }
 
     execute() {
+        if(this.verboseMode) this.log();
         // Capture the left node
         let lnode = this.nextStep?.execute();
 

@@ -9,7 +9,8 @@ class InterpretMulDiv extends interpreter_step_1.InterpreterStep {
     }
     execute() {
         var _a, _b;
-        this.log();
+        if (this.verboseMode)
+            this.log();
         // Capture the left node
         let lnode = (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();
         // Loop while there are more assignments

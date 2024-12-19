@@ -8,7 +8,7 @@ export class InterpretPowRoot extends InterpreterStep {
     }
     
     execute() {
-        this.log();
+        if(this.verboseMode) this.log();
         // Capture the left node
         let lnode = this.nextStep?.execute();
 
@@ -19,7 +19,7 @@ export class InterpretPowRoot extends InterpreterStep {
             const rnode = this.nextStep?.execute();
             lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
         }
-        
+
         return lnode;
     }
 }

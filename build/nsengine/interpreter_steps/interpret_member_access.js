@@ -8,7 +8,8 @@ class InterpretMemberAccess extends interpreter_step_1.InterpreterStep {
     }
     execute(backwardLookingNode) {
         var _a, _b;
-        this.log();
+        if (this.verboseMode)
+            this.log();
         // Capture the left node
         let lnode = backwardLookingNode || ((_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute());
         // Loop while there are more assignments

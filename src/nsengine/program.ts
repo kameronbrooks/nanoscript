@@ -50,6 +50,8 @@ export const OP_NOT_EQUALs               = 0x3C;
 // ============= UNARY OPERATIONS =============
 export const OP_NEGi                     = 0x40;
 export const OP_NEGf                     = 0x41;
+export const OP_INCREMENT_LOCAL_POST           = 0x42;
+export const OP_DECREMENT_LOCAL_POST           = 0x43;
 
 // ============= CONVERSION OPERATIONS =============
 export const OP_INT_TO_FLOAT             = 0x50;
@@ -123,6 +125,8 @@ const OP_NAMES: { [key: number]: string } = {
     0x3C: 'NOT_EQUALs',
     0x40: 'NEGi',
     0x41: 'NEGf',
+    0x42: 'INCREMENT_POST',
+    0x43: 'DECREMENT_POST',
     0x50: 'INT_TO_FLOAT',
     0x51: 'FLOAT_TO_INT',
     0x52: 'INT_TO_STRING',
@@ -154,12 +158,28 @@ export interface OPResult {
 
 export const OP_MAP: { [key: string]: OPResult } = {
     '-int': { opcode: OP_NEGi, returnDtype: 'int' },
+    // This is for the any case (kind of a hack)
+    'any+any': { opcode: OP_ADDi, returnDtype: 'int' },
+    'any-any': { opcode: OP_SUBi, returnDtype: 'int' },
+    'any*any': { opcode: OP_MULi, returnDtype: 'int' },
+    'any/any': { opcode: OP_DIVi, returnDtype: 'int' },
+    'any%any': { opcode: OP_MODi, returnDtype: 'int' },
+    'any==any': { opcode: OP_EQUALi, returnDtype: 'bool' },
+    'any!=any': { opcode: OP_NOT_EQUALi, returnDtype: 'bool' },
+    'any>any': { opcode: OP_GREATER_THANi, returnDtype: 'bool' },
+    'any<any': { opcode: OP_LESS_THANi, returnDtype: 'bool' },
+    'any>=any': { opcode: OP_GREATER_THAN_OR_EQUALi, returnDtype: 'bool' },
+    'any<=any': { opcode: OP_LESS_THAN_OR_EQUALi, returnDtype: 'bool' },
+    'any++': { opcode: OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
+    'any--': { opcode: OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
+    // Int
     'int+int': { opcode: OP_ADDi, returnDtype: 'int' },
     'int-int': { opcode: OP_SUBi, returnDtype: 'int' },
     'int*int': { opcode: OP_MULi, returnDtype: 'int' },
     'int/int': { opcode: OP_DIVi, returnDtype: 'int' },
     'int%int': { opcode: OP_MODi, returnDtype: 'int' },
     'int**int': { opcode: OP_POWi, returnDtype: 'int' },
+    // Float
     '-float': { opcode: OP_NEGf, returnDtype: 'float' },
     'float+float': { opcode: OP_ADDf, returnDtype: 'float' },
     'float-float': { opcode: OP_SUBf, returnDtype: 'float' },
@@ -188,6 +208,10 @@ export const OP_MAP: { [key: string]: OPResult } = {
     'bool!=bool': { opcode: OP_NOT_EQUALb, returnDtype: 'bool' },
     'string==string': { opcode: OP_EQUALs, returnDtype: 'bool' },
     'string!=string': { opcode: OP_NOT_EQUALs, returnDtype: 'bool' },
+    'int++': { opcode: OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
+    'int--': { opcode: OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
+    'float++': { opcode: OP_INCREMENT_LOCAL_POST, returnDtype: 'float' },
+    'float--': { opcode: OP_DECREMENT_LOCAL_POST, returnDtype: 'float' },
 };
 
 export const IMPLICIT_CONVERSION_MAP: { [key: string]: OPResult } = {
@@ -239,7 +263,7 @@ export function createProgram(engineVersion: string, instructions?: Instruction[
  * @returns 
  */
 export function programToString(program: Program): string {
-    let output = `nanoscript v${program.engineVersion}\n`;
+    let output = `nscrpt v${program.engineVersion}\n`;
     for (let i = 0; i < program.instructions.length; i++) {
         let instruction = program.instructions[i];
         output += `[${i}]\t${getOpName(instruction.opcode)} ${instruction.operand}\n`;
@@ -252,7 +276,7 @@ export function programToString(program: Program): string {
  * @param program 
  */
 export function printProgram(program: Program): void {
-    console.log(`nanoscript v${program.engineVersion}`);
+    console.log(`nscrpt v${program.engineVersion}`);
     for (let i = 0; i < program.instructions.length; i++) {
         let instruction = program.instructions[i];
         let operandDisplay = instruction.operand;

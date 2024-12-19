@@ -8,7 +8,8 @@ class InterpretPrimitive extends interpreter_step_1.InterpreterStep {
     }
     execute() {
         var _a;
-        this.log();
+        if (this.verboseMode)
+            this.log();
         if (this.interpreter.match("LPAREN")) {
             let node = this.interpreter.parseExpression();
             this.interpreter.consume("RPAREN");

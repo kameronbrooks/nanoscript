@@ -8,7 +8,7 @@ export class InterpretEquality extends InterpreterStep {
     }
     
     execute() {
-        this.log();
+        if(this.verboseMode) this.log();
         // Capture the left node
         let lnode = this.nextStep?.execute();
 

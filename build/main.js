@@ -19,9 +19,13 @@ function tokenize(code) {
     return tokenizer.tokenize();
 }
 const consoleModule = {
-    name: "console",
+    name: "io",
     exports: [
-        { name: "log", type: "function", object: (x) => console.log(x) }
+        { name: "console", type: "object", object: {
+                log: (x) => console.log(x),
+                error: (x) => console.error(x),
+                warn: (x) => console
+            } }
     ]
 };
 const mathModule = {
@@ -88,19 +92,30 @@ const result = executor.execute(program);
 const end = performance.now();
 console.log(result + " in " + (end - start) + "ms");
 */
+const script = `{
+let a = 0;
+for(let i = 0; i < 100; i++) {
+    a = i*2;
+}
+}`;
+/*
 const script = `
 {
     let x = 10;
     if (x > 10) {
-        //console.log('x is greater than 10');
+        console.log('x is greater than 10');
         x = myObject.x;
-    } else {
-        //console.log('x is greater less than 10');
+    } else if (x < 10) {
+        console.log('x is less than 10');
         x = myObject.y;
+    } else{
+        console.log('x is equal to 10');
+        x = 100;
     }
     x;
 }
 `;
+*/
 /*
 const script = `
 {
@@ -121,31 +136,10 @@ start = performance.now();
 const result = executor.execute(program);
 end = performance.now();
 console.log(result + " in " + (end - start) + "ms");
-//console.log(runCode("1 + (2 + 3) * 5"));
-//console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
-//console.log(astToString(runCode("1 + -(-1 + 2) * 10 + 2") as any));
-//console.log(astToString(runCode("x.func1.m + 1") as any));
-//console.log(astToString(runCode("f(x+1, y(x+2), (2+5))") as any));
-//console.log(astToString(runCode("o[0]") as any));
-//console.log(astToString(runCode("o[0,1].g") as any));
-/*
-let tokenizer = new Tokenizer("1 + 2 * 3;");
-console.log(tokenizer.tokenize());
-
-
-tokenizer = new Tokenizer("(1 + 2) * 10;");
-console.log(tokenizer.tokenize());
-
-tokenizer = new Tokenizer("let x = 10;");
-console.log(tokenizer.tokenize());
-
-tokenizer = new Tokenizer("console.log(x);");
-console.log(tokenizer.tokenize());
-
-tokenizer = new Tokenizer(`
-for (let i = 0; i < 10; i++) {
-    console.log(i**2);
+start = performance.now();
+let a = 0;
+for (let i = 0; i < 100; i++) {
+    a = i * 2;
 }
-`);
-console.log(tokenizer.tokenize());
-*/ 
+end = performance.now();
+console.log(a + " in " + (end - start) + "ms");

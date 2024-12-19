@@ -8,7 +8,8 @@ class InterpretFunctionCall extends interpreter_step_1.InterpreterStep {
     }
     execute(backwardLookingNode) {
         var _a;
-        this.log();
+        if (this.verboseMode)
+            this.log();
         // Capture the left node, if we are not backward looking
         let lnode = backwardLookingNode || ((_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute());
         // Loop while there are more assignments

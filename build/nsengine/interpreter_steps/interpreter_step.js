@@ -4,6 +4,7 @@ exports.InterpreterClass = exports.InterpreterStep = void 0;
 const interpreter_1 = require("../interpreter");
 class InterpreterStep {
     constructor(name, description, interpreter, nextStep = null) {
+        this.verboseMode = false;
         this.name = name;
         this.description = description;
         this.nextStep = nextStep;
