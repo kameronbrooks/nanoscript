@@ -58,7 +58,27 @@ export const OP_INT_TO_STRING            = 0x52;
 export const OP_FLOAT_TO_STRING          = 0x53;
 
 
-// 
+// ============== VARIABLE OPERATIONS =============
+export const OP_LOAD_LOCAL                  = 0x60;
+export const OP_STORE_LOCAL                 = 0x61;
+
+export const OP_LOAD_MEMBER                 = 0x62;
+export const OP_STORE_MEMBER                = 0x63;
+
+export const OP_LOAD_EXTERNAL               = 0x64;
+
+export const OP_LOAD_ELEMENT                = 0x65;
+export const OP_STORE_ELEMENT               = 0x66;
+
+export const OP_ALLOC_STACK                    = 0x67;
+export const OP_POP_STACK                     = 0x68;
+export const OP_ALLOC_HEAP                     = 0x69;
+export const OP_POP_HEAP                      = 0x6A;
+
+
+// ============== FUNCTION OPERATIONS =============
+export const OP_CALL_INTERNAL               = 0x70;
+export const OP_CALL_EXTERNAL               = 0x71;
 
 
 export interface OPResult {

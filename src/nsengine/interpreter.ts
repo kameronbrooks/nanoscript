@@ -1,6 +1,6 @@
 import { Token, TokenType } from "./tokenizer";
 import { InterpreterStep } from "./interpreter_steps/interpreter_step";
-import { ASTNode, ConditionNode, BlockNode } from "./ast";
+import { ASTNode, ConditionNode, BlockNode, DeclarationNode } from "./ast";
 import * as ist from "./interpreter_steps/interpreter_step_types";
 
 
@@ -186,10 +186,50 @@ export class Interpreter {
         return null;
     }
 
+    private parseDeclaration(): ASTNode|null|undefined {
+        if (this.match("DECLARE_VARIABLE")) {
+            const name = this.consume("IDENTIFIER").value;
+            
+            let value = undefined;
+            if (this.match("ASSIGN")) {
+                value = this.parseExpression();
+            }
+            this.consume("EOS");
+
+            return {
+                type: "Declaration",
+                identifier: name as string,
+                initializer: value,
+                dtype: 'any',
+                constant: false
+            } as DeclarationNode;
+        }
+        else if (this.match("DECLARE_CONSTANT")) {
+            const name = this.consume("IDENTIFIER").value;
+            
+            let value = undefined;
+            if (this.match("ASSIGN")) {
+                value = this.parseExpression();
+            }
+            this.consume("EOS");
+
+            return {
+                type: "Declaration",
+                identifier: name as string,
+                initializer: value,
+                dtype: 'any',
+                constant: true
+            } as DeclarationNode;
+        }
+        return null;
+    }
+
     public parseStatement(): ASTNode|null|undefined {
         let node = this.parseIfStatement();
         if (node) return node;
         node = this.parseWhileStatement();
+        if (node) return node;
+        node = this.parseDeclaration();
         if (node) return node;
         //node = this.parseForStatement();
         //if (node) return node;

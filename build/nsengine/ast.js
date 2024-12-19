@@ -55,6 +55,32 @@ function astToString(node, level = 0) {
                 a += astToString(node.elseBody, level + 1);
             }
             return a + postfix;
+        case "Loop":
+            a = indent + `[Loop]:\n`;
+            if (node.initializer) {
+                a += indent + `[Initializer]:\n`;
+                a += astToString(node.initializer, level + 1);
+            }
+            if (node.condition) {
+                a += indent + `[Condition]:\n`;
+                a += astToString(node.condition, level + 1);
+            }
+            if (node.increment) {
+                a += indent + `[Increment]:\n`;
+                a += astToString(node.increment, level + 1);
+            }
+            if (node.body) {
+                a += indent + `[Body]:\n`;
+                a += astToString(node.body, level + 1);
+            }
+            return a + postfix;
+        case "Declaration":
+            a = indent + `[Declare]:\n`;
+            a += indent + `[${node.identifier}]\n`;
+            if (node.initializer) {
+                a += astToString(node.initializer, level + 1);
+            }
+            return a + postfix;
         default:
             return `Unknown ASTNode type ${node.type}`;
     }

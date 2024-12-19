@@ -61,8 +61,9 @@ export class Nenv {
 
     getObject(name: string): any {
         let output = this.references[name];
+        console.log(output);
         if (output) {
-            return output.export.object;
+            return output.export;
         }
         if (name.includes(".")) {
             let parts = name.split(".");

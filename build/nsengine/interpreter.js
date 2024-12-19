@@ -170,11 +170,47 @@ class Interpreter {
         /// TODO: Implement the parseWhileStatement method
         return null;
     }
+    parseDeclaration() {
+        if (this.match("DECLARE_VARIABLE")) {
+            const name = this.consume("IDENTIFIER").value;
+            let value = undefined;
+            if (this.match("ASSIGN")) {
+                value = this.parseExpression();
+            }
+            this.consume("EOS");
+            return {
+                type: "Declaration",
+                identifier: name,
+                initializer: value,
+                dtype: 'any',
+                constant: false
+            };
+        }
+        else if (this.match("DECLARE_CONSTANT")) {
+            const name = this.consume("IDENTIFIER").value;
+            let value = undefined;
+            if (this.match("ASSIGN")) {
+                value = this.parseExpression();
+            }
+            this.consume("EOS");
+            return {
+                type: "Declaration",
+                identifier: name,
+                initializer: value,
+                dtype: 'any',
+                constant: true
+            };
+        }
+        return null;
+    }
     parseStatement() {
         let node = this.parseIfStatement();
         if (node)
             return node;
         node = this.parseWhileStatement();
+        if (node)
+            return node;
+        node = this.parseDeclaration();
         if (node)
             return node;
         //node = this.parseForStatement();

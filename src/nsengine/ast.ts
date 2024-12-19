@@ -90,6 +90,14 @@ export interface FunctionCallNode extends ASTNode {
     arguments: ASTNode[];
 }
 
+export interface DeclarationNode extends ASTNode {
+    type: "Declaration";
+    identifier: string;
+    initializer?: ASTNode;
+    dtype?: string;
+    constant?: boolean;
+}
+
 export function createNumberNode(value: number): NumberNode {
     return { type: "Number", value };
 }
@@ -144,7 +152,32 @@ export function astToString(node: ASTNode, level:number=0): string {
                 a += astToString((node as ConditionNode).elseBody as ASTNode, level+1);
             }
             return a + postfix;
-
+        case "Loop":
+            a = indent+`[Loop]:\n`;
+            if((node as LoopNode).initializer) {
+                a += indent+`[Initializer]:\n`;
+                a += astToString((node as LoopNode).initializer as ASTNode, level+1);
+            }
+            if((node as LoopNode).condition) {
+                a += indent+`[Condition]:\n`;
+                a += astToString((node as LoopNode).condition as ASTNode, level+1);
+            }
+            if((node as LoopNode).increment) {
+                a += indent+`[Increment]:\n`;
+                a += astToString((node as LoopNode).increment as ASTNode, level+1);
+            }
+            if((node as LoopNode).body) {
+                a += indent+`[Body]:\n`;
+                a += astToString((node as LoopNode).body as ASTNode, level+1);
+            }
+            return a + postfix;
+        case "Declaration":
+            a = indent+`[Declare]:\n`;
+            a += indent+`[${(node as DeclarationNode).identifier}]\n`;
+            if((node as DeclarationNode).initializer) {
+                a += astToString((node as DeclarationNode).initializer as ASTNode, level+1);
+            }
+            return a + postfix;
         default:
             return `Unknown ASTNode type ${node.type}`;
     }

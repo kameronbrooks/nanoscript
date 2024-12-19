@@ -35,19 +35,31 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Compiler = void 0;
 const prg = __importStar(require("./program"));
+/**
+ * Contains information about an object in a scope
+ * - name: The name of the object
+ * - datatype: The datatype of the object
+ * - value: The value of the object
+ * - type: The type of the object
+ *      "function" | "object" | "class" | "constant" | "variable"
+ */
 class ScopeObject {
-    constructor(name, datatype, value, type) {
+    constructor(name, datatype, value, type, location, localStackIndex) {
         this.name = name;
         this.datatype = datatype;
         this.value = value;
         this.type = type;
+        this.location = location;
+        this.localStackIndex = localStackIndex;
     }
 }
 class Scope {
-    constructor(parent = null, nenv) {
+    constructor(parent = null, nenv, stackVariables) {
+        this.stackVariables = [];
         this.nenv = nenv;
         this.parent = parent;
         this.objects = new Map();
+        this.stackVariables = stackVariables || [];
     }
     getObject(name) {
         let obj = this.objects.get(name);
@@ -61,13 +73,30 @@ class Scope {
             let ref = this.nenv.getObject(name);
             if (ref) {
                 return {
-                    name: ref.export.name,
-                    datatype: ref.export.datatype || 'any',
-                    value: ref.export.object,
-                    type: ref.export.type
+                    name: name,
+                    datatype: (ref === null || ref === void 0 ? void 0 : ref.datatype) || 'any',
+                    value: ref.object,
+                    type: ref.type,
+                    location: "external"
                 };
             }
         }
+        throw new Error(`Unknown identifier: ${name}`);
+    }
+    addLocalVariable(name, isConst, datatype, value) {
+        if (this.objects.has(name) || this.stackVariables.includes(name)) {
+            throw new Error(`Variable ${name} already exists`);
+        }
+        const obj = {
+            name,
+            datatype,
+            value,
+            type: isConst ? "constant" : "variable",
+            location: "internal",
+            localStackIndex: this.stackVariables.length,
+        };
+        this.objects.set(name, obj);
+        this.stackVariables.push(name);
         return obj;
     }
     isGlobal() {
@@ -91,13 +120,17 @@ class CompilerState {
 }
 class Compiler {
     constructor(nenv) {
+        this.engineVersion = "0.0.1";
+        this.frameBeginIndex = [];
         this.nenv = nenv;
         this.program = {
+            engineVersion: this.engineVersion,
             nenv: this.nenv,
             instructions: [],
         };
         this.globalScope = new Scope(null, nenv);
         this.state = new CompilerState(this.globalScope);
+        this.frameBeginIndex.push(0);
     }
     getTailIndex() {
         return this.program.instructions.length;
@@ -118,6 +151,7 @@ class Compiler {
     }
     compile(ast) {
         this.program = {
+            engineVersion: this.engineVersion,
             nenv: this.nenv,
             instructions: [],
         };
@@ -163,6 +197,12 @@ class Compiler {
                 break;
             case "Condition":
                 this.compileCondition(node);
+                break;
+            case "MemberAccess":
+                this.compileMemberAccess(node);
+                break;
+            case "Declaration":
+                this.compileDeclaration(node);
                 break;
             default:
                 throw new Error(`Unknown node type: ${node.type}`);
@@ -226,11 +266,48 @@ class Compiler {
         this.addInstruction(prg.OP_LOAD_CONST_NULL, null);
         this.state.currentDatatype = 'null';
     }
-    compileIdentifier(node) {
+    compileMemberAccess(node) {
+        if (!node.object) {
+            throw new Error("Missing object in member access");
+        }
+        if (!node.member) {
+            throw new Error("Missing member in member access");
+        }
+        console.log(node.object);
+        console.log(node.member);
+        // Compile the object
+        this.compileNode(node.object);
+        // Compile the member
+        this.addInstruction(prg.OP_LOAD_MEMBER, node.member.value);
+        // Add the instruction
+    }
+    compileIdentifier(node, isMember = false) {
         var _a;
-        let target = (_a = this.state.currentScope) === null || _a === void 0 ? void 0 : _a.getObject(node.value);
-        if (!target) {
-            throw new Error(`Unknown identifier: ${node.value}`);
+        // check if the identifier is a member of an object
+        // if not, we need to check if the identifier is in the current scope
+        if (!isMember) {
+            let target = (_a = this.state.currentScope) === null || _a === void 0 ? void 0 : _a.getObject(node.value);
+            if (!target) {
+                throw new Error(`Unknown identifier: ${node.value}`);
+            }
+            if (target.location === "external") {
+                // Add the instruction to load the external object
+                this.addInstruction(prg.OP_LOAD_EXTERNAL, target.value);
+            }
+            else {
+                // Add the instruction to load the object
+                if (target.type === "variable") {
+                    this.addInstruction(prg.OP_LOAD_LOCAL, target.localStackIndex);
+                }
+                else if (target.type === "constant") {
+                    // TODO: Figure out the opcode based on the datatype
+                    this.addInstruction(prg.OP_LOAD_CONST_FLOAT, target.localStackIndex);
+                }
+            }
+        }
+        else {
+            // Add the instruction
+            this.addInstruction(prg.OP_LOAD_MEMBER, node.value);
         }
         // Load the value
         // TODO: Figure out the opcode based on the object type
@@ -263,8 +340,38 @@ class Compiler {
         }
     }
     compileAssignment(node) {
+        var _a, _b, _c;
         this.compileNode(node.right);
+        const rightDataType = this.state.currentDatatype;
         this.compileNode(node.left);
+        if (!this.state.isLValue) {
+            throw new Error("Invalid assignment target");
+        }
+        const leftDataType = this.state.currentDatatype;
+        // Switch the last load instruction to a store instruction
+        if (((_a = this.program.instructions.at(-1)) === null || _a === void 0 ? void 0 : _a.opcode) === prg.OP_LOAD_MEMBER) {
+            this.addInstruction(prg.OP_STORE_MEMBER);
+        }
+        else if (((_b = this.program.instructions.at(-1)) === null || _b === void 0 ? void 0 : _b.opcode) === prg.OP_LOAD_LOCAL) {
+            this.addInstruction(prg.OP_STORE_LOCAL);
+        }
+        else if (((_c = this.program.instructions.at(-1)) === null || _c === void 0 ? void 0 : _c.opcode) === prg.OP_LOAD_ELEMENT) {
+            this.addInstruction(prg.OP_STORE_ELEMENT);
+        }
+    }
+    compileDeclaration(node) {
+        var _a;
+        // If global, this will be 0
+        // Otherwise if we are calling this from a function, this will be the index of the frame
+        // When a function is called, you want the frame ptr to add the local variables to the stack
+        const currentFrameStartIndex = this.frameBeginIndex.at(-1) || 0;
+        // Add the constant to the scope
+        const obj = (_a = this.state.currentScope) === null || _a === void 0 ? void 0 : _a.addLocalVariable(node.identifier, node.constant || false, node.dtype || 'any', node.initializer);
+        this.insertInstruction(currentFrameStartIndex, prg.OP_ALLOC_STACK, 1);
+        if (node.initializer) {
+            this.compileNode(node.initializer);
+            this.addInstruction(prg.OP_STORE_LOCAL, obj === null || obj === void 0 ? void 0 : obj.localStackIndex);
+        }
     }
 }
 exports.Compiler = Compiler;

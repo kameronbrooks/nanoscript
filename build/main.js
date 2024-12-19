@@ -16,11 +16,56 @@ function tokenize(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     return tokenizer.tokenize();
 }
+const consoleModule = {
+    name: "console",
+    exports: [
+        { name: "log", type: "function", object: (x) => console.log(x) }
+    ]
+};
+const mathModule = {
+    name: "math",
+    exports: [
+        { name: "PI", type: "constant", object: Math.PI },
+        { name: "E", type: "constant", object: Math.E },
+        { name: "abs", type: "function", object: Math.abs },
+        { name: "acos", type: "function", object: Math.acos },
+        { name: "acosh", type: "function", object: Math.acosh },
+        { name: "asin", type: "function", object: Math.asin },
+        { name: "asinh", type: "function", object: Math.asinh },
+        { name: "atan", type: "function", object: Math.atan },
+        { name: "atanh", type: "function", object: Math.atanh },
+        { name: "atan2", type: "function", object: Math.atan2 },
+        { name: "cbrt", type: "function", object: Math.cbrt },
+        { name: "ceil", type: "function", object: Math.ceil },
+        { name: "clz32", type: "function", object: Math.clz32 },
+        { name: "cos", type: "function", object: Math.cos },
+        { name: "cosh", type: "function", object: Math.cosh },
+        { name: "exp", type: "function", object: Math.exp },
+        { name: "expm1", type: "function", object: Math.expm1 },
+        { name: "floor", type: "function", object: Math.floor },
+        { name: "fround", type: "function", object: Math.fround },
+        { name: "hypot", type: "function", object: Math.hypot },
+        { name: "imul", type: "function", object: Math.imul },
+        { name: "log", type: "function", object: Math.log },
+        { name: "log1p", type: "function", object: Math.log1p },
+        { name: "log10", type: "function", object: Math.log10 },
+        { name: "log2", type: "function", object: Math.log2 },
+    ]
+};
+const myModule = {
+    name: "myModule",
+    exports: [
+        { name: "myObject", type: "constant", object: { x: 0, y: 0, z: 0 } }
+    ]
+};
+const _nenv = new nenv_1.Nenv();
+_nenv.addModule(consoleModule);
+_nenv.addModule(mathModule);
+_nenv.addModule(myModule);
 function compile(code) {
-    let nenv = new nenv_1.Nenv();
     let tokenizer = new tokenizer_1.Tokenizer(code);
     let tokens = tokenizer.tokenize();
-    let compiler = new compiler_1.Compiler(nenv);
+    let compiler = new compiler_1.Compiler(_nenv);
     let interpreter = new interpreter_1.Interpreter(tokens);
     let ast = interpreter.parse();
     return compiler.compile([ast]);
@@ -42,12 +87,15 @@ const end = performance.now();
 console.log(result + " in " + (end - start) + "ms");
 */
 const script = `
-if (1 > 10) {
-    //console.log('x is greater than 10');
-    1+1;
-} else {
-    //console.log('x is greater less than 10');
-    2+2;
+{
+    let x = 10;
+    if (x > 10) {
+        //console.log('x is greater than 10');
+        myObject.x;
+    } else {
+        //console.log('x is greater less than 10');
+        myObject.y;
+    }
 }
 `;
 console.log((0, ast_1.astToString)(runCode(script)));
