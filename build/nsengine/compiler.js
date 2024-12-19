@@ -229,6 +229,7 @@ class Compiler {
         // Add the instruction
         this.addInstruction(result.opcode, null);
         this.state.currentDatatype = result.returnDtype;
+        this.state.isLValue = false;
     }
     compileUnaryOp(node) {
         this.compileNode(node.operand);
@@ -245,6 +246,7 @@ class Compiler {
     compileBoolean(node) {
         this.addInstruction(prg.OP_LOAD_CONST_BOOL, node.value);
         this.state.currentDatatype = 'bool';
+        this.state.isLValue = false;
     }
     compileNumber(node) {
         // Float
@@ -257,14 +259,17 @@ class Compiler {
         }
         // Set the current datatype
         this.state.currentDatatype = node.dtype || 'float';
+        this.state.isLValue = false;
     }
     compileString(node) {
         this.addInstruction(prg.OP_LOAD_CONST_STRING, node.value);
         this.state.currentDatatype = 'string';
+        this.state.isLValue = false;
     }
     compileNull(node) {
         this.addInstruction(prg.OP_LOAD_CONST_NULL, null);
         this.state.currentDatatype = 'null';
+        this.state.isLValue = false;
     }
     compileMemberAccess(node) {
         if (!node.object) {
@@ -293,6 +298,7 @@ class Compiler {
             if (target.location === "external") {
                 // Add the instruction to load the external object
                 this.addInstruction(prg.OP_LOAD_EXTERNAL, target.value);
+                this.state.isLValue = false;
             }
             else {
                 // Add the instruction to load the object
@@ -303,11 +309,13 @@ class Compiler {
                     // TODO: Figure out the opcode based on the datatype
                     this.addInstruction(prg.OP_LOAD_CONST_FLOAT, target.localStackIndex);
                 }
+                this.state.isLValue = true;
             }
         }
         else {
             // Add the instruction
             this.addInstruction(prg.OP_LOAD_MEMBER, node.value);
+            this.state.isLValue = true;
         }
         // Load the value
         // TODO: Figure out the opcode based on the object type
@@ -322,10 +330,11 @@ class Compiler {
         if (node.body) {
             this.compileNode(node.body);
         }
-        const falseBranchIndex = this.getTailIndex();
+        let falseBranchIndex = this.getTailIndex();
         let elseJumpInstruction = null;
         if (node.elseBody) {
             elseJumpInstruction = this.addInstruction(prg.OP_JUMP, null);
+            falseBranchIndex = this.getTailIndex();
             this.compileNode(node.elseBody);
         }
         const endOfConditionIndex = this.getTailIndex();
@@ -338,9 +347,9 @@ class Compiler {
         if (elseJumpInstruction) {
             elseJumpInstruction.operand = endOfConditionIndex;
         }
+        this.state.isLValue = false;
     }
     compileAssignment(node) {
-        var _a, _b, _c;
         this.compileNode(node.right);
         const rightDataType = this.state.currentDatatype;
         this.compileNode(node.left);
@@ -348,16 +357,21 @@ class Compiler {
             throw new Error("Invalid assignment target");
         }
         const leftDataType = this.state.currentDatatype;
+        const lastInstruction = this.program.instructions.at(-1);
+        if (!lastInstruction) {
+            throw new Error("No instructions");
+        }
         // Switch the last load instruction to a store instruction
-        if (((_a = this.program.instructions.at(-1)) === null || _a === void 0 ? void 0 : _a.opcode) === prg.OP_LOAD_MEMBER) {
-            this.addInstruction(prg.OP_STORE_MEMBER);
+        if (lastInstruction.opcode === prg.OP_LOAD_MEMBER) {
+            lastInstruction.opcode = prg.OP_STORE_MEMBER;
         }
-        else if (((_b = this.program.instructions.at(-1)) === null || _b === void 0 ? void 0 : _b.opcode) === prg.OP_LOAD_LOCAL) {
-            this.addInstruction(prg.OP_STORE_LOCAL);
+        else if (lastInstruction.opcode === prg.OP_LOAD_LOCAL) {
+            lastInstruction.opcode = prg.OP_STORE_LOCAL;
         }
-        else if (((_c = this.program.instructions.at(-1)) === null || _c === void 0 ? void 0 : _c.opcode) === prg.OP_LOAD_ELEMENT) {
-            this.addInstruction(prg.OP_STORE_ELEMENT);
+        else if (lastInstruction.opcode === prg.OP_LOAD_ELEMENT) {
+            lastInstruction.opcode = prg.OP_STORE_ELEMENT;
         }
+        this.state.isLValue = false;
     }
     compileDeclaration(node) {
         var _a;

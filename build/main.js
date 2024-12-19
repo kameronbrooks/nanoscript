@@ -5,6 +5,8 @@ const interpreter_1 = require("./nsengine/interpreter");
 const ast_1 = require("./nsengine/ast");
 const compiler_1 = require("./nsengine/compiler");
 const nenv_1 = require("./nsengine/nenv");
+const executor_1 = require("./nsengine/executor");
+const program_1 = require("./nsengine/program");
 function runCode(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     let tokens = tokenizer.tokenize();
@@ -55,7 +57,7 @@ const mathModule = {
 const myModule = {
     name: "myModule",
     exports: [
-        { name: "myObject", type: "constant", object: { x: 0, y: 0, z: 0 } }
+        { name: "myObject", type: "constant", object: { x: 1, y: 2, z: 3 } }
     ]
 };
 const _nenv = new nenv_1.Nenv();
@@ -91,15 +93,34 @@ const script = `
     let x = 10;
     if (x > 10) {
         //console.log('x is greater than 10');
-        myObject.x;
+        x = myObject.x;
     } else {
         //console.log('x is greater less than 10');
-        myObject.y;
+        x = myObject.y;
     }
+    x;
 }
 `;
+/*
+const script = `
+{
+    let x = 10;
+    x = 9;
+    x;
+}
+`;
+*/
 console.log((0, ast_1.astToString)(runCode(script)));
-console.log(compile(script));
+(0, program_1.printProgram)(compile(script));
+const executor = new executor_1.Executor();
+let start = performance.now();
+const program = compile(script);
+let end = performance.now();
+console.log("Compiled in " + (end - start) + "ms");
+start = performance.now();
+const result = executor.execute(program);
+end = performance.now();
+console.log(result + " in " + (end - start) + "ms");
 //console.log(runCode("1 + (2 + 3) * 5"));
 //console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
 //console.log(astToString(runCode("1 + -(-1 + 2) * 10 + 2") as any));

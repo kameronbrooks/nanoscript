@@ -4,6 +4,7 @@ import { astToString } from "./nsengine/ast";
 import { Compiler } from "./nsengine/compiler";
 import { Nenv, NenvModule, NenvExport } from "./nsengine/nenv";
 import { Executor } from "./nsengine/executor";
+import { printProgram } from "./nsengine/program";
 
 function runCode(code: string) {
     let tokenizer = new Tokenizer(code);
@@ -61,7 +62,7 @@ const mathModule = {
 const myModule = {
     name: "myModule",
     exports: [
-        { name: "myObject", type: "constant", object: {x: 0, y: 0, z:0} }
+        { name: "myObject", type: "constant", object: {x: 1, y: 2, z:3} }
     ] as NenvExport[]
 } as NenvModule;
 
@@ -102,17 +103,38 @@ const script = `
     let x = 10;
     if (x > 10) {
         //console.log('x is greater than 10');
-        myObject.x;
+        x = myObject.x;
     } else {
         //console.log('x is greater less than 10');
-        myObject.y;
+        x = myObject.y;
     }
+    x;
 }
 `;
+
+/*
+const script = `
+{
+    let x = 10;
+    x = 9;
+    x;
+}
+`;
+*/
 console.log(astToString(runCode(script) as any));
 
 
-console.log(compile(script));
+printProgram(compile(script));
+
+const executor = new Executor();
+let start = performance.now();
+const program = compile(script);
+let end = performance.now();
+console.log("Compiled in " + (end - start) + "ms");
+start = performance.now();
+const result = executor.execute(program);
+end = performance.now();
+console.log(result + " in " + (end - start) + "ms");
 //console.log(runCode("1 + (2 + 3) * 5"));
 //console.log(astToString(runCode("1 + 1 + 3 + 5 * 5 * 5 + 4") as any));
 

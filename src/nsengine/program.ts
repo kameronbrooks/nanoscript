@@ -81,6 +81,72 @@ export const OP_CALL_INTERNAL               = 0x70;
 export const OP_CALL_EXTERNAL               = 0x71;
 
 
+const OP_NAMES: { [key: number]: string } = {
+    0x00: 'NOOP',
+    0x01: 'TERM',
+    0x02: 'JUMP',
+    0x03: 'BRANCH_TRUE',
+    0x04: 'BRANCH_FALSE',
+    0x10: 'LOAD_CONST_BOOL',
+    0x11: 'LOAD_CONST_INT',
+    0x12: 'LOAD_CONST_FLOAT',
+    0x13: 'LOAD_CONST_NULL',
+    0x14: 'LOAD_CONST_STRING',
+    0x20: 'ADDi',
+    0x21: 'SUBi',
+    0x22: 'MULi',
+    0x23: 'DIVi',
+    0x24: 'MODi',
+    0x25: 'POWi',
+    0x26: 'ADDf',
+    0x27: 'SUBf',
+    0x28: 'MULf',
+    0x29: 'DIVf',
+    0x2A: 'MODf',
+    0x2B: 'POWf',
+    0x2C: 'ADDs',
+    0x2D: 'GREATER_THANi',
+    0x2E: 'LESS_THANi',
+    0x2F: 'GREATER_THAN_OR_EQUALi',
+    0x30: 'LESS_THAN_OR_EQUALi',
+    0x31: 'EQUALi',
+    0x32: 'NOT_EQUALi',
+    0x33: 'GREATER_THANf',
+    0x34: 'LESS_THANf',
+    0x35: 'GREATER_THAN_OR_EQUALf',
+    0x36: 'LESS_THAN_OR_EQUALf',
+    0x37: 'EQUALf',
+    0x38: 'NOT_EQUALf',
+    0x39: 'EQUALb',
+    0x3A: 'NOT_EQUALb',
+    0x3B: 'EQUALs',
+    0x3C: 'NOT_EQUALs',
+    0x40: 'NEGi',
+    0x41: 'NEGf',
+    0x50: 'INT_TO_FLOAT',
+    0x51: 'FLOAT_TO_INT',
+    0x52: 'INT_TO_STRING',
+    0x53: 'FLOAT_TO_STRING',
+    0x60: 'LOAD_LOCAL',
+    0x61: 'STORE_LOCAL',
+    0x62: 'LOAD_MEMBER',
+    0x63: 'STORE_MEMBER',
+    0x64: 'LOAD_EXTERNAL',
+    0x65: 'LOAD_ELEMENT',
+    0x66: 'STORE_ELEMENT',
+    0x67: 'ALLOC_STACK',
+    0x68: 'POP_STACK',
+    0x69: 'ALLOC_HEAP',
+    0x6A: 'POP_HEAP',
+    0x70: 'CALL_INTERNAL',
+    0x71: 'CALL_EXTERNAL',
+};
+
+export function getOpName(opcode: number): string {
+    return OP_NAMES[opcode];
+}
+
+
 export interface OPResult {
     opcode: number;
     returnDtype: string;
@@ -150,4 +216,50 @@ export interface Program {
     engineVersion: string;
     nenv: Nenv;
     instructions: Instruction[];
+}
+
+/**
+ * A constructor for the Program object
+ * @param engineVersion 
+ * @param instructions 
+ * @param nenv 
+ * @returns 
+ */
+export function createProgram(engineVersion: string, instructions?: Instruction[], nenv?: Nenv, ): Program {
+    return {
+        engineVersion,
+        nenv: nenv || new Nenv(),
+        instructions: instructions || [],
+    };
+}
+
+/**
+ * Return the string representation of the program
+ * @param program 
+ * @returns 
+ */
+export function programToString(program: Program): string {
+    let output = `nanoscript v${program.engineVersion}\n`;
+    for (let i = 0; i < program.instructions.length; i++) {
+        let instruction = program.instructions[i];
+        output += `[${i}]\t${getOpName(instruction.opcode)} ${instruction.operand}\n`;
+    }
+    return output;
+}
+
+/**
+ * Print the program to the console
+ * @param program 
+ */
+export function printProgram(program: Program): void {
+    console.log(`nanoscript v${program.engineVersion}`);
+    for (let i = 0; i < program.instructions.length; i++) {
+        let instruction = program.instructions[i];
+        let operandDisplay = instruction.operand;
+        if (instruction.operand === null) {
+            operandDisplay = '';
+        }
+        console.log(`[${i}]\t${getOpName(instruction.opcode)}\t${operandDisplay}`);
+
+    }
 }

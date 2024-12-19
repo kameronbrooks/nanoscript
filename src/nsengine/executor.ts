@@ -37,6 +37,7 @@ export class Executor {
     ip: number = 0;
     sp: number = 0;
     fp: number = 0;
+    ret: any;
     program?: prg.Program;
     
     constructor(maxStackSize: number = 1024) {
@@ -48,7 +49,9 @@ export class Executor {
         this.ip = 0;
         this.fp = 0;
         while (program.instructions[this.ip].opcode != prg.OP_TERM) {
+            this.printStack();
             this.executeInstruction(program.instructions[this.ip]);
+
         }
 
         if (this.stack.length > 0) {
@@ -56,6 +59,13 @@ export class Executor {
         }
 
         return 0;
+    }
+
+    printStack() {
+        console.log("Stack: " + this.stack);
+    }
+    printHeap() {
+        console.log("Heap: " + this.heap);
     }
 
     executeInstruction(instruction: prg.Instruction) {
@@ -198,10 +208,115 @@ export class Executor {
                     this.ip++;
                 }
                 break;
+            case prg.OP_BRANCH_TRUE:
+                a = this.stack.pop();
+                if (a) {
+                    this.ip = instruction.operand;
+                } else {
+                    this.ip++;
+                }
+                break;
+            case prg.OP_EQUALi:
+            case prg.OP_EQUALf:
+            case prg.OP_EQUALb:
+            case prg.OP_EQUALs:
+                b = this.stack.pop();
+                a = this.stack.pop();
+                this.stack.push(a == b);
+                this.ip++;
+                break;
+            case prg.OP_NOT_EQUALi:
+            case prg.OP_NOT_EQUALf:
+            case prg.OP_NOT_EQUALb:
+            case prg.OP_NOT_EQUALs:
+                b = this.stack.pop();
+                a = this.stack.pop();
+                this.stack.push(a != b);
+                this.ip++;
+                break;
+            case prg.OP_GREATER_THANi:
+            case prg.OP_GREATER_THANf:
+                b = this.stack.pop();
+                a = this.stack.pop();
+                this.stack.push(a > b);
+                this.ip++;
+                break;
+            case prg.OP_LESS_THANi:
+            case prg.OP_LESS_THANf:
+                b = this.stack.pop();
+                a = this.stack.pop();
+                this.stack.push(a < b);
+                this.ip++;
+                break;
+            case prg.OP_GREATER_THAN_OR_EQUALi:
+            case prg.OP_GREATER_THAN_OR_EQUALf:
+                b = this.stack.pop();
+                a = this.stack.pop();
+                this.stack.push(a >= b);
+                this.ip++;
+                break;
+            case prg.OP_LESS_THAN_OR_EQUALi:
+            case prg.OP_LESS_THAN_OR_EQUALf:
+                b = this.stack.pop();
+                a = this.stack.pop();
+                this.stack.push(a <= b);
+                this.ip++;
+                break;
+            case prg.OP_NEGi:
+            case prg.OP_NEGf:
+                a = this.stack.pop();
+                this.stack.push(-a);
+                this.ip++;
+                break;
+            case prg.OP_LOAD_LOCAL:
+                this.stack.push(this.stack[this.fp + instruction.operand]);
+                this.ip++;
+                break;
+            case prg.OP_STORE_LOCAL:
+                this.stack[this.fp + instruction.operand] = this.stack.pop();
+                this.ip++;
+                break;
+            case prg.OP_LOAD_EXTERNAL:
+                this.stack.push(instruction.operand);
+                this.ip++;
+                break;
+            case prg.OP_ALLOC_STACK:
+                for (let i = 0; i < instruction.operand; i++) {
+                    this.stack.push(null);
+                    this.sp++;
+                }
+                this.ip++;
+                break;
+            case prg.OP_POP_STACK:
+                for (let i = 0; i < instruction.operand; i++) {
+                    this.stack.pop();
+                    this.sp--;
+                }
+                this.ip++;
+                break;
+            case prg.OP_ALLOC_HEAP:
+                for (let i = 0; i < instruction.operand; i++) {
+                    this.heap.push(null);
+                }
+                this.ip++;
+                break;
+            case prg.OP_POP_HEAP:
+                for (let i = 0; i < instruction.operand; i++) {
+                    this.heap.pop();
+                }
+                this.ip++;
+                break;
+            case prg.OP_LOAD_MEMBER:
+                a = this.stack.pop();
+                this.stack.push(a[instruction.operand]);
+                this.ip++;
+                break;
+            case prg.OP_STORE_MEMBER:
+                a = this.stack.pop();
+                a[instruction.operand] = this.stack.pop();
+                this.ip++;
+                break;
 
-            
-
-                
             default:
                 throw new Error(`Unknown opcode: ${instruction.opcode}`);
         }

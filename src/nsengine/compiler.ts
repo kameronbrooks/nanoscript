@@ -258,6 +258,7 @@ export class Compiler {
         // Add the instruction
         this.addInstruction(result.opcode, null);
         this.state.currentDatatype = result.returnDtype;
+        this.state.isLValue = false;
 
     }
 
@@ -279,6 +280,7 @@ export class Compiler {
     private compileBoolean(node: ast.BooleanNode) {
         this.addInstruction(prg.OP_LOAD_CONST_BOOL, node.value);
         this.state.currentDatatype = 'bool';
+        this.state.isLValue = false;
     }
 
     private compileNumber(node: ast.NumberNode) {
@@ -292,17 +294,20 @@ export class Compiler {
         }
         // Set the current datatype
         this.state.currentDatatype = node.dtype || 'float';
+        this.state.isLValue = false;
     }
 
     private compileString(node: ast.StringNode) {
         this.addInstruction(prg.OP_LOAD_CONST_STRING, node.value);
         this.state.currentDatatype = 'string';
+        this.state.isLValue = false;
     }
 
     private compileNull(node: ast.NullNode) {
         this.addInstruction(prg.OP_LOAD_CONST_NULL, null);
 
         this.state.currentDatatype = 'null';
+        this.state.isLValue = false;
     }
 
     private compileMemberAccess(node: ast.MemberAccessNode) {
@@ -336,6 +341,7 @@ export class Compiler {
             if (target.location === "external") {
                 // Add the instruction to load the external object
                 this.addInstruction(prg.OP_LOAD_EXTERNAL, target.value);
+                this.state.isLValue = false;
             }
             else {
                 // Add the instruction to load the object
@@ -346,10 +352,12 @@ export class Compiler {
                     // TODO: Figure out the opcode based on the datatype
                     this.addInstruction(prg.OP_LOAD_CONST_FLOAT, target.localStackIndex);
                 }
+                this.state.isLValue = true;
             }
         } else {
             // Add the instruction
             this.addInstruction(prg.OP_LOAD_MEMBER, node.value);
+            this.state.isLValue = true;
         }
 
         
@@ -371,11 +379,12 @@ export class Compiler {
         if(node.body) {
             this.compileNode(node.body);
         }
-        const falseBranchIndex = this.getTailIndex();
+        let falseBranchIndex = this.getTailIndex();
         
         let elseJumpInstruction = null;
         if(node.elseBody) {
             elseJumpInstruction = this.addInstruction(prg.OP_JUMP, null);
+            falseBranchIndex = this.getTailIndex();
             this.compileNode(node.elseBody);
         }
         const endOfConditionIndex = this.getTailIndex();
@@ -391,6 +400,7 @@ export class Compiler {
         if (elseJumpInstruction) {
             elseJumpInstruction.operand = endOfConditionIndex;
         }
+        this.state.isLValue = false;
     }
 
 
@@ -405,16 +415,21 @@ export class Compiler {
         }
         const leftDataType = this.state.currentDatatype;
 
+        const lastInstruction = this.program.instructions.at(-1);
+        if (!lastInstruction) {
+            throw new Error("No instructions");
+        }
         // Switch the last load instruction to a store instruction
-        if (this.program.instructions.at(-1)?.opcode === prg.OP_LOAD_MEMBER) {
-            this.addInstruction(prg.OP_STORE_MEMBER);
+        if (lastInstruction.opcode === prg.OP_LOAD_MEMBER) {
+            lastInstruction.opcode = prg.OP_STORE_MEMBER;
         }
-        else if (this.program.instructions.at(-1)?.opcode === prg.OP_LOAD_LOCAL) {
-            this.addInstruction(prg.OP_STORE_LOCAL);
+        else if (lastInstruction.opcode === prg.OP_LOAD_LOCAL) {
+            lastInstruction.opcode = prg.OP_STORE_LOCAL;
         }
-        else if (this.program.instructions.at(-1)?.opcode === prg.OP_LOAD_ELEMENT) {
-            this.addInstruction(prg.OP_STORE_ELEMENT);
+        else if (lastInstruction.opcode === prg.OP_LOAD_ELEMENT) {
+            lastInstruction.opcode = prg.OP_STORE_ELEMENT;
         }
+        this.state.isLValue = false;
     }
 
     private compileDeclaration(node: ast.DeclarationNode) {
