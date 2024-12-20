@@ -277,7 +277,16 @@ class Interpreter {
      * @returns the AST
      */
     parse() {
-        const node = this.parseStatement();
+        const node = {
+            type: "Program",
+            statements: []
+        };
+        while (!this.isEOF()) {
+            const statement = this.parseStatement();
+            if (statement) {
+                node.statements.push(statement);
+            }
+        }
         this.consume("EOF");
         return node;
     }

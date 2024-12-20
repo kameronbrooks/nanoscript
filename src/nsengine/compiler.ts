@@ -218,6 +218,11 @@ export class Compiler {
                 }
                 this.state.popScope();
                 break;
+            case "Program":
+                for (let statement of (node as ast.BlockNode).statements) {
+                    this.compileNode(statement);
+                }
+                break;
             case "Condition":
                 this.compileCondition(node as ast.ConditionNode);
                 break;
@@ -276,9 +281,9 @@ export class Compiler {
     private compileUnaryOp(node: ast.UnaryOpNode) {
         this.compileNode(node.operand);
         const datatype = this.state.currentDatatype;
-
         const opKey = node.postfix ? datatype + node.operator: node.operator + datatype;
         const result = prg.searchOpMap(opKey);
+        
         if (!result) {
             throw new Error(`Unknown operator: ${opKey}`);
         }
@@ -484,15 +489,9 @@ export class Compiler {
             }
         }
 
-        
-        
-
-
     }
 
     private compileFunctionCall(node: ast.FunctionCallNode) {
-        
-
         // Compile the arguments
         for (let arg of node.arguments) {
             this.compileNode(arg);

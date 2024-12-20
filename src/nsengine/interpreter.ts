@@ -1,6 +1,6 @@
 import { Token, TokenType } from "./tokenizer";
 import { InterpreterStep } from "./interpreter_steps/interpreter_step";
-import { ASTNode, ConditionNode, BlockNode, DeclarationNode, LoopNode } from "./ast";
+import { ASTNode, ConditionNode, BlockNode, DeclarationNode, LoopNode, ProgramNode } from "./ast";
 import * as ist from "./interpreter_steps/interpreter_step_types";
 
 
@@ -300,8 +300,17 @@ export class Interpreter {
      * @returns the AST
      */
     parse(): ASTNode|null|undefined {
-      const node = this.parseStatement();
-      this.consume("EOF");
-      return node;
+    const node = {
+        type: "Program",
+        statements: []
+    } as ProgramNode
+    while (!this.isEOF()) {
+        const statement = this.parseStatement();
+        if (statement) {
+            node.statements.push(statement);
+        }
+    }
+    this.consume("EOF");
+    return node;
     }
   }

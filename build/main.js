@@ -7,6 +7,7 @@ const compiler_1 = require("./nsengine/compiler");
 const nenv_1 = require("./nsengine/nenv");
 const executor_1 = require("./nsengine/executor");
 const program_1 = require("./nsengine/program");
+const builtin_1 = require("./nenvmodules/builtin");
 function runCode(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     let tokens = tokenizer.tokenize();
@@ -18,46 +19,6 @@ function tokenize(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     return tokenizer.tokenize();
 }
-const consoleModule = {
-    name: "io",
-    exports: [
-        { name: "console", type: "object", object: {
-                log: (x) => console.log(x),
-                error: (x) => console.error(x),
-                warn: (x) => console
-            } }
-    ]
-};
-const mathModule = {
-    name: "math",
-    exports: [
-        { name: "PI", type: "constant", object: Math.PI },
-        { name: "E", type: "constant", object: Math.E },
-        { name: "abs", type: "function", object: Math.abs },
-        { name: "acos", type: "function", object: Math.acos },
-        { name: "acosh", type: "function", object: Math.acosh },
-        { name: "asin", type: "function", object: Math.asin },
-        { name: "asinh", type: "function", object: Math.asinh },
-        { name: "atan", type: "function", object: Math.atan },
-        { name: "atanh", type: "function", object: Math.atanh },
-        { name: "atan2", type: "function", object: Math.atan2 },
-        { name: "cbrt", type: "function", object: Math.cbrt },
-        { name: "ceil", type: "function", object: Math.ceil },
-        { name: "clz32", type: "function", object: Math.clz32 },
-        { name: "cos", type: "function", object: Math.cos },
-        { name: "cosh", type: "function", object: Math.cosh },
-        { name: "exp", type: "function", object: Math.exp },
-        { name: "expm1", type: "function", object: Math.expm1 },
-        { name: "floor", type: "function", object: Math.floor },
-        { name: "fround", type: "function", object: Math.fround },
-        { name: "hypot", type: "function", object: Math.hypot },
-        { name: "imul", type: "function", object: Math.imul },
-        { name: "log", type: "function", object: Math.log },
-        { name: "log1p", type: "function", object: Math.log1p },
-        { name: "log10", type: "function", object: Math.log10 },
-        { name: "log2", type: "function", object: Math.log2 },
-    ]
-};
 const myModule = {
     name: "myModule",
     exports: [
@@ -65,8 +26,7 @@ const myModule = {
     ]
 };
 const _nenv = new nenv_1.Nenv();
-_nenv.addModule(consoleModule);
-_nenv.addModule(mathModule);
+_nenv.addModule(builtin_1.builtin_module);
 _nenv.addModule(myModule);
 function compile(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
@@ -92,12 +52,14 @@ const result = executor.execute(program);
 const end = performance.now();
 console.log(result + " in " + (end - start) + "ms");
 */
-const script = `{
+const script = `
 let a = 0;
 for(let i = 0; i < 100; i++) {
     a = i*2;
 }
-}`;
+a;
+Math.PI;
+`;
 /*
 const script = `
 {

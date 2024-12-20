@@ -195,6 +195,11 @@ class Compiler {
                 }
                 this.state.popScope();
                 break;
+            case "Program":
+                for (let statement of node.statements) {
+                    this.compileNode(statement);
+                }
+                break;
             case "Condition":
                 this.compileCondition(node);
                 break;

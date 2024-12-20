@@ -58,6 +58,10 @@ export interface BlockNode extends ASTNode {
     type: "Block";
     statements: ASTNode[];
 }
+export interface ProgramNode extends ASTNode {
+    type: "Program";
+    statements: ASTNode[];
+}
 export interface ConditionNode extends ASTNode {
     type: "Condition";
     condition: ASTNode;

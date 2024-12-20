@@ -1,5 +1,6 @@
 import {Tokenizer}  from "../src/nsengine/tokenizer";
 import {Interpreter} from "../src/nsengine/interpreter";
+import * as nenv from "../src/nsengine/nenv";
 
 function tokenize(code: string) {
     let tokenizer = new Tokenizer(code);
@@ -12,6 +13,20 @@ function runCode(code: string) {
     let interpreter = new Interpreter(tokens);
     return interpreter.parse();
 }
+
+const consoleModule = {
+    name: "io",
+    exports: [
+        { name: "console", type: "object", object: {
+            log: (x: any) => console.log(x),
+            error: (x: any) => console.error(x),
+            warn: (x: any) => console
+        }}
+    ] as nenv.NenvExport[]
+} as nenv.NenvModule;
+
+
+
 
 
 const validScripts = [
@@ -66,6 +81,15 @@ if (x > 10) {
 `arr[0,1].g;`,
 `arr[0,1].g.f();`,
 ];
+
+beforeAll(() => {
+    const n_env = new nenv.Nenv();
+    n_env.addModule(consoleModule);
+});
+
+beforeEach(() => {
+
+});
 
 
 
