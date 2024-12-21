@@ -4,6 +4,7 @@ exports.OP_LOAD_MEMBER = exports.OP_STORE_LOCAL = exports.OP_LOAD_LOCAL = export
 exports.IMPLICIT_CONVERSION_MAP = exports.OP_MAP = exports.OP_CALL_EXTERNAL = exports.OP_CALL_INTERNAL = exports.OP_POP_HEAP = exports.OP_ALLOC_HEAP = exports.OP_POP_STACK = exports.OP_ALLOC_STACK = exports.OP_STORE_ELEMENT = exports.OP_LOAD_ELEMENT = exports.OP_LOAD_EXTERNAL = exports.OP_STORE_MEMBER = void 0;
 exports.getOpName = getOpName;
 exports.searchOpMap = searchOpMap;
+exports.removeInstructionMetadata = removeInstructionMetadata;
 exports.createProgram = createProgram;
 exports.programToString = programToString;
 exports.printProgram = printProgram;
@@ -208,6 +209,12 @@ exports.IMPLICIT_CONVERSION_MAP = {
  */
 function searchOpMap(opKey) {
     return exports.OP_MAP[opKey];
+}
+function removeInstructionMetadata(instruction) {
+    return {
+        opcode: instruction.opcode,
+        operand: instruction.operand,
+    };
 }
 /**
  * A constructor for the Program object

@@ -234,7 +234,17 @@ export function searchOpMap(opKey:string): OPResult|null {
 export interface Instruction {
     opcode: number;
     operand: any;
+    index?: number;
+    label?: string;
 }
+
+export function removeInstructionMetadata(instruction: Instruction): Instruction {
+    return {
+        opcode: instruction.opcode,
+        operand: instruction.operand,
+    };
+}
+
 
 export interface Program {
     engineVersion: string;
@@ -256,6 +266,8 @@ export function createProgram(engineVersion: string, instructions?: Instruction[
         instructions: instructions || [],
     };
 }
+
+
 
 /**
  * Return the string representation of the program

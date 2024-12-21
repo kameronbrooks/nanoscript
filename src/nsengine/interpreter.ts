@@ -1,6 +1,6 @@
 import { Token, TokenType } from "./tokenizer";
 import { InterpreterStep } from "./interpreter_steps/interpreter_step";
-import { ASTNode, ConditionNode, BlockNode, DeclarationNode, LoopNode, ProgramNode } from "./ast";
+import { ASTNode, ConditionNode, BlockNode, DeclarationNode, LoopNode, ProgramNode, BreakNode } from "./ast";
 import * as ist from "./interpreter_steps/interpreter_step_types";
 
 
@@ -202,6 +202,25 @@ export class Interpreter {
         return null;
     }
 
+    private parseBreakStatement(): ASTNode|null|undefined {
+        if (this.match("BREAK")) {
+            if(this.match("EOS")) {
+                return {
+                    type: "Break",
+                    level: 1
+                } as BreakNode;
+            }
+            else {
+                const level = this.consume("NUMBER").value;
+                this.consume("EOS");
+                return {
+                    type: "Break",
+                    level: parseInt(level as string)
+                } as BreakNode;
+            }
+        }
+    }
+
     private parseForStatement(): ASTNode|null|undefined {
         if (this.match("FOR")) {
             this.consume("LPAREN");     // Parentheses required
@@ -275,6 +294,8 @@ export class Interpreter {
         node = this.parseForStatement();
         if (node) return node;
         node = this.parseWhileStatement();
+        if (node) return node;
+        node = this.parseBreakStatement();
         if (node) return node;
         //node = this.parseForStatement();
         //if (node) return node;

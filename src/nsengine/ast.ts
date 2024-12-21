@@ -76,6 +76,11 @@ export interface LoopNode extends ASTNode {
     body?: ASTNode;
 }
 
+export interface BreakNode extends ASTNode {
+    type: "Break";
+    level: number;
+}
+
 export interface MemberAccessNode extends ASTNode {
     type: "MemberAccess";
     object: ASTNode;

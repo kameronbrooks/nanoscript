@@ -184,6 +184,24 @@ class Interpreter {
         }
         return null;
     }
+    parseBreakStatement() {
+        if (this.match("BREAK")) {
+            if (this.match("EOS")) {
+                return {
+                    type: "Break",
+                    level: 1
+                };
+            }
+            else {
+                const level = this.consume("NUMBER").value;
+                this.consume("EOS");
+                return {
+                    type: "Break",
+                    level: parseInt(level)
+                };
+            }
+        }
+    }
     parseForStatement() {
         if (this.match("FOR")) {
             this.consume("LPAREN"); // Parentheses required
@@ -253,6 +271,9 @@ class Interpreter {
         if (node)
             return node;
         node = this.parseWhileStatement();
+        if (node)
+            return node;
+        node = this.parseBreakStatement();
         if (node)
             return node;
         //node = this.parseForStatement();

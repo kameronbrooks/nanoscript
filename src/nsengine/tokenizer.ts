@@ -57,6 +57,7 @@ export type TokenType = (
     "ELSE" |
     "WHILE" |
     "RETURN" |
+    "BREAK" |
     "FOR" |
     "IN" |
     "DECLARE_VARIABLE" |
@@ -84,11 +85,13 @@ export const keywordTokenMap: { [key: string]: TokenType } = {
     "in": "IN",
     "try": "TRY",
     "catch": "CATCH",
+    "break": "BREAK",
 }
 
 export interface Token {
     type: TokenType;
     value?: string;
+    line?: number;
 }
 
 export interface StringBuilderToken extends Token {
@@ -101,11 +104,13 @@ export class Tokenizer {
     private input: string;
     private index: number;
     private tokens: Token[];
+    private currentLine: number;
 
     constructor(input: string) {
         this.input = input;
         this.index = 0;
         this.tokens = [];
+        this.currentLine = 1;
     }
 
     tokenize(): Token[] {
@@ -144,7 +149,7 @@ export class Tokenizer {
     tryParseEOS(): boolean {
         const char = this.input[this.index];
         if (char === ";") {
-            this.tokens.push({ type: "EOS" });
+            this.tokens.push({ type: "EOS" , line: this.currentLine});
             this.index++;
             return true;
         }
@@ -154,6 +159,9 @@ export class Tokenizer {
     tryParseWhiteSpace(): boolean {
         const char = this.input[this.index];
         if (/\s/.test(char)) {
+            if (char === "\n") {
+                this.currentLine++;
+            }
             this.index++;
             return true;
         }
@@ -168,7 +176,7 @@ export class Tokenizer {
                 numStr += this.input[this.index];
                 this.index++;
             }
-            this.tokens.push({ type: "NUMBER", value: numStr });
+            this.tokens.push({ type: "NUMBER", value: numStr, line: this.currentLine });
             return true;
         }
         return false;
@@ -178,37 +186,37 @@ export class Tokenizer {
     tryParseOperator(): boolean {
         let char = this.input[this.index];
         if (char === "(") {
-            this.tokens.push({ type: "LPAREN", value: char });
+            this.tokens.push({ type: "LPAREN", value: char, line: this.currentLine });
             this.index++;
             return true;
         }
         if (char === ")") {
-            this.tokens.push({ type: "RPAREN", value: char });
+            this.tokens.push({ type: "RPAREN", value: char, line: this.currentLine });
             this.index++;
             return true;
         }
         if (char === "[") {
-            this.tokens.push({ type: "LBRACKET", value: char });
+            this.tokens.push({ type: "LBRACKET", value: char, line: this.currentLine });
             this.index++;
             return true;
         }
         if (char === "]") {
-            this.tokens.push({ type: "RBRACKET", value: char });
+            this.tokens.push({ type: "RBRACKET", value: char, line: this.currentLine });
             this.index++;
             return true;
         }
         if (char === "{") {
-            this.tokens.push({ type: "LBRACE", value: char });
+            this.tokens.push({ type: "LBRACE", value: char, line: this.currentLine });
             this.index++;
             return true;
         }
         if (char === "}") {
-            this.tokens.push({ type: "RBRACE", value: char });
+            this.tokens.push({ type: "RBRACE", value: char, line: this.currentLine });
             this.index++;
             return true;
         }
         if (char === ".") {
-            this.tokens.push({ type: "MEMBER_ACCESS", value: char });
+            this.tokens.push({ type: "MEMBER_ACCESS", value: char, line: this.currentLine });
             this.index++;
             return true;
         }
@@ -216,17 +224,17 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "+") {
-                this.tokens.push({ type: "INCREMENT", value: "++" });
+                this.tokens.push({ type: "INCREMENT", value: "++" , line: this.currentLine});
                 this.index++;
                 return true;
             }
             else if (char === "=") {
-                this.tokens.push({ type: "INCREMENT_ASSIGN", value: "+=" });
+                this.tokens.push({ type: "INCREMENT_ASSIGN", value: "+=", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "PLUS", value: '+'});
+                this.tokens.push({ type: "PLUS", value: '+', line: this.currentLine });
             }
             return true;
         }
@@ -234,17 +242,17 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "-") {
-                this.tokens.push({ type: "DECREMENT", value: "--" });
+                this.tokens.push({ type: "DECREMENT", value: "--", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else if (char === "=") {
-                this.tokens.push({ type: "DECREMENT_ASSIGN", value: "-=" });
+                this.tokens.push({ type: "DECREMENT_ASSIGN", value: "-=", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "MINUS", value: '-' });
+                this.tokens.push({ type: "MINUS", value: '-', line: this.currentLine });
             }
             return true;
         }
@@ -254,18 +262,18 @@ export class Tokenizer {
             char = this.input[this.index];
             // Power
             if (char === "*") {
-                this.tokens.push({ type: "POWER", value: "**" });
+                this.tokens.push({ type: "POWER", value: "**", line: this.currentLine });
                 this.index++;
                 return true;
             }
             // Multiply assign
             else if (char === "=") {
-                this.tokens.push({ type: "MULTIPLY_ASSIGN", value: "*=" });
+                this.tokens.push({ type: "MULTIPLY_ASSIGN", value: "*=", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "MULTIPLY", value: '*' });
+                this.tokens.push({ type: "MULTIPLY", value: '*', line: this.currentLine });
             }
             return true;
         }
@@ -294,18 +302,18 @@ export class Tokenizer {
             }
             // sqrt
             else if (char === "/") {
-                this.tokens.push({ type: "SQRT", value: "*/" });
+                this.tokens.push({ type: "SQRT", value: "*/", line: this.currentLine });
                 this.index++;
                 return true;
             }
             // Divide assign
             else if (char === "=") {
-                this.tokens.push({ type: "DIVIDE_ASSIGN", value: "/=" });
+                this.tokens.push({ type: "DIVIDE_ASSIGN", value: "/=", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "DIVIDE", value: '/' });
+                this.tokens.push({ type: "DIVIDE", value: '/', line: this.currentLine });
             }
             return true;
         }
@@ -314,12 +322,12 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "MODULO_ASSIGN", value: "%=" });
+                this.tokens.push({ type: "MODULO_ASSIGN", value: "%=", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "MODULO", value: "%" });
+                this.tokens.push({ type: "MODULO", value: "%", line: this.currentLine });
             }
             return true;
         }
@@ -328,12 +336,12 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "EQUALITY", value: "==" });
+                this.tokens.push({ type: "EQUALITY", value: "==", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "ASSIGN", value: "=" });
+                this.tokens.push({ type: "ASSIGN", value: "=", line: this.currentLine });
             }
             return true;
         }
@@ -342,12 +350,12 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "LESS_THAN_OR_EQUAL", value: "<=" });
+                this.tokens.push({ type: "LESS_THAN_OR_EQUAL", value: "<=", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "LESS_THAN", value: "<" });
+                this.tokens.push({ type: "LESS_THAN", value: "<", line: this.currentLine });
             }
             return true;
         }
@@ -356,12 +364,12 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "GREATER_THAN_OR_EQUAL", value: ">=" });
+                this.tokens.push({ type: "GREATER_THAN_OR_EQUAL", value: ">=", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "GREATER_THAN", value: ">" });
+                this.tokens.push({ type: "GREATER_THAN", value: ">", line: this.currentLine });
             }
             return true;
         }
@@ -370,12 +378,12 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "=") {
-                this.tokens.push({ type: "INEQUALITY", value: "!=" });
+                this.tokens.push({ type: "INEQUALITY", value: "!=", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "NOT", value: "!" });
+                this.tokens.push({ type: "NOT", value: "!", line: this.currentLine });
             }
         }
 
@@ -383,12 +391,12 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "&") {
-                this.tokens.push({ type: "AND", value: "&&" });
+                this.tokens.push({ type: "AND", value: "&&", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "BITWISE_AND", value: "&" });
+                this.tokens.push({ type: "BITWISE_AND", value: "&", line: this.currentLine });
             }
             return true;
         }
@@ -397,18 +405,18 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "|") {
-                this.tokens.push({ type: "OR", value: "||" });
+                this.tokens.push({ type: "OR", value: "||", line: this.currentLine });
                 this.index++;
                 return true;
             }
             else {
-                this.tokens.push({ type: "BITWISE_OR", value: "|" });
+                this.tokens.push({ type: "BITWISE_OR", value: "|", line: this.currentLine });
             }
             return true;
         }
 
         if (char === ",") {
-            this.tokens.push({ type: "COMMA", value: "," });
+            this.tokens.push({ type: "COMMA", value: ",", line: this.currentLine });
             this.index++;
             return true;
         }
@@ -434,7 +442,7 @@ export class Tokenizer {
                 return true;
             }
             else {
-                this.tokens.push({ type: "IDENTIFIER", value: identifier });
+                this.tokens.push({ type: "IDENTIFIER", value: identifier, line: this.currentLine });
             }
             
             return true;
@@ -467,7 +475,7 @@ export class Tokenizer {
                 this.index++;
             }
             this.index++;
-            this.tokens.push({ type: "STRINGLITERAL", value: str });
+            this.tokens.push({ type: "STRINGLITERAL", value: str, line: this.currentLine });
             return true;
         }
         else if (char === "'") {
@@ -482,7 +490,7 @@ export class Tokenizer {
                 this.index++;
             }
             this.index++;
-            this.tokens.push({ type: "STRINGLITERAL", value: str });
+            this.tokens.push({ type: "STRINGLITERAL", value: str, line: this.currentLine });
             return true;
         }
         else if (char === "`") {
@@ -559,7 +567,8 @@ export class Tokenizer {
                 value: newString,
                 subExpressions: expressions.map((expression) => {
                     return new Tokenizer(expression).tokenize();
-                })
+                }),
+                line: this.currentLine
             } as StringBuilderToken);
 
             return true;

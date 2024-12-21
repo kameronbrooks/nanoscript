@@ -61,13 +61,34 @@ const end = performance.now();
 console.log(result + " in " + (end - start) + "ms");
 */
 
+/*
 const script = `
 let a = 0;
+let b = 0;
 for(let i = 0; i < 100; i++) {
     a = i*2;
+    if (a > 50) {
+        break;
+    }
 }
 a;
-Math.PI;
+`;
+*/
+
+const script = `
+let a = 0;
+let b = 0;
+for(let i = 0; i < 10; i++) {
+    for(let j = 0; j < 10; j++) {
+        a = i * j;
+        console.log(a);
+        if (a > 50) {
+            console.log("limit hit");
+            break 2;
+        }
+    }
+}
+a;
 `;
 
 /*

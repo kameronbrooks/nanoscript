@@ -5,6 +5,20 @@ import * as prg from "./program";
 
 
 /**
+ * Contains the list of variables in a frame
+ * Related to scope but not 1-to-1
+ * When entering a function body, different variables are in the frame
+ * This allows the local variables to be manipulated based on their offset
+ * from the frame pointer
+ * 
+ * A function may have several scopes, but only one frame
+ * - variables: The list of variables in the frame
+ */
+interface FrameVariableList {
+    variables: string[];
+}
+
+/**
  * Contains information about an object in a scope
  * - name: The name of the object
  * - datatype: The datatype of the object
@@ -43,13 +57,21 @@ class Scope {
     parent: Scope | null;
     objects: Map<string, ScopeObject>;
     nenv?: Nenv;
-    stackVariables: string[] = [];
+    frameVariablesStack: FrameVariableList[] = [];
 
-    constructor(parent: Scope | null = null, nenv?: Nenv, stackVariables?: string[]) {
+    constructor(parent: Scope | null = null, nenv?: Nenv, stackVariables?: FrameVariableList[]) {
         this.nenv = nenv;
         this.parent = parent;
         this.objects = new Map();
-        this.stackVariables = stackVariables || [];
+        this.frameVariablesStack = stackVariables || [];
+    }
+
+    createChild() {
+        return new Scope(this, undefined, this.frameVariablesStack);
+    }
+
+    getFrameVariables() {
+        return this.frameVariablesStack.at(-1) as FrameVariableList;
     }
 
     getObject(name: string) : ScopeObject | undefined {
@@ -76,7 +98,7 @@ class Scope {
     }
 
     addLocalVariable(name: string, isConst:boolean, datatype: string, value: any) {
-        if (this.objects.has(name) || this.stackVariables.includes(name)) {
+        if (this.objects.has(name) || this.getFrameVariables().variables.includes(name)) {
             throw new Error(`Variable ${name} already exists`);
         }
         const obj = {
@@ -85,12 +107,11 @@ class Scope {
             value,
             type: isConst ? "constant" : "variable",
             location: "internal",
-            localStackIndex: this.stackVariables.length,
-            
+            localStackIndex: this.getFrameVariables().variables.length,
         } as ScopeObject;
 
         this.objects.set(name, obj);
-        this.stackVariables.push(name);
+        this.getFrameVariables().variables.push(name);
 
         return obj;
     }
@@ -100,20 +121,56 @@ class Scope {
     }
 }
 
+/**
+ * Contains the break instructions within a block
+ * Used as an intermediate step in the compilation process to hold references to 
+ * the break instructions that need to be updated after the block is compiled
+ * - breakInstructions: The break instructions within the block
+ */
+interface BreakList {
+    breakInstructions: prg.Instruction[];
+}
+
+
+
+/**
+ * Contains the current state of the compiler
+ * - currentDatatype: The current datatype
+ * - isLValue: Whether the current object is an lvalue
+ * - currentScope: The current scope
+ * - breakListStack: The break instruction stack
+ */
 class CompilerState {
     currentDatatype: string;
     isLValue: boolean;
     // TODO: need some kind of object here if we are doing member access
     currentScope?: Scope | null;
+    breakListStack: BreakList[];
+    frameVariableList: FrameVariableList[] = [];
+
 
     constructor(currentScope?: Scope) {
         this.currentDatatype = 'none';
         this.isLValue = false;
         this.currentScope = currentScope;
+        this.breakListStack = [];
+        this.frameVariableList = [
+            {
+                variables: []
+            } as FrameVariableList
+        ];
+
+        if (this.currentScope) {
+            this.currentScope.frameVariablesStack = this.frameVariableList;
+        }
+        console.log(this.currentScope);
     }
 
     pushScope() {
-        this.currentScope = new Scope(this.currentScope);
+        if (!this.currentScope) {
+            throw new Error("No scope to push");
+        }
+        this.currentScope = this.currentScope.createChild();
     }
     popScope() {
         if (this.currentScope && !this.currentScope.isGlobal()) {
@@ -123,6 +180,78 @@ class CompilerState {
 
 }
 
+/**
+ * Contains a table of instruction references
+ * This is required to handle forward references and allow for the order of instructions
+ * to be changed while mainting links between instructions
+ * 
+ */
+class InstructionReferenceTable {
+    private table: Map<string, prg.Instruction>;
+    private index: number = 0;
+    private openReference?: string|null;
+
+    constructor() {
+        this.table = new Map();
+        this.openReference = null;
+        this.index = 0;
+    }
+    /**
+     * Add an instruction to the table
+     * @param index 
+     * @param instruction 
+     */
+    add(index: string, instruction: prg.Instruction) {
+        this.table.set(index, instruction);
+    }
+
+    /**
+     * Get an instruction from the table
+     * @param index 
+     * @returns 
+     */
+    get(index: string) {
+        return this.table.get(index);
+    }
+
+    /**
+     * Set the open reference
+     * This gets the program ready to assign the next instruction to the open reference
+     * @param index
+     * @returns
+     */
+    open() {
+        this.openReference = '$' + (this.index++);
+        return this.openReference;
+    }
+
+    /**
+     * This closes the open reference and assigns the instruction to the reference
+     * @param instruction 
+     */
+    close(instruction: prg.Instruction) {
+        if (this.openReference) {
+            this.add(this.openReference, instruction);
+            this.openReference = null;
+        }
+    }
+
+    getOpenReference() {
+        return this.openReference;
+    }
+
+    hasOpenReference() {
+        return this.openReference !== null;
+    }
+
+    print() {
+        console.log("Instruction Reference Table");
+        for (let [key, value] of this.table) {
+            console.log(`${key}: ${value.opcode}  index [${value.index}]`);
+        }
+    }
+}
+
 export class Compiler {
     private engineVersion = "0.0.1";
     private nenv: Nenv;
@@ -130,6 +259,7 @@ export class Compiler {
     private state: CompilerState;
     private globalScope: Scope;
     private frameBeginIndex: number[] = [];
+    private instructionReferenceTable: InstructionReferenceTable;
 
 
     constructor(nenv: Nenv) {
@@ -143,6 +273,7 @@ export class Compiler {
         this.globalScope = new Scope(null, nenv);
         this.state = new CompilerState(this.globalScope);
         this.frameBeginIndex.push(0);
+        this.instructionReferenceTable = new InstructionReferenceTable();
 
     }
 
@@ -151,20 +282,36 @@ export class Compiler {
     }
 
 
-    addInstruction(opcode: number, operand:any = null) {
-        
-        this.program.instructions.push({
+    addInstruction(opcode: number, operand:any = null, ignoreReference = false) {
+        const instruction = {
             opcode,
-            operand
-        });
+            operand,
+            index: this.program.instructions.length,
+        } as prg.Instruction
+        this.program.instructions.push(instruction);
+
+        // push the index of the new instruction to the reference table
+        // if there is an open reference, this will close it
+        if (!ignoreReference && this.instructionReferenceTable.hasOpenReference()) {
+            this.instructionReferenceTable.close(instruction);
+        }
         return this.program.instructions.at(-1);
     }
-    insertInstruction(index:number, opcode: number, operand:any = null) {
-        
-        this.program.instructions.splice(index, 0, {
+    insertInstruction(index:number, opcode: number, operand:any = null, ignoreReference = false) {
+        const instruction = {
             opcode,
-            operand
-        });
+            operand,
+            index,
+        } as prg.Instruction;
+
+        this.program.instructions.splice(index, 0, instruction);
+
+        // push the index of the new instruction to the reference table
+        // if there is an open reference, this will close it
+        if (!ignoreReference && this.instructionReferenceTable.hasOpenReference()) {
+            this.instructionReferenceTable.close(instruction);
+        }
+
         return this.program.instructions.at(index);
     }
 
@@ -181,6 +328,55 @@ export class Compiler {
 
         // Terminate the program
         this.addInstruction(prg.OP_TERM);
+        console.log("=====================================");
+        console.log("Pre Linked Program");
+        this.instructionReferenceTable.print();
+        prg.printProgram(this.program); 
+        console.log("=====================================");
+        // Optimize the program to remove unnecessary instructions
+        this.optimize();
+
+        this.finalize();
+
+        console.log("=====================================");
+        console.log("Final Program");
+        this.instructionReferenceTable.print();
+        prg.printProgram(this.program); 
+        console.log("=====================================");
+        // Finalize the program by updating the instruction indices and resolving branch targets
+        return this.program;
+    }
+
+    optimize() {
+        // TODO: Implement optimization
+    }
+    finalize() {
+        // First, update the instructions to contain the correct indices
+        for (let i = 0; i < this.program.instructions.length; i++) {
+            this.program.instructions[i].index = i;
+        }
+        // Next, resolve the branch and jump targets
+        for (let i = 0; i < this.program.instructions.length; i++) {
+            const instruction = this.program.instructions[i];
+            if (
+                instruction.opcode === prg.OP_BRANCH_FALSE || 
+                instruction.opcode === prg.OP_BRANCH_TRUE || 
+                instruction.opcode === prg.OP_JUMP
+            ) {
+                const targetIndex = instruction.operand as string;
+                const targetInstruction = this.instructionReferenceTable.get(targetIndex);
+                if (!targetInstruction) {
+                    throw new Error(`Branch target not found: ${targetIndex}`);
+                }
+                instruction.operand = targetInstruction.index;
+            }
+
+        }
+        // Finally, remove the instruction metadata and return the program
+        this.program.instructions = this.program.instructions.map(instruction => ({
+            opcode: instruction.opcode,
+            operand: instruction.operand
+        }));
 
         return this.program;
     }
@@ -238,6 +434,9 @@ export class Compiler {
             case "Loop":
                 this.compileLoopStatement(node as ast.LoopNode);
                 break;
+            case "Break":
+                this.compileBreak(node as ast.BreakNode);
+                break;
                 
             default:
                 throw new Error(`Unknown node type: ${node.type}`);
@@ -245,8 +444,6 @@ export class Compiler {
     }
 
     private compileBinaryOp(node: ast.BinaryOpNode) {
-        
-
         const leftInsertionIndex = this.getTailIndex();
         this.compileNode(node.left);
         let leftDataType = this.state.currentDatatype;
@@ -270,12 +467,11 @@ export class Compiler {
         if (!result) {
             throw new Error(`Unknown operator: ${opKey}`);
         }
-
+        
         // Add the instruction
         this.addInstruction(result.opcode, null);
         this.state.currentDatatype = result.returnDtype;
         this.state.isLValue = false;
-
     }
 
     private compileUnaryOp(node: ast.UnaryOpNode) {
@@ -283,7 +479,7 @@ export class Compiler {
         const datatype = this.state.currentDatatype;
         const opKey = node.postfix ? datatype + node.operator: node.operator + datatype;
         const result = prg.searchOpMap(opKey);
-        
+
         if (!result) {
             throw new Error(`Unknown operator: ${opKey}`);
         }
@@ -344,8 +540,6 @@ export class Compiler {
         if (!node.member) {
             throw new Error("Missing member in member access");
         }
-        console.log(node.object);
-        console.log(node.member);
         // Compile the object
         this.compileNode(node.object);
 
@@ -406,26 +600,26 @@ export class Compiler {
         if(node.body) {
             this.compileNode(node.body);
         }
-        let falseBranchIndex = this.getTailIndex();
+        let falseBranchRef = null;
         
         let elseJumpInstruction = null;
         if(node.elseBody) {
-            elseJumpInstruction = this.addInstruction(prg.OP_JUMP, null);
-            falseBranchIndex = this.getTailIndex();
+            elseJumpInstruction = this.addInstruction(prg.OP_JUMP, null, true);
+            falseBranchRef = this.instructionReferenceTable.open();
             this.compileNode(node.elseBody);
         }
-        const endOfConditionIndex = this.getTailIndex();
+        const endOfConditionRef = this.instructionReferenceTable.open();
 
         // Update the branch instruction
         if (!branchInstruction) {
             throw new Error("Branch instruction not found");
         }
 
-        branchInstruction.operand = falseBranchIndex;
+        branchInstruction.operand = falseBranchRef || endOfConditionRef;
 
         // Update the jump instruction
         if (elseJumpInstruction) {
-            elseJumpInstruction.operand = endOfConditionIndex;
+            elseJumpInstruction.operand = endOfConditionRef;
         }
         this.state.isLValue = false;
     }
@@ -515,10 +709,15 @@ export class Compiler {
         if (node.initializer) {
             this.compileNode(node.initializer);
         }
-        const conditionIndex = this.getTailIndex();
+        const conditionRef = this.instructionReferenceTable.open();
+
         this.compileNode(node.condition);
         const branchInstruction = this.addInstruction(prg.OP_BRANCH_FALSE, null);
-        const jumpIndex = this.getTailIndex();
+
+        // Push a new break list so break statements can be handled
+        this.state.breakListStack.push({ breakInstructions: [] });
+
+        // Compile the body
         this.compileNode(node.body);
 
         // Compile the increment if there is one (for loop)
@@ -526,13 +725,46 @@ export class Compiler {
             this.compileNode(node.increment);
         }
         // Jump back to the condition
-        this.addInstruction(prg.OP_JUMP, conditionIndex);
-        const endOfLoopIndex = this.getTailIndex();
+        this.addInstruction(prg.OP_JUMP, conditionRef);
+        const endOfLoopRef = this.instructionReferenceTable.open();
+
 
         if (!branchInstruction) {
             throw new Error("Branch instruction not found");
         }
-        branchInstruction.operand = endOfLoopIndex;
+        branchInstruction.operand = endOfLoopRef;
+
+        // Handle the break statements
+        // Retarget the break instructions to the end of the loop
+        const breakList = this.state.breakListStack.pop();
+        if (!breakList) {
+            throw new Error("Break list not found");
+        }
+        for (let instruction of breakList.breakInstructions) {
+            instruction.operand = endOfLoopRef;
+        }
+    }
+
+    private compileBreak(node: ast.BreakNode) {
+        // Add the jump instruction
+        const instruction = this.addInstruction(prg.OP_JUMP, null);
+        if (!instruction) {
+            throw new Error("Failed to add break instruction");
+        }
+
+        // Add the instruction to the break list
+        const breakLevel = node.level;
+        if (breakLevel < 0) {
+            throw new Error("Break level must be greater than or equal to 0");
+        }
+        if (breakLevel > this.state.breakListStack.length) {
+            throw new Error(`Cannot break out farther than loop depth, current depth: ${this.state.breakListStack.length} requested depth: ${breakLevel}`);
+        }
+        const breakList = this.state.breakListStack.at(-breakLevel);
+        if (!breakList) {
+            throw new Error("Break list not found at this level");
+        }
+        breakList.breakInstructions.push(instruction);
     }
 
 
