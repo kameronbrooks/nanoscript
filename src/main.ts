@@ -16,12 +16,11 @@ function runCode(code: string) {
     let interpreter = new Interpreter(tokens);
     return interpreter.parse();
 }
+
 function tokenize(code: string) {
     let tokenizer = new Tokenizer(code);
     return tokenizer.tokenize();
 }
-
-
 
 const myModule = {
     name: "myModule",
@@ -44,48 +43,12 @@ function compile(code: string) {
     return compiler.compile([ast] as any);
 }
 
-/*
-const script = `
-    (1 + 2) * 10
-`;
-
-const program = compile(script);
-
-console.log(program);
-
-const executor = new Executor();
-
-const start = performance.now();
-const result = executor.execute(program);
-const end = performance.now();
-console.log(result + " in " + (end - start) + "ms");
-*/
-
-/*
 const script = `
 let a = 0;
 let b = 0;
-for(let i = 0; i < 100; i++) {
-    a = i*2;
-    if (a > 50) {
-        break;
-    }
-}
-a;
-`;
-*/
-
-const script = `
-let a = 0;
-let b = 0;
-for(let i = 0; i < 10; i++) {
-    for(let j = 0; j < 10; j++) {
+for(let i = 0; i < 1000; i++) {
+    for(let j = 0; j < 100; j++) {
         a = i * j;
-        console.log(a);
-        if (a > 50) {
-            console.log("limit hit");
-            break 2;
-        }
     }
 }
 a;
@@ -124,20 +87,18 @@ console.log(astToString(runCode(script) as any));
 printProgram(compile(script));
 
 const executor = new Executor();
+
 let start = performance.now();
 const program = compile(script);
 let end = performance.now();
 console.log("Compiled in " + (end - start) + "ms");
-start = performance.now();
-const result = executor.execute(program);
-end = performance.now();
-console.log(result + " in " + (end - start) + "ms");
+
+let result = null;
 
 
+
 start = performance.now();
-let a = 0;
-for(let i = 0; i < 100; i++) {
-    a = i * 2;
-}
+result = executor.execute(program);
 end = performance.now();
-console.log(a + " in " + (end - start) + "ms");
+console.log(result + " in " + (end - start) + "ms  (executor)");
+

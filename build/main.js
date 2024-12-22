@@ -36,46 +36,12 @@ function compile(code) {
     let ast = interpreter.parse();
     return compiler.compile([ast]);
 }
-/*
-const script = `
-    (1 + 2) * 10
-`;
-
-const program = compile(script);
-
-console.log(program);
-
-const executor = new Executor();
-
-const start = performance.now();
-const result = executor.execute(program);
-const end = performance.now();
-console.log(result + " in " + (end - start) + "ms");
-*/
-/*
 const script = `
 let a = 0;
 let b = 0;
-for(let i = 0; i < 100; i++) {
-    a = i*2;
-    if (a > 50) {
-        break;
-    }
-}
-a;
-`;
-*/
-const script = `
-let a = 0;
-let b = 0;
-for(let i = 0; i < 10; i++) {
-    for(let j = 0; j < 10; j++) {
+for(let i = 0; i < 1000; i++) {
+    for(let j = 0; j < 100; j++) {
         a = i * j;
-        console.log(a);
-        if (a > 50) {
-            console.log("limit hit");
-            break 2;
-        }
     }
 }
 a;
@@ -114,14 +80,8 @@ let start = performance.now();
 const program = compile(script);
 let end = performance.now();
 console.log("Compiled in " + (end - start) + "ms");
+let result = null;
 start = performance.now();
-const result = executor.execute(program);
+result = executor.execute(program);
 end = performance.now();
-console.log(result + " in " + (end - start) + "ms");
-start = performance.now();
-let a = 0;
-for (let i = 0; i < 100; i++) {
-    a = i * 2;
-}
-end = performance.now();
-console.log(a + " in " + (end - start) + "ms");
+console.log(result + " in " + (end - start) + "ms  (executor)");

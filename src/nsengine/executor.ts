@@ -7,6 +7,7 @@
  */
 
 import * as prg from "./program";
+import { printInstruction } from "./program";
 
 
 class ExternalFunction {
@@ -39,24 +40,95 @@ export class Executor {
     fp: number = 0;
     ret: any;
     program?: prg.Program;
+    ops: Function[];
     
     constructor(maxStackSize: number = 1024) {
-
+        this.ip = 0;
+        this.sp = 0;
+        this.fp = 0;
+        this.ops = [
+            this.op_noop.bind(this),
+            this.op_term.bind(this),
+            this.op_jump.bind(this),
+            this.op_branch_true.bind(this),
+            this.op_branch_false.bind(this),
+            this.op_load_const_bool.bind(this),
+            this.op_load_const_int.bind(this),
+            this.op_load_const_float.bind(this),
+            this.op_load_const_null.bind(this),
+            this.op_load_const_string.bind(this),
+            this.op_addi.bind(this),
+            this.op_subi.bind(this),
+            this.op_muli.bind(this),
+            this.op_divi.bind(this),
+            this.op_modi.bind(this),
+            this.op_powi.bind(this),
+            this.op_addf.bind(this),
+            this.op_subf.bind(this),
+            this.op_mulf.bind(this),
+            this.op_divf.bind(this),
+            this.op_modf.bind(this),
+            this.op_powf.bind(this),
+            this.op_adds.bind(this),
+            this.op_greater_than_i.bind(this),
+            this.op_less_than_i.bind(this),
+            this.op_greater_than_or_equal_i.bind(this),
+            this.op_less_than_or_equal_i.bind(this),
+            this.op_equal_i.bind(this),
+            this.op_not_equal_i.bind(this),
+            this.op_greater_than_f.bind(this),
+            this.op_less_than_f.bind(this),
+            this.op_greater_than_or_equal_f.bind(this),
+            this.op_less_than_or_equal_f.bind(this),
+            this.op_equal_f.bind(this),
+            this.op_not_equal_f.bind(this),
+            this.op_equal_b.bind(this),
+            this.op_not_equal_b.bind(this),
+            this.op_equal_s.bind(this),
+            this.op_not_equal_s.bind(this),
+            this.op_neg_i.bind(this),
+            this.op_neg_f.bind(this),
+            this.op_increment_local_post.bind(this),
+            this.op_decrement_local_post.bind(this),
+            this.op_int_to_float.bind(this),
+            this.op_float_to_int.bind(this),
+            this.op_int_to_string.bind(this),
+            this.op_float_to_string.bind(this),
+            this.op_load_local.bind(this),
+            this.op_store_local.bind(this),
+            this.op_load_member.bind(this),
+            this.op_store_member.bind(this),
+            this.op_load_external.bind(this),
+            this.op_load_element.bind(this),
+            this.op_store_element.bind(this),
+            this.op_alloc_stack.bind(this),
+            this.op_pop_stack.bind(this),
+            this.op_alloc_heap.bind(this),
+            this.op_pop_heap.bind(this),
+            this.op_call_internal.bind(this),
+            this.op_call_external.bind(this)
+        ];
+        /*
+        let i = 0;
+        while (i < prg.OP_CALL_EXTERNAL) {
+            console.log(`${i}: ${prg.getOpName(i)} ${this.ops[i]}`);
+            i++;
+        }
+        */
     }
 
     execute(program: prg.Program) {
         this.program = program;
         this.ip = 0;
         this.fp = 0;
+
         while (program.instructions[this.ip].opcode != prg.OP_TERM) {
-            //this.printStack();
-            this.executeInstruction(program.instructions[this.ip]);
+            this.ops[program.instructions[this.ip].opcode]();
         }
 
         if (this.stack.length > 0) {
             return this.stack.pop();
         }
-
         return 0;
     }
 
@@ -67,297 +139,396 @@ export class Executor {
         console.log("Heap: " + this.heap);
     }
 
-    executeInstruction(instruction: prg.Instruction) {
-        let a, b ,c, d, e, f;
-        switch (instruction.opcode) {
-            case prg.OP_LOAD_CONST_BOOL:
-                this.stack.push(instruction.operand);
-                this.ip++;
-                this.sp++;
-            case prg.OP_LOAD_CONST_INT:
-                this.stack.push(instruction.operand);
-                this.ip++;
-                this.sp++;
-                break;
-            case prg.OP_LOAD_CONST_FLOAT:
-                this.stack.push(instruction.operand);
-                this.ip++;
-                this.sp++;
-                break;
-            case prg.OP_LOAD_CONST_STRING:
-                this.stack.push(instruction.operand);
-                this.ip++;
-                this.sp++;
-                break;
-            case prg.OP_LOAD_CONST_NULL:
-                this.stack.push(null);
-                this.ip++;
-                this.sp++;
-                break;
-            case prg.OP_ADDi:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a + b);
-                this.ip++;
-                break;
-            case prg.OP_ADDf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a + b);
-                this.ip++;
-                break;
-            case prg.OP_SUBi:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a - b);
-                this.ip++;
-                break;
-            case prg.OP_SUBf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a - b);
-                this.ip++;
-                break;
-            case prg.OP_MULi:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a * b);
-                this.ip++;
-                break;
-            case prg.OP_MULf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a * b);
-                this.ip++;
-                break;
-            case prg.OP_DIVi:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a / b);
-                this.ip++;
-                break;
-            case prg.OP_DIVf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a / b);
-                this.ip++;
-                break;
-            case prg.OP_MODi:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a % b);
-                this.ip++;
-                break;
-            case prg.OP_MODf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a % b);
-                this.ip++;
-                break;
-            case prg.OP_POWi:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a ** b);
-                this.ip++;
-                break;
-            case prg.OP_POWf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a ** b);
-                this.ip++;
-                break;
-            case prg.OP_NEGi:
-                a = this.stack.pop();
-                this.stack.push(-a);
-                this.ip++;
-                break;
-            case prg.OP_NEGf:
-                a = this.stack.pop();
-                this.stack.push(-a);
-                this.ip++;
-                break;
-            case prg.OP_INT_TO_FLOAT:
-                a = this.stack.pop();
-                this.stack.push(a);
-                this.ip++;
-                break;
-            case prg.OP_FLOAT_TO_INT:
-                a = this.stack.pop() as number;
-                this.stack.push(Math.floor(a));
-                this.ip++;
-                break;
-            case prg.OP_INT_TO_STRING:
-                a = this.stack.pop();
-                this.stack.push(a.toString());
-                this.ip++;
-                break;
-            case prg.OP_FLOAT_TO_STRING:
-                a = this.stack.pop();
-                this.stack.push(a.toString());
-                this.ip++;
-                break;
-            case prg.OP_JUMP:
-                this.ip = instruction.operand;
-                break;
-            case prg.OP_BRANCH_FALSE:
-                a = this.stack.pop();
-                if (!a) {
-                    this.ip = instruction.operand;
-                } else {
-                    this.ip++;
-                }
-                break;
-            case prg.OP_BRANCH_TRUE:
-                a = this.stack.pop();
-                if (a) {
-                    this.ip = instruction.operand;
-                } else {
-                    this.ip++;
-                }
-                break;
-            case prg.OP_EQUALi:
-            case prg.OP_EQUALf:
-            case prg.OP_EQUALb:
-            case prg.OP_EQUALs:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a == b);
-                this.ip++;
-                break;
-            case prg.OP_NOT_EQUALi:
-            case prg.OP_NOT_EQUALf:
-            case prg.OP_NOT_EQUALb:
-            case prg.OP_NOT_EQUALs:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a != b);
-                this.ip++;
-                break;
-            case prg.OP_GREATER_THANi:
-            case prg.OP_GREATER_THANf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a > b);
-                this.ip++;
-                break;
-            case prg.OP_LESS_THANi:
-            case prg.OP_LESS_THANf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a < b);
-                this.ip++;
-                break;
-            case prg.OP_GREATER_THAN_OR_EQUALi:
-            case prg.OP_GREATER_THAN_OR_EQUALf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a >= b);
-                this.ip++;
-                break;
-            case prg.OP_LESS_THAN_OR_EQUALi:
-            case prg.OP_LESS_THAN_OR_EQUALf:
-                b = this.stack.pop();
-                a = this.stack.pop();
-                this.stack.push(a <= b);
-                this.ip++;
-                break;
-            case prg.OP_NEGi:
-            case prg.OP_NEGf:
-                a = this.stack.pop();
-                this.stack.push(-a);
-                this.ip++;
-                break;
-            case prg.OP_LOAD_LOCAL:
-                this.stack.push(this.stack[this.fp + instruction.operand]);
-                this.ip++;
-                break;
-            case prg.OP_STORE_LOCAL:
-                this.stack[this.fp + instruction.operand] = this.stack.pop();
-                this.ip++;
-                break;
-            case prg.OP_LOAD_EXTERNAL:
-                this.stack.push(instruction.operand);
-                this.ip++;
-                break;
-            case prg.OP_ALLOC_STACK:
-                for (let i = 0; i < instruction.operand; i++) {
-                    this.stack.push(null);
-                    this.sp++;
-                }
-                this.ip++;
-                break;
-            case prg.OP_POP_STACK:
-                for (let i = 0; i < instruction.operand; i++) {
-                    this.stack.pop();
-                    this.sp--;
-                }
-                this.ip++;
-                break;
-            case prg.OP_ALLOC_HEAP:
-                for (let i = 0; i < instruction.operand; i++) {
-                    this.heap.push(null);
-                }
-                this.ip++;
-                break;
-            case prg.OP_POP_HEAP:
-                for (let i = 0; i < instruction.operand; i++) {
-                    this.heap.pop();
-                }
-                this.ip++;
-                break;
-            case prg.OP_LOAD_MEMBER:
-                a = this.stack.pop();
-                this.stack.push(a[instruction.operand]);
-                this.ip++;
-                break;
-            case prg.OP_STORE_MEMBER:
-                a = this.stack.pop();
-                a[instruction.operand] = this.stack.pop();
-                this.ip++;
-                break;
-            case prg.OP_LOAD_ELEMENT:
-                a = this.stack.pop();
-                b = this.stack.pop();
-                this.stack.push(a[b]);
-                this.ip++;
-                break;
-            case prg.OP_STORE_ELEMENT:
-                a = this.stack.pop();
-                b = this.stack.pop();
-                c = this.stack.pop();
-                a[b] = c;
-                this.ip++;
-                break;
-            case prg.OP_CALL_INTERNAL:
-                // call other functions in the program
-                this.ip++;
-                break;
-            case prg.OP_CALL_EXTERNAL:
-                a = this.stack.pop();
-                if(instruction.operand < 1) {
-                    this.stack.push(a());
-                }
-                else {
-                    b = [];
-                    for (let i = 0; i < instruction.operand; i++) {
-                        b.push(this.stack.pop());
-                    }
-                    this.stack.push(a(...b.reverse()));
-                }
-                this.ip++;
-                break;
-            case prg.OP_INCREMENT_LOCAL_POST:
-                this.stack[this.fp + instruction.operand]++;
-                this.ip++;
-                break;
-            case prg.OP_DECREMENT_LOCAL_POST:
-                this.stack[this.fp + instruction.operand]--;
-                this.ip++;
-                break;
-
-            default:
-                throw new Error(`Unknown opcode: ${instruction.opcode}`);
-        }
-        
+    op_noop() {
+        this.ip++;
     }
+    op_term() {
+        this.ip++;
+    }
+    op_jump() {
+        this.ip = this.program?.instructions[this.ip].operand;
+    }
+
+    op_branch_false() {
+        if (!this.stack.pop()) {
+            this.ip = this.program?.instructions[this.ip].operand;
+        } else {
+            this.ip++;
+        }
+    }
+
+    op_branch_true() {
+        if (this.stack.pop()) {
+            this.ip = this.program?.instructions[this.ip].operand;
+        } else {
+            this.ip++;
+        }
+    }
+
+    op_load_const_bool() {
+        this.stack.push(this.program?.instructions[this.ip].operand);
+        this.ip++;
+    }
+
+    op_load_const_int() {
+        this.stack.push(this.program?.instructions[this.ip].operand);
+        this.ip++;
+    }
+
+    op_load_const_float() {
+        this.stack.push(this.program?.instructions[this.ip].operand);
+        this.ip++;
+    }
+
+    op_load_const_null() {
+        this.stack.push(null);
+        this.ip++;
+    }
+
+    op_load_const_string() {
+        this.stack.push(this.program?.instructions[this.ip].operand);
+        this.ip++;
+    }
+
+    op_addi() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a + b);
+        this.ip++;
+    }
+
+    op_subi() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a - b);
+        this.ip++;
+    }
+
+    op_muli() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a * b);
+        this.ip++;
+    }
+
+    op_divi() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a / b);
+        this.ip++;
+    }
+
+    op_modi() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a % b);
+        this.ip++;
+    }
+
+    op_powi() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a ** b);
+        this.ip++;
+    }
+
+    op_addf() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a + b);
+        this.ip++;
+    }
+
+    op_subf() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a - b);
+        this.ip++;
+    }
+
+    op_mulf() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a * b);
+        this.ip++;
+    }
+
+    op_divf() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a / b);
+        this.ip++;
+    }
+
+    op_modf() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a % b);
+        this.ip++;
+    }
+
+    op_powf() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a ** b);
+        this.ip++;
+    }
+
+    op_adds() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a + b);
+        this.ip++;
+    }
+
+    op_greater_than_i() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a > b);
+        this.ip++;
+    }
+
+    op_less_than_i() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a < b);
+        this.ip++;
+    }
+
+    op_greater_than_or_equal_i() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a >= b);
+        this.ip++;
+    }
+
+    op_less_than_or_equal_i() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a <= b);
+        this.ip++;
+    }
+
+    op_equal_i() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a == b);
+        this.ip++;
+    }
+
+    op_not_equal_i() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a != b);
+        this.ip++;
+    }
+
+    op_greater_than_f() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a > b);
+        this.ip++;
+    }
+
+    op_less_than_f() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a < b);
+        this.ip++;
+    }
+
+    op_greater_than_or_equal_f() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a >= b);
+        this.ip++;
+    }
+
+    op_less_than_or_equal_f() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a <= b);
+        this.ip++;
+    }
+
+    op_equal_f() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a == b);
+        this.ip++;
+    }
+
+    op_not_equal_f() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a != b);
+        this.ip++;
+    }
+
+    op_equal_b() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a == b);
+        this.ip++;
+    }
+
+    op_not_equal_b() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a != b);
+        this.ip++;
+    }
+
+    op_equal_s() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a == b);
+        this.ip++;
+    }
+
+    op_not_equal_s() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a != b);
+        this.ip++;
+    }
+
+    op_neg_i() {
+        let a = this.stack.pop();
+        this.stack.push(-a);
+        this.ip++;
+    }
+
+    op_neg_f() {
+        let a = this.stack.pop();
+        this.stack.push(-a);
+        this.ip++;
+    }
+
+    op_increment_local_post() {
+        this.stack[this.fp + this.program?.instructions[this.ip].operand]++;
+        this.ip++;
+    }
+
+    op_decrement_local_post() {
+        this.stack[this.fp + this.program?.instructions[this.ip].operand]--;
+        this.ip++;
+    }
+
+    op_int_to_float() {
+        let a = this.stack.pop();
+        this.stack.push(a);
+        this.ip++;
+    }
+
+    op_float_to_int() {
+        let a = this.stack.pop() as number;
+        this.stack.push(Math.floor(a));
+        this.ip++;
+    }
+
+    op_int_to_string() {
+        let a = this.stack.pop();
+        this.stack.push(a.toString());
+        this.ip++;
+    }
+
+    op_float_to_string() {
+        let a = this.stack.pop();
+        this.stack.push(a.toString());
+        this.ip++;
+    }
+
+    op_load_local() {
+        this.stack.push(this.stack[this.fp + this.program?.instructions[this.ip].operand]);
+        this.ip++;
+    }
+
+    op_store_local() {
+        this.stack[this.fp + this.program?.instructions[this.ip].operand] = this.stack.pop();
+        this.ip++;
+    }
+
+    op_load_external() {
+        this.stack.push(this.program?.instructions[this.ip].operand);
+        this.ip++;
+    }
+
+    op_alloc_stack() {
+        for (let i = 0; i < this.program?.instructions[this.ip].operand; i++) {
+            this.stack.push(null);
+            this.sp++;
+        }
+        this.ip++;
+    }
+
+    op_pop_stack() {
+        for (let i = 0; i < this.program?.instructions[this.ip].operand; i++) {
+            this.stack.pop();
+            this.sp--;
+        }
+        this.ip++;
+    }
+
+    op_alloc_heap() {
+        for (let i = 0; i < this.program?.instructions[this.ip].operand; i++) {
+            this.heap.push(null);
+        }
+        this.ip++;
+    }
+
+    op_load_member() {
+        let a = this.stack.pop();
+        this.stack.push(a[this.program?.instructions[this.ip].operand]);
+        this.ip++;
+    }
+
+    op_store_member() {
+        let a = this.stack.pop();
+        a[this.program?.instructions[this.ip].operand] = this.stack.pop();
+        this.ip++;
+    }
+
+    op_load_element() {
+        let a = this.stack.pop();
+        let b = this.stack.pop();
+        this.stack.push(a[b]);
+        this.ip++;
+    }
+    op_store_element() {
+        let a = this.stack.pop();
+        let b = this.stack.pop();
+        let c = this.stack.pop();
+        a[b] = c;
+        this.ip++;
+    }
+
+    
+
+    op_pop_heap() {
+        for (let i = 0; i < this.program?.instructions[this.ip].operand; i++) {
+            this.heap.pop();
+        }
+        this.ip++;
+    }
+
+    op_call_internal() {
+        this.ip++;
+    }
+
+    op_call_external() {
+        let a = this.stack.pop();
+        if(this.program?.instructions[this.ip].operand < 1) {
+            this.stack.push(a());
+        }
+        else {
+            let b = [];
+            for (let i = 0; i < this.program?.instructions[this.ip].operand; i++) {
+                b.push(this.stack.pop());
+            }
+            this.stack.push(a(...b.reverse()));
+        }
+        this.ip++;
+    }
+
 }
