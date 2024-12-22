@@ -39,8 +39,8 @@ function compile(code) {
 const script = `
 let a = 0;
 let b = 0;
-for(let i = 0; i < 1000; i++) {
-    for(let j = 0; j < 100; j++) {
+for(let i = 0; i < 10000; i++) {
+    for(let j = 0; j < 10000; j++) {
         a = i * j;
     }
 }
