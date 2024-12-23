@@ -39,7 +39,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Executor = void 0;
+exports.JSExecutor = void 0;
 const prg = __importStar(require("./program"));
 class ExternalFunction {
     constructor(id, signature, callback) {
@@ -53,7 +53,7 @@ class Interface {
         this.functions = functions;
     }
 }
-class Executor {
+class JSExecutor {
     constructor(maxStackSize = 1024) {
         this.stack = [];
         this.heap = [];
@@ -69,6 +69,14 @@ class Executor {
             this.op_jump.bind(this),
             this.op_branch_true.bind(this),
             this.op_branch_false.bind(this),
+            this.op_branch_null.bind(this),
+            this.op_branch_not_null.bind(this),
+            this.op_branch_equal.bind(this),
+            this.op_branch_not_equal.bind(this),
+            this.op_branch_greater_than.bind(this),
+            this.op_branch_less_than.bind(this),
+            this.op_branch_greater_than_or_equal.bind(this),
+            this.op_branch_less_than_or_equal.bind(this),
             this.op_load_const_bool.bind(this),
             this.op_load_const_int.bind(this),
             this.op_load_const_float.bind(this),
@@ -103,6 +111,7 @@ class Executor {
             this.op_not_equal_b.bind(this),
             this.op_equal_s.bind(this),
             this.op_not_equal_s.bind(this),
+            this.op_not_b.bind(this),
             this.op_neg_i.bind(this),
             this.op_neg_f.bind(this),
             this.op_increment_local_post.bind(this),
@@ -173,6 +182,78 @@ class Executor {
     op_branch_true() {
         var _a;
         if (this.stack.pop()) {
+            this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
+        }
+        else {
+            this.ip++;
+        }
+    }
+    op_branch_null() {
+        var _a;
+        if (this.stack.pop() == null) {
+            this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
+        }
+        else {
+            this.ip++;
+        }
+    }
+    op_branch_not_null() {
+        var _a;
+        if (this.stack.pop() != null) {
+            this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
+        }
+        else {
+            this.ip++;
+        }
+    }
+    op_branch_equal() {
+        var _a;
+        if (this.stack.pop() == this.stack.pop()) {
+            this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
+        }
+        else {
+            this.ip++;
+        }
+    }
+    op_branch_not_equal() {
+        var _a;
+        if (this.stack.pop() != this.stack.pop()) {
+            this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
+        }
+        else {
+            this.ip++;
+        }
+    }
+    op_branch_greater_than() {
+        var _a;
+        if (this.stack.pop() > this.stack.pop()) {
+            this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
+        }
+        else {
+            this.ip++;
+        }
+    }
+    op_branch_less_than() {
+        var _a;
+        if (this.stack.pop() < this.stack.pop()) {
+            this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
+        }
+        else {
+            this.ip++;
+        }
+    }
+    op_branch_greater_than_or_equal() {
+        var _a;
+        if (this.stack.pop() >= this.stack.pop()) {
+            this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
+        }
+        else {
+            this.ip++;
+        }
+    }
+    op_branch_less_than_or_equal() {
+        var _a;
+        if (this.stack.pop() <= this.stack.pop()) {
             this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
         }
         else {
@@ -377,6 +458,11 @@ class Executor {
         this.stack.push(a != b);
         this.ip++;
     }
+    op_not_b() {
+        let a = this.stack.pop();
+        this.stack.push(!a);
+        this.ip++;
+    }
     op_neg_i() {
         let a = this.stack.pop();
         this.stack.push(-a);
@@ -506,4 +592,4 @@ class Executor {
         this.ip++;
     }
 }
-exports.Executor = Executor;
+exports.JSExecutor = JSExecutor;

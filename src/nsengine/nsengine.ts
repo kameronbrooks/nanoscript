@@ -4,7 +4,7 @@ import { Tokenizer } from "./tokenizer";
 import { Interpreter } from "./interpreter";
 import { Compiler } from "./compiler";
 import { Program } from "./program";
-import { Executor } from "./executor";
+import { JSExecutor } from "./executor";
 
 /**
  * This is the nano script engine
@@ -12,12 +12,13 @@ import { Executor } from "./executor";
  */
 export class NSEngine {
     _nenv: Nenv;
-    _excutor: Executor;
-    
+    _excutor: JSExecutor;
+    version: string = "0.0.1";
+
     constructor() {
         this._nenv = new Nenv();
         this._nenv.addModule(builtin_module);
-        this._excutor = new Executor(1024);
+        this._excutor = new JSExecutor(1024);
     }
 
     /**

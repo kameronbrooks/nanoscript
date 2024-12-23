@@ -7,6 +7,14 @@ export const OP_JUMP                    = i++;
 
 export const OP_BRANCH_TRUE             = i++;
 export const OP_BRANCH_FALSE            = i++;
+export const OP_BRANCH_NULL             = i++;
+export const OP_BRANCH_NOT_NULL         = i++;
+export const OP_BRANCH_EQUAL            = i++;
+export const OP_BRANCH_NOT_EQUAL        = i++;
+export const OP_BRANCH_GREATER_THAN     = i++;
+export const OP_BRANCH_LESS_THAN        = i++;
+export const OP_BRANCH_GREATER_THAN_OR_EQUAL = i++;
+export const OP_BRANCH_LESS_THAN_OR_EQUAL = i++;
 
 // ============= STACK OPERATIONS =============
 export const OP_LOAD_CONST_BOOL         = i++;
@@ -48,6 +56,7 @@ export const OP_EQUALs                   = i++;
 export const OP_NOT_EQUALs               = i++;
 
 // ============= UNARY OPERATIONS =============
+export const OP_NOTb                     = i++; 
 export const OP_NEGi                     = i++;
 export const OP_NEGf                     = i++;
 export const OP_INCREMENT_LOCAL_POST           = i++;
@@ -89,6 +98,14 @@ const OP_NAMES: string[] = [
     'OP_JUMP',
     'OP_BRANCH_TRUE',
     'OP_BRANCH_FALSE',
+    'OP_BRANCH_NULL',
+    'OP_BRANCH_NOT_NULL',
+    'OP_BRANCH_EQUAL',
+    'OP_BRANCH_NOT_EQUAL',
+    'OP_BRANCH_GREATER_THAN',
+    'OP_BRANCH_LESS_THAN',
+    'OP_BRANCH_GREATER_THAN_OR_EQUAL',
+    'OP_BRANCH_LESS_THAN_OR_EQUAL',
     'OP_LOAD_CONST_BOOL',
     'OP_LOAD_CONST_INT',
     'OP_LOAD_CONST_FLOAT',
@@ -123,6 +140,7 @@ const OP_NAMES: string[] = [
     'OP_NOT_EQUALb',
     'OP_EQUALs',
     'OP_NOT_EQUALs',
+    'OP_NOTb',
     'OP_NEGi',
     'OP_NEGf',
     'OP_INCREMENT_LOCAL_POST',
@@ -208,6 +226,7 @@ export const OP_MAP: { [key: string]: OPResult } = {
     'bool!=bool': { opcode: OP_NOT_EQUALb, returnDtype: 'bool' },
     'string==string': { opcode: OP_EQUALs, returnDtype: 'bool' },
     'string!=string': { opcode: OP_NOT_EQUALs, returnDtype: 'bool' },
+    '!bool': { opcode: OP_NOTb, returnDtype: 'bool' },
     'int++': { opcode: OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
     'int--': { opcode: OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
     'float++': { opcode: OP_INCREMENT_LOCAL_POST, returnDtype: 'float' },
@@ -229,7 +248,9 @@ export function searchOpMap(opKey:string): OPResult|null {
     return OP_MAP[opKey];
 }
 
-
+/**
+ * The fundamental unit of a program
+ */
 export interface Instruction {
     opcode: number;
     operand: any;
@@ -237,10 +258,20 @@ export interface Instruction {
     label?: string;
 }
 
+/**
+ * Return the string representation of the instruction
+ * @param instruction 
+ * @returns 
+ */
 export function printInstruction(instruction: Instruction): string {
     return `${getOpName(instruction.opcode)} ${instruction.operand}`;
 }
 
+/**
+ * Removes the extra metadata from the instruction leaving only the opcode and operand
+ * @param instruction 
+ * @returns 
+ */
 export function removeInstructionMetadata(instruction: Instruction): Instruction {
     return {
         opcode: instruction.opcode,

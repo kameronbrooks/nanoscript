@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OP_LOAD_MEMBER = exports.OP_STORE_LOCAL = exports.OP_LOAD_LOCAL = exports.OP_FLOAT_TO_STRING = exports.OP_INT_TO_STRING = exports.OP_FLOAT_TO_INT = exports.OP_INT_TO_FLOAT = exports.OP_DECREMENT_LOCAL_POST = exports.OP_INCREMENT_LOCAL_POST = exports.OP_NEGf = exports.OP_NEGi = exports.OP_NOT_EQUALs = exports.OP_EQUALs = exports.OP_NOT_EQUALb = exports.OP_EQUALb = exports.OP_NOT_EQUALf = exports.OP_EQUALf = exports.OP_LESS_THAN_OR_EQUALf = exports.OP_GREATER_THAN_OR_EQUALf = exports.OP_LESS_THANf = exports.OP_GREATER_THANf = exports.OP_NOT_EQUALi = exports.OP_EQUALi = exports.OP_LESS_THAN_OR_EQUALi = exports.OP_GREATER_THAN_OR_EQUALi = exports.OP_LESS_THANi = exports.OP_GREATER_THANi = exports.OP_ADDs = exports.OP_POWf = exports.OP_MODf = exports.OP_DIVf = exports.OP_MULf = exports.OP_SUBf = exports.OP_ADDf = exports.OP_POWi = exports.OP_MODi = exports.OP_DIVi = exports.OP_MULi = exports.OP_SUBi = exports.OP_ADDi = exports.OP_LOAD_CONST_STRING = exports.OP_LOAD_CONST_NULL = exports.OP_LOAD_CONST_FLOAT = exports.OP_LOAD_CONST_INT = exports.OP_LOAD_CONST_BOOL = exports.OP_BRANCH_FALSE = exports.OP_BRANCH_TRUE = exports.OP_JUMP = exports.OP_TERM = exports.OP_NOOP = void 0;
-exports.IMPLICIT_CONVERSION_MAP = exports.OP_MAP = exports.OP_CALL_EXTERNAL = exports.OP_CALL_INTERNAL = exports.OP_POP_HEAP = exports.OP_ALLOC_HEAP = exports.OP_POP_STACK = exports.OP_ALLOC_STACK = exports.OP_STORE_ELEMENT = exports.OP_LOAD_ELEMENT = exports.OP_LOAD_EXTERNAL = exports.OP_STORE_MEMBER = void 0;
+exports.OP_NEGf = exports.OP_NEGi = exports.OP_NOTb = exports.OP_NOT_EQUALs = exports.OP_EQUALs = exports.OP_NOT_EQUALb = exports.OP_EQUALb = exports.OP_NOT_EQUALf = exports.OP_EQUALf = exports.OP_LESS_THAN_OR_EQUALf = exports.OP_GREATER_THAN_OR_EQUALf = exports.OP_LESS_THANf = exports.OP_GREATER_THANf = exports.OP_NOT_EQUALi = exports.OP_EQUALi = exports.OP_LESS_THAN_OR_EQUALi = exports.OP_GREATER_THAN_OR_EQUALi = exports.OP_LESS_THANi = exports.OP_GREATER_THANi = exports.OP_ADDs = exports.OP_POWf = exports.OP_MODf = exports.OP_DIVf = exports.OP_MULf = exports.OP_SUBf = exports.OP_ADDf = exports.OP_POWi = exports.OP_MODi = exports.OP_DIVi = exports.OP_MULi = exports.OP_SUBi = exports.OP_ADDi = exports.OP_LOAD_CONST_STRING = exports.OP_LOAD_CONST_NULL = exports.OP_LOAD_CONST_FLOAT = exports.OP_LOAD_CONST_INT = exports.OP_LOAD_CONST_BOOL = exports.OP_BRANCH_LESS_THAN_OR_EQUAL = exports.OP_BRANCH_GREATER_THAN_OR_EQUAL = exports.OP_BRANCH_LESS_THAN = exports.OP_BRANCH_GREATER_THAN = exports.OP_BRANCH_NOT_EQUAL = exports.OP_BRANCH_EQUAL = exports.OP_BRANCH_NOT_NULL = exports.OP_BRANCH_NULL = exports.OP_BRANCH_FALSE = exports.OP_BRANCH_TRUE = exports.OP_JUMP = exports.OP_TERM = exports.OP_NOOP = void 0;
+exports.IMPLICIT_CONVERSION_MAP = exports.OP_MAP = exports.OP_CALL_EXTERNAL = exports.OP_CALL_INTERNAL = exports.OP_POP_HEAP = exports.OP_ALLOC_HEAP = exports.OP_POP_STACK = exports.OP_ALLOC_STACK = exports.OP_STORE_ELEMENT = exports.OP_LOAD_ELEMENT = exports.OP_LOAD_EXTERNAL = exports.OP_STORE_MEMBER = exports.OP_LOAD_MEMBER = exports.OP_STORE_LOCAL = exports.OP_LOAD_LOCAL = exports.OP_FLOAT_TO_STRING = exports.OP_INT_TO_STRING = exports.OP_FLOAT_TO_INT = exports.OP_INT_TO_FLOAT = exports.OP_DECREMENT_LOCAL_POST = exports.OP_INCREMENT_LOCAL_POST = void 0;
 exports.getOpName = getOpName;
 exports.searchOpMap = searchOpMap;
 exports.printInstruction = printInstruction;
@@ -16,6 +16,14 @@ exports.OP_TERM = i++;
 exports.OP_JUMP = i++;
 exports.OP_BRANCH_TRUE = i++;
 exports.OP_BRANCH_FALSE = i++;
+exports.OP_BRANCH_NULL = i++;
+exports.OP_BRANCH_NOT_NULL = i++;
+exports.OP_BRANCH_EQUAL = i++;
+exports.OP_BRANCH_NOT_EQUAL = i++;
+exports.OP_BRANCH_GREATER_THAN = i++;
+exports.OP_BRANCH_LESS_THAN = i++;
+exports.OP_BRANCH_GREATER_THAN_OR_EQUAL = i++;
+exports.OP_BRANCH_LESS_THAN_OR_EQUAL = i++;
 // ============= STACK OPERATIONS =============
 exports.OP_LOAD_CONST_BOOL = i++;
 exports.OP_LOAD_CONST_INT = i++;
@@ -53,6 +61,7 @@ exports.OP_NOT_EQUALb = i++;
 exports.OP_EQUALs = i++;
 exports.OP_NOT_EQUALs = i++;
 // ============= UNARY OPERATIONS =============
+exports.OP_NOTb = i++;
 exports.OP_NEGi = i++;
 exports.OP_NEGf = i++;
 exports.OP_INCREMENT_LOCAL_POST = i++;
@@ -83,6 +92,14 @@ const OP_NAMES = [
     'OP_JUMP',
     'OP_BRANCH_TRUE',
     'OP_BRANCH_FALSE',
+    'OP_BRANCH_NULL',
+    'OP_BRANCH_NOT_NULL',
+    'OP_BRANCH_EQUAL',
+    'OP_BRANCH_NOT_EQUAL',
+    'OP_BRANCH_GREATER_THAN',
+    'OP_BRANCH_LESS_THAN',
+    'OP_BRANCH_GREATER_THAN_OR_EQUAL',
+    'OP_BRANCH_LESS_THAN_OR_EQUAL',
     'OP_LOAD_CONST_BOOL',
     'OP_LOAD_CONST_INT',
     'OP_LOAD_CONST_FLOAT',
@@ -117,6 +134,7 @@ const OP_NAMES = [
     'OP_NOT_EQUALb',
     'OP_EQUALs',
     'OP_NOT_EQUALs',
+    'OP_NOTb',
     'OP_NEGi',
     'OP_NEGf',
     'OP_INCREMENT_LOCAL_POST',
@@ -194,6 +212,7 @@ exports.OP_MAP = {
     'bool!=bool': { opcode: exports.OP_NOT_EQUALb, returnDtype: 'bool' },
     'string==string': { opcode: exports.OP_EQUALs, returnDtype: 'bool' },
     'string!=string': { opcode: exports.OP_NOT_EQUALs, returnDtype: 'bool' },
+    '!bool': { opcode: exports.OP_NOTb, returnDtype: 'bool' },
     'int++': { opcode: exports.OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
     'int--': { opcode: exports.OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
     'float++': { opcode: exports.OP_INCREMENT_LOCAL_POST, returnDtype: 'float' },
@@ -212,9 +231,19 @@ exports.IMPLICIT_CONVERSION_MAP = {
 function searchOpMap(opKey) {
     return exports.OP_MAP[opKey];
 }
+/**
+ * Return the string representation of the instruction
+ * @param instruction
+ * @returns
+ */
 function printInstruction(instruction) {
     return `${getOpName(instruction.opcode)} ${instruction.operand}`;
 }
+/**
+ * Removes the extra metadata from the instruction leaving only the opcode and operand
+ * @param instruction
+ * @returns
+ */
 function removeInstructionMetadata(instruction) {
     return {
         opcode: instruction.opcode,

@@ -3,9 +3,10 @@ import {Interpreter} from "./nsengine/interpreter";
 import { astToString } from "./nsengine/ast";
 import { Compiler } from "./nsengine/compiler";
 import { Nenv, NenvModule, NenvExport } from "./nsengine/nenv";
-import { Executor } from "./nsengine/executor";
+import { JSExecutor } from "./nsengine/executor";
 import { printProgram } from "./nsengine/program";
 import { builtin_module } from "./nenvmodules/builtin";
+import { NSBinaryComplier } from "./nsengine/prg2bin";
 
 function runCode(code: string) {
     let tokenizer = new Tokenizer(code);
@@ -86,7 +87,7 @@ console.log(astToString(runCode(script) as any));
 
 printProgram(compile(script));
 
-const executor = new Executor();
+const executor = new JSExecutor();
 
 let start = performance.now();
 const program = compile(script);
@@ -102,3 +103,11 @@ result = executor.execute(program);
 end = performance.now();
 console.log(result + " in " + (end - start) + "ms  (executor)");
 
+
+const prg2bin = new NSBinaryComplier();
+const binary = prg2bin.compileBinary(program);
+console.log(binary);
+
+// save file
+const fs = require('fs');
+fs.writeFileSync('out.bin', Buffer.from(binary));

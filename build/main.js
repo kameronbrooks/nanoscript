@@ -8,6 +8,7 @@ const nenv_1 = require("./nsengine/nenv");
 const executor_1 = require("./nsengine/executor");
 const program_1 = require("./nsengine/program");
 const builtin_1 = require("./nenvmodules/builtin");
+const prg2bin_1 = require("./nsengine/prg2bin");
 function runCode(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     let tokens = tokenizer.tokenize();
@@ -75,7 +76,7 @@ const script = `
 */
 console.log((0, ast_1.astToString)(runCode(script)));
 (0, program_1.printProgram)(compile(script));
-const executor = new executor_1.Executor();
+const executor = new executor_1.JSExecutor();
 let start = performance.now();
 const program = compile(script);
 let end = performance.now();
@@ -85,3 +86,9 @@ start = performance.now();
 result = executor.execute(program);
 end = performance.now();
 console.log(result + " in " + (end - start) + "ms  (executor)");
+const prg2bin = new prg2bin_1.NSBinaryComplier();
+const binary = prg2bin.compileBinary(program);
+console.log(binary);
+// save file
+const fs = require('fs');
+fs.writeFileSync('out.bin', Buffer.from(binary));
