@@ -164,7 +164,10 @@ class JSExecutor {
             this.op_return.bind(this),
             this.op_return8.bind(this),
             this.op_return32.bind(this),
-            this.op_return64.bind(this)
+            this.op_return64.bind(this),
+            this.op_push_return8.bind(this),
+            this.op_push_return32.bind(this),
+            this.op_push_return64.bind(this)
         ];
         /*
         let i = 0;
@@ -627,7 +630,7 @@ class JSExecutor {
         // push the return address
         this.stack.push(this.ip + 1);
         // set the new frame pointer
-        this.fp = this.sp;
+        this.fp = this.stack.length;
         // set the new instruction pointer
         this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
     }
@@ -644,7 +647,6 @@ class JSExecutor {
         this.ip = this.stack.pop();
         // restore the frame pointer
         this.fp = this.stack.pop();
-        this.stack.push(this.ret);
     }
     op_return32() {
         this.ret = this.stack.pop();
@@ -655,7 +657,6 @@ class JSExecutor {
         this.ip = this.stack.pop();
         // restore the frame pointer
         this.fp = this.stack.pop();
-        this.stack.push(this.ret);
     }
     op_return64() {
         this.ret = this.stack.pop();
@@ -666,20 +667,19 @@ class JSExecutor {
         this.ip = this.stack.pop();
         // restore the frame pointer
         this.fp = this.stack.pop();
-        this.stack.push(this.ret);
     }
     op_call_external() {
         var _a, _b;
         let a = this.stack.pop();
         if (((_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand) < 1) {
-            this.stack.push(a());
+            this.ret = a();
         }
         else {
             let b = [];
             for (let i = 0; i < ((_b = this.program) === null || _b === void 0 ? void 0 : _b.instructions[this.ip].operand); i++) {
                 b.push(this.stack.pop());
             }
-            this.stack.push(a(...b.reverse()));
+            this.ret = a(...b.reverse());
         }
         this.ip++;
     }
@@ -689,9 +689,21 @@ class JSExecutor {
         // push the return address
         this.stack.push(this.ip + 1);
         // set the new frame pointer
-        this.fp = this.sp;
+        this.fp = this.stack.length;
         // set the new instruction pointer
         this.ip = this.stack.pop();
+    }
+    op_push_return8() {
+        this.stack.push(this.ret);
+        this.ip++;
+    }
+    op_push_return32() {
+        this.stack.push(this.ret);
+        this.ip++;
+    }
+    op_push_return64() {
+        this.stack.push(this.ret);
+        this.ip++;
     }
 }
 exports.JSExecutor = JSExecutor;

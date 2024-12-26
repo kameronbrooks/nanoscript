@@ -135,6 +135,10 @@ export const OP_RETURN8                     = i++;
 export const OP_RETURN32                    = i++;
 export const OP_RETURN64                    = i++;
 
+export const OP_PUSH_RETURN8                = i++;
+export const OP_PUSH_RETURN32               = i++;
+export const OP_PUSH_RETURN64               = i++;
+
 
 
 
@@ -263,6 +267,10 @@ export const OP_NAMES: string[] = [
     'OP_RETURN8',
     'OP_RETURN32',
     'OP_RETURN64',
+
+    'OP_PUSH_RETURN8',
+    'OP_PUSH_RETURN32',
+    'OP_PUSH_RETURN64',
 ];
 
 export function getOpName(opcode: number): string {

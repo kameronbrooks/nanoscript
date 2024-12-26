@@ -105,6 +105,21 @@ class Scope {
         this.getFrameVariables().variables.push(name);
         return obj;
     }
+    addFunction(name, datatype, value) {
+        if (this.objects.has(name) || this.getFrameVariables().variables.includes(name)) {
+            throw new Error(`Variable ${name} already exists`);
+        }
+        const obj = {
+            name,
+            datatype,
+            value,
+            type: "function",
+            location: "internal"
+        };
+        this.objects.set(name, obj);
+        this.getFrameVariables().variables.push(name);
+        return obj;
+    }
     addFunctionArgument(name, isConst, datatype, value, localStackIndex) {
         if (this.objects.has(name)) {
             throw new Error(`Variable ${name} already exists`);
@@ -196,8 +211,8 @@ class InstructionReferenceTable {
      * @param index
      * @returns
      */
-    open() {
-        this.openReference = '$' + (this.index++);
+    open(tag) {
+        this.openReference = '$' + (tag || (this.index++));
         return this.openReference;
     }
     /**
@@ -350,7 +365,8 @@ class Compiler {
             const instruction = this.instructionBufferTarget[i];
             if (instruction.opcode === prg.OP_BRANCH_FALSE ||
                 instruction.opcode === prg.OP_BRANCH_TRUE ||
-                instruction.opcode === prg.OP_JUMP) {
+                instruction.opcode === prg.OP_JUMP ||
+                instruction.opcode === prg.OP_CALL_INTERNAL) {
                 const targetIndex = instruction.operand;
                 const targetInstruction = this.instructionReferenceTable.get(targetIndex);
                 if (!targetInstruction) {
@@ -551,7 +567,7 @@ class Compiler {
                 }
                 else if (target.type === "function") {
                     //this.addInstruction(prg.OP_LOAD_EXTERNAL, target.value);
-                    this.addInstruction(prg.OP_LOAD_INSTRUCTION_REFERENCE, target.value);
+                    this.addInstruction(prg.OP_LOAD_INSTRUCTION_REFERENCE, '$' + target.name);
                     this.state.isLValue = true;
                 }
                 this.state.currentDatatype = target.datatype;
@@ -659,12 +675,15 @@ class Compiler {
         else if (lastInstruction.opcode === prg.OP_LOAD_INSTRUCTION_REFERENCE) {
             this.replaceLastInstruction(prg.OP_CALL_INTERNAL);
         }
-        // Add the instruction
+        //Clean up the arguments
+        this.addInstruction(prg.OP_POP_STACK, node.arguments.length);
+        // Restore the return value
+        this.addInstruction(prg.OP_PUSH_RETURN64);
     }
     compileFunctionDefinition(node) {
         var _a, _b;
         // Add the function to the scope
-        const obj = (_a = this.state.currentScope) === null || _a === void 0 ? void 0 : _a.addLocalVariable(node.name, false, 'function', node);
+        const obj = (_a = this.state.currentScope) === null || _a === void 0 ? void 0 : _a.addFunction(node.name, 'any', null);
         console.log(this.state.currentScope);
         const previousFrameVariableList = this.state.frameVariableList;
         // Push a new scope for the function
@@ -680,11 +699,16 @@ class Compiler {
         this.functionInstructionBuffers.push(functionBuffer);
         this.setInstructionBufferTarget(functionBuffer.instructions);
         this.state.isInFunction++;
-        let argStackIndex = -2;
+        let argStackIndex = -3;
+        const reversedArgs = node.arguments.slice().reverse();
         // Add the arguments to the scope
-        for (let arg of node.arguments) {
+        for (let arg of reversedArgs) {
             (_b = this.state.currentScope) === null || _b === void 0 ? void 0 : _b.addFunctionArgument(arg.value, false, 'any', null, argStackIndex--);
         }
+        if (this.instructionReferenceTable.get('$' + node.name)) {
+            throw new Error(`Function ${node.name} already exists`);
+        }
+        this.instructionReferenceTable.open(node.name);
         // Compile the function body
         this.compileNode(node.body);
         this.clearInstructionBufferTarget();

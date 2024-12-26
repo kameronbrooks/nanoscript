@@ -116,6 +116,24 @@ class Scope {
         return obj;
     }
 
+    addFunction(name: string, datatype: string, value: any) {
+        if (this.objects.has(name) || this.getFrameVariables().variables.includes(name)) {
+            throw new Error(`Variable ${name} already exists`);
+        }
+        const obj = {
+            name,
+            datatype,
+            value,
+            type: "function",
+            location: "internal"
+        } as ScopeObject;
+
+        this.objects.set(name, obj);
+        this.getFrameVariables().variables.push(name);
+
+        return obj;
+    }
+
     addFunctionArgument(name: string, isConst:boolean, datatype: string, value: any, localStackIndex: number) {
         if (this.objects.has(name)) {
             throw new Error(`Variable ${name} already exists`);
@@ -249,8 +267,8 @@ class InstructionReferenceTable {
      * @param index
      * @returns
      */
-    open() {
-        this.openReference = '$' + (this.index++);
+    open(tag?: string) {
+        this.openReference = '$' + (tag || (this.index++));
         return this.openReference;
     }
 
@@ -439,7 +457,8 @@ export class Compiler {
             if (
                 instruction.opcode === prg.OP_BRANCH_FALSE || 
                 instruction.opcode === prg.OP_BRANCH_TRUE || 
-                instruction.opcode === prg.OP_JUMP
+                instruction.opcode === prg.OP_JUMP || 
+                instruction.opcode === prg.OP_CALL_INTERNAL
             ) {
                 const targetIndex = instruction.operand as string;
                 const targetInstruction = this.instructionReferenceTable.get(targetIndex);
@@ -663,7 +682,7 @@ export class Compiler {
                 }
                 else if (target.type === "function") {
                     //this.addInstruction(prg.OP_LOAD_EXTERNAL, target.value);
-                    this.addInstruction(prg.OP_LOAD_INSTRUCTION_REFERENCE, target.value);
+                    this.addInstruction(prg.OP_LOAD_INSTRUCTION_REFERENCE, '$'+target.name);
                     this.state.isLValue = true;
 
                 }
@@ -797,17 +816,19 @@ export class Compiler {
         else if (lastInstruction.opcode === prg.OP_LOAD_INSTRUCTION_REFERENCE) {
             this.replaceLastInstruction(prg.OP_CALL_INTERNAL);
         }
-        // Add the instruction
+        //Clean up the arguments
+        this.addInstruction(prg.OP_POP_STACK, node.arguments.length);
+        // Restore the return value
+        this.addInstruction(prg.OP_PUSH_RETURN64);
         
     }
 
     private compileFunctionDefinition(node: ast.FunctionDeclarationNode) {
         // Add the function to the scope
-        const obj = this.state.currentScope?.addLocalVariable(
+        const obj = this.state.currentScope?.addFunction(
             node.name, 
-            false, 
-            'function', 
-            node
+            'any',
+            null 
         );
 
         console.log(this.state.currentScope)
@@ -829,9 +850,10 @@ export class Compiler {
         this.setInstructionBufferTarget(functionBuffer.instructions);
         this.state.isInFunction++;
 
-        let argStackIndex = -2;
+        let argStackIndex = -3;
+        const reversedArgs = node.arguments.slice().reverse();
         // Add the arguments to the scope
-        for (let arg of node.arguments) {
+        for (let arg of reversedArgs) {
             this.state.currentScope?.addFunctionArgument(
                 (arg as ast.IdentifierNode).value, 
                 false, 
@@ -840,7 +862,10 @@ export class Compiler {
                 argStackIndex--
             );
         }
-
+        if (this.instructionReferenceTable.get('$' + node.name)) {
+            throw new Error(`Function ${node.name} already exists`);
+        }
+        this.instructionReferenceTable.open(node.name);
         // Compile the function body
         this.compileNode(node.body);
 
