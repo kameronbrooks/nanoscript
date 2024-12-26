@@ -1,98 +1,144 @@
 import { Nenv } from "./nenv";
 
 let i = 0;
-export const OP_NOOP                    = i++;
-export const OP_TERM                    = i++;
-export const OP_JUMP                    = i++;
+export const OP_NOOP                            = i++;
+export const OP_TERM                            = i++;
+export const OP_JUMP                            = i++;
 
-export const OP_BRANCH_TRUE             = i++;
-export const OP_BRANCH_FALSE            = i++;
-export const OP_BRANCH_NULL             = i++;
-export const OP_BRANCH_NOT_NULL         = i++;
-export const OP_BRANCH_EQUAL            = i++;
-export const OP_BRANCH_NOT_EQUAL        = i++;
-export const OP_BRANCH_GREATER_THAN     = i++;
-export const OP_BRANCH_LESS_THAN        = i++;
-export const OP_BRANCH_GREATER_THAN_OR_EQUAL = i++;
-export const OP_BRANCH_LESS_THAN_OR_EQUAL = i++;
+export const OP_BRANCH_TRUE                     = i++;
+export const OP_BRANCH_FALSE                    = i++;
+export const OP_BRANCH_NULL                     = i++;
+export const OP_BRANCH_NOT_NULL                 = i++;
+
+export const OP_BRANCH_EQUAL8                   = i++;
+export const OP_BRANCH_EQUAL32                  = i++;
+export const OP_BRANCH_EQUAL64                  = i++;
+
+export const OP_BRANCH_NOT_EQUAL8               = i++;
+export const OP_BRANCH_NOT_EQUAL32              = i++;
+export const OP_BRANCH_NOT_EQUAL64              = i++;
+
+export const OP_BRANCH_GREATER_THAN8            = i++;
+export const OP_BRANCH_GREATER_THAN32           = i++;
+export const OP_BRANCH_GREATER_THAN64           = i++;
+
+export const OP_BRANCH_LESS_THAN8               = i++;
+export const OP_BRANCH_LESS_THAN32              = i++;
+export const OP_BRANCH_LESS_THAN64              = i++;
+
+export const OP_BRANCH_GREATER_THAN_OR_EQUAL8   = i++;
+export const OP_BRANCH_GREATER_THAN_OR_EQUAL32  = i++;
+export const OP_BRANCH_GREATER_THAN_OR_EQUAL64  = i++;
+
+export const OP_BRANCH_LESS_THAN_OR_EQUAL8      = i++;
+export const OP_BRANCH_LESS_THAN_OR_EQUAL32     = i++;
+export const OP_BRANCH_LESS_THAN_OR_EQUAL64     = i++;
 
 // ============= STACK OPERATIONS =============
-export const OP_LOAD_CONST_BOOL         = i++;
-export const OP_LOAD_CONST_INT          = i++;
-export const OP_LOAD_CONST_FLOAT        = i++;
-export const OP_LOAD_CONST_NULL         = i++;
-export const OP_LOAD_CONST_STRING       = i++;
+export const OP_LOAD_LITERAL_BOOL                 = i++;
+export const OP_LOAD_LITERAL_INT32                = i++;
+export const OP_LOAD_LITERAL_FLOAT64              = i++;
+export const OP_LOAD_LITERAL_NULL                 = i++;
+export const OP_LOAD_LITERAL_STRING               = i++;
+export const OP_LOAD_INSTRUCTION_REFERENCE        = i++;
+export const OP_LOAD_PTR                          = i++;
+export const OP_LOAD_LITERAL_OBJECT               = i++;
 
 // ============= BINARY OPERATIONS =============
-export const OP_ADDi                     = i++;
-export const OP_SUBi                     = i++;
-export const OP_MULi                     = i++;
-export const OP_DIVi                     = i++;
-export const OP_MODi                     = i++;
-export const OP_POWi                     = i++;
-export const OP_ADDf                     = i++;
-export const OP_SUBf                     = i++;
-export const OP_MULf                     = i++;
-export const OP_DIVf                     = i++;
-export const OP_MODf                     = i++;
-export const OP_POWf                     = i++;
-export const OP_ADDs                     = i++;
+export const OP_ADDi                            = i++;
+export const OP_SUBi                            = i++;
+export const OP_MULi                            = i++;
+export const OP_DIVi                            = i++;
+export const OP_MODi                            = i++;
+export const OP_POWi                            = i++;
 
-export const OP_GREATER_THANi            = i++;
-export const OP_LESS_THANi               = i++;
-export const OP_GREATER_THAN_OR_EQUALi   = i++;
-export const OP_LESS_THAN_OR_EQUALi      = i++;
-export const OP_EQUALi                   = i++;
-export const OP_NOT_EQUALi               = i++;
-export const OP_GREATER_THANf            = i++;
-export const OP_LESS_THANf               = i++;
-export const OP_GREATER_THAN_OR_EQUALf   = i++;
-export const OP_LESS_THAN_OR_EQUALf      = i++;
-export const OP_EQUALf                   = i++;
-export const OP_NOT_EQUALf               = i++;
-export const OP_EQUALb                   = i++;
-export const OP_NOT_EQUALb               = i++;
-export const OP_EQUALs                   = i++;
-export const OP_NOT_EQUALs               = i++;
+export const OP_ADDf                            = i++;
+export const OP_SUBf                            = i++;
+export const OP_MULf                            = i++;
+export const OP_DIVf                            = i++;
+export const OP_MODf                            = i++;
+export const OP_POWf                            = i++;
+
+export const OP_ADDs                            = i++;
+
+export const OP_GREATER_THANi                   = i++;
+export const OP_LESS_THANi                      = i++;
+export const OP_GREATER_THAN_OR_EQUALi          = i++;
+export const OP_LESS_THAN_OR_EQUALi             = i++;
+export const OP_EQUALi                          = i++;
+export const OP_NOT_EQUALi                      = i++;
+export const OP_GREATER_THANf                   = i++;
+export const OP_LESS_THANf                      = i++;
+export const OP_GREATER_THAN_OR_EQUALf          = i++;
+export const OP_LESS_THAN_OR_EQUALf             = i++;
+export const OP_EQUALf                          = i++;
+export const OP_NOT_EQUALf                      = i++;
+export const OP_EQUALb                          = i++;
+export const OP_NOT_EQUALb                      = i++;
+export const OP_EQUALs                          = i++;
+export const OP_NOT_EQUALs                      = i++;
 
 // ============= UNARY OPERATIONS =============
-export const OP_NOTb                     = i++; 
-export const OP_NEGi                     = i++;
-export const OP_NEGf                     = i++;
-export const OP_INCREMENT_LOCAL_POST           = i++;
-export const OP_DECREMENT_LOCAL_POST           = i++;
+export const OP_NOTb                            = i++; 
+export const OP_NEGi                            = i++;
+export const OP_NEGf                            = i++;
+export const OP_INCREMENT_LOCAL32               = i++;
+export const OP_DECREMENT_LOCAL32               = i++;
 
 // ============= CONVERSION OPERATIONS =============
-export const OP_INT_TO_FLOAT             = i++;
-export const OP_FLOAT_TO_INT             = i++;
-export const OP_INT_TO_STRING            = i++;
-export const OP_FLOAT_TO_STRING          = i++;
+export const OP_INT_TO_FLOAT                    = i++;
+export const OP_FLOAT_TO_INT                    = i++;
+export const OP_INT_TO_STRING                   = i++;
+export const OP_FLOAT_TO_STRING                 = i++;
 
 
 // ============== VARIABLE OPERATIONS =============
-export const OP_LOAD_LOCAL                  = i++;
-export const OP_STORE_LOCAL                 = i++;
+export const OP_LOAD_LOCAL8                     = i++;
+export const OP_LOAD_LOCAL32                    = i++;
+export const OP_LOAD_LOCAL64                    = i++;
 
-export const OP_LOAD_MEMBER                 = i++;
-export const OP_STORE_MEMBER                = i++;
+export const OP_STORE_LOCAL8                    = i++;
+export const OP_STORE_LOCAL32                   = i++;
+export const OP_STORE_LOCAL64                   = i++;
 
-export const OP_LOAD_EXTERNAL               = i++;
+export const OP_LOAD_MEMBER8                    = i++;
+export const OP_LOAD_MEMBER32                   = i++;
+export const OP_LOAD_MEMBER64                   = i++;
 
-export const OP_LOAD_ELEMENT                = i++;
-export const OP_STORE_ELEMENT               = i++;
+export const OP_STORE_MEMBER8                   = i++;
+export const OP_STORE_MEMBER32                  = i++;
+export const OP_STORE_MEMBER64                  = i++;
 
-export const OP_ALLOC_STACK                    = i++;
-export const OP_POP_STACK                     = i++;
-export const OP_ALLOC_HEAP                     = i++;
-export const OP_POP_HEAP                      = i++;
+export const OP_LOAD_ELEMENT8                   = i++;
+export const OP_LOAD_ELEMENT32                  = i++;
+export const OP_LOAD_ELEMENT64                  = i++;
+
+export const OP_STORE_ELEMENT8                  = i++;
+export const OP_STORE_ELEMENT32                 = i++;
+export const OP_STORE_ELEMENT64                 = i++;
+
+export const OP_LOAD_EXTERNAL                   = i++;
+
+export const OP_ALLOC_STACK                     = i++;
+export const OP_POP_STACK                       = i++;
+export const OP_ALLOC_HEAP                      = i++;
+export const OP_POP_HEAP                        = i++;
 
 
 // ============== FUNCTION OPERATIONS =============
 export const OP_CALL_INTERNAL               = i++;
 export const OP_CALL_EXTERNAL               = i++;
+export const OP_CALL_STACK                  = i++;
+
+export const OP_RETURN                      = i++;
+export const OP_RETURN8                     = i++;
+export const OP_RETURN32                    = i++;
+export const OP_RETURN64                    = i++;
 
 
-const OP_NAMES: string[] = [
+
+
+export const OP_NAMES: string[] = [
     'OP_NOOP',
     'OP_TERM',
     'OP_JUMP',
@@ -100,42 +146,70 @@ const OP_NAMES: string[] = [
     'OP_BRANCH_FALSE',
     'OP_BRANCH_NULL',
     'OP_BRANCH_NOT_NULL',
-    'OP_BRANCH_EQUAL',
-    'OP_BRANCH_NOT_EQUAL',
-    'OP_BRANCH_GREATER_THAN',
-    'OP_BRANCH_LESS_THAN',
-    'OP_BRANCH_GREATER_THAN_OR_EQUAL',
-    'OP_BRANCH_LESS_THAN_OR_EQUAL',
+
+    'OP_BRANCH_EQUAL8',
+    'OP_BRANCH_EQUAL32',
+    'OP_BRANCH_EQUAL64',
+
+    'OP_BRANCH_NOT_EQUAL8',
+    'OP_BRANCH_NOT_EQUAL32',
+    'OP_BRANCH_NOT_EQUAL64',
+
+    'OP_BRANCH_GREATER_THAN8',
+    'OP_BRANCH_GREATER_THAN32',
+    'OP_BRANCH_GREATER_THAN64',
+
+    'OP_BRANCH_LESS_THAN8',
+    'OP_BRANCH_LESS_THAN32',
+    'OP_BRANCH_LESS_THAN64',
+
+    'OP_BRANCH_GREATER_THAN_OR_EQUAL8',
+    'OP_BRANCH_GREATER_THAN_OR_EQUAL32',
+    'OP_BRANCH_GREATER_THAN_OR_EQUAL64',
+
+    'OP_BRANCH_LESS_THAN_OR_EQUAL8',
+    'OP_BRANCH_LESS_THAN_OR_EQUAL32',
+    'OP_BRANCH_LESS_THAN_OR_EQUAL64',
+
     'OP_LOAD_CONST_BOOL',
     'OP_LOAD_CONST_INT',
     'OP_LOAD_CONST_FLOAT',
     'OP_LOAD_CONST_NULL',
     'OP_LOAD_CONST_STRING',
+    'OP_LOAD_INSTRUCTION_REFERENCE',
+    'OP_LOAD_PTR',
+    'OP_LOAD_CONST_OBJECT',
+
     'OP_ADDi',
     'OP_SUBi',
     'OP_MULi',
     'OP_DIVi',
     'OP_MODi',
     'OP_POWi',
+
     'OP_ADDf',
     'OP_SUBf',
     'OP_MULf',
     'OP_DIVf',
     'OP_MODf',
     'OP_POWf',
+
     'OP_ADDs',
+
     'OP_GREATER_THANi',
     'OP_LESS_THANi',
     'OP_GREATER_THAN_OR_EQUALi',
     'OP_LESS_THAN_OR_EQUALi',
     'OP_EQUALi',
     'OP_NOT_EQUALi',
+
     'OP_GREATER_THANf',
     'OP_LESS_THANf',
     'OP_GREATER_THAN_OR_EQUALf',
     'OP_LESS_THAN_OR_EQUALf',
     'OP_EQUALf',
     'OP_NOT_EQUALf',
+
     'OP_EQUALb',
     'OP_NOT_EQUALb',
     'OP_EQUALs',
@@ -143,25 +217,52 @@ const OP_NAMES: string[] = [
     'OP_NOTb',
     'OP_NEGi',
     'OP_NEGf',
-    'OP_INCREMENT_LOCAL_POST',
-    'OP_DECREMENT_LOCAL_POST',
+
+    'OP_INCREMENT_LOCAL32',
+    'OP_DECREMENT_LOCAL32',
     'OP_INT_TO_FLOAT',
     'OP_FLOAT_TO_INT',
     'OP_INT_TO_STRING',
     'OP_FLOAT_TO_STRING',
-    'OP_LOAD_LOCAL',
-    'OP_STORE_LOCAL',
-    'OP_LOAD_MEMBER',
-    'OP_STORE_MEMBER',
+
+    'OP_LOAD_LOCAL8',   // Also used for arguments when given a negative index
+    'OP_LOAD_LOCAL32',  // Also used for arguments when given a negative index
+    'OP_LOAD_LOCAL64',  // Also used for arguments when given a negative index
+
+    'OP_STORE_LOCAL8',  // Also used for arguments when given a negative index
+    'OP_STORE_LOCAL32', // Also used for arguments when given a negative index
+    'OP_STORE_LOCAL64', // Also used for arguments when given a negative index
+
+    'OP_LOAD_MEMBER8',
+    'OP_LOAD_MEMBER32',
+    'OP_LOAD_MEMBER64',
+
+    'OP_STORE_MEMBER8',
+    'OP_STORE_MEMBER32',
+    'OP_STORE_MEMBER64',
+
+    'OP_LOAD_ELEMENT8',
+    'OP_LOAD_ELEMENT32',
+    'OP_LOAD_ELEMENT64',
+
+    'OP_STORE_ELEMENT8',
+    'OP_STORE_ELEMENT32',
+    'OP_STORE_ELEMENT64',
+
     'OP_LOAD_EXTERNAL',
-    'OP_LOAD_ELEMENT',
-    'OP_STORE_ELEMENT',
+    
     'OP_ALLOC_STACK',
     'OP_POP_STACK',
     'OP_ALLOC_HEAP',
     'OP_POP_HEAP',
     'OP_CALL_INTERNAL',
     'OP_CALL_EXTERNAL',
+    'OP_CALL_STACK',
+
+    'OP_RETURN',
+    'OP_RETURN8',
+    'OP_RETURN32',
+    'OP_RETURN64',
 ];
 
 export function getOpName(opcode: number): string {
@@ -188,8 +289,8 @@ export const OP_MAP: { [key: string]: OPResult } = {
     'any<any': { opcode: OP_LESS_THANi, returnDtype: 'bool' },
     'any>=any': { opcode: OP_GREATER_THAN_OR_EQUALi, returnDtype: 'bool' },
     'any<=any': { opcode: OP_LESS_THAN_OR_EQUALi, returnDtype: 'bool' },
-    'any++': { opcode: OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
-    'any--': { opcode: OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
+    'any++': { opcode: OP_INCREMENT_LOCAL32, returnDtype: 'int' },
+    'any--': { opcode: OP_DECREMENT_LOCAL32, returnDtype: 'int' },
     // Int
     'int+int': { opcode: OP_ADDi, returnDtype: 'int' },
     'int-int': { opcode: OP_SUBi, returnDtype: 'int' },
@@ -227,10 +328,10 @@ export const OP_MAP: { [key: string]: OPResult } = {
     'string==string': { opcode: OP_EQUALs, returnDtype: 'bool' },
     'string!=string': { opcode: OP_NOT_EQUALs, returnDtype: 'bool' },
     '!bool': { opcode: OP_NOTb, returnDtype: 'bool' },
-    'int++': { opcode: OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
-    'int--': { opcode: OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
-    'float++': { opcode: OP_INCREMENT_LOCAL_POST, returnDtype: 'float' },
-    'float--': { opcode: OP_DECREMENT_LOCAL_POST, returnDtype: 'float' },
+    'int++': { opcode: OP_INCREMENT_LOCAL32, returnDtype: 'int' },
+    'int--': { opcode: OP_DECREMENT_LOCAL32, returnDtype: 'int' },
+    'float++': { opcode: OP_INCREMENT_LOCAL32, returnDtype: 'float' },
+    'float--': { opcode: OP_DECREMENT_LOCAL32, returnDtype: 'float' },
 };
 
 export const IMPLICIT_CONVERSION_MAP: { [key: string]: OPResult } = {

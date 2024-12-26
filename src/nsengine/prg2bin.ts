@@ -1,4 +1,4 @@
-import { OP_LOAD_CONST_FLOAT, Program } from "./program";
+import { OP_LOAD_LITERAL_FLOAT64, Program } from "./program";
 
 export class NSBinaryComplier {
     stringToBytes(str: string): Uint8Array {
@@ -45,7 +45,7 @@ export class NSBinaryComplier {
             if (operand) {
                 if (typeof operand === "number") {
                     console.log("number: " + operand);
-                    if (opcode === OP_LOAD_CONST_FLOAT) {
+                    if (opcode === OP_LOAD_LITERAL_FLOAT64) {
                         instructionView.setFloat64(instructionByteOffset, operand, true);
                     } else {
                         instructionView.setInt32(instructionByteOffset, operand, true);

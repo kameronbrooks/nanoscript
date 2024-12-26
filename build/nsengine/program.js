@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OP_NEGf = exports.OP_NEGi = exports.OP_NOTb = exports.OP_NOT_EQUALs = exports.OP_EQUALs = exports.OP_NOT_EQUALb = exports.OP_EQUALb = exports.OP_NOT_EQUALf = exports.OP_EQUALf = exports.OP_LESS_THAN_OR_EQUALf = exports.OP_GREATER_THAN_OR_EQUALf = exports.OP_LESS_THANf = exports.OP_GREATER_THANf = exports.OP_NOT_EQUALi = exports.OP_EQUALi = exports.OP_LESS_THAN_OR_EQUALi = exports.OP_GREATER_THAN_OR_EQUALi = exports.OP_LESS_THANi = exports.OP_GREATER_THANi = exports.OP_ADDs = exports.OP_POWf = exports.OP_MODf = exports.OP_DIVf = exports.OP_MULf = exports.OP_SUBf = exports.OP_ADDf = exports.OP_POWi = exports.OP_MODi = exports.OP_DIVi = exports.OP_MULi = exports.OP_SUBi = exports.OP_ADDi = exports.OP_LOAD_CONST_STRING = exports.OP_LOAD_CONST_NULL = exports.OP_LOAD_CONST_FLOAT = exports.OP_LOAD_CONST_INT = exports.OP_LOAD_CONST_BOOL = exports.OP_BRANCH_LESS_THAN_OR_EQUAL = exports.OP_BRANCH_GREATER_THAN_OR_EQUAL = exports.OP_BRANCH_LESS_THAN = exports.OP_BRANCH_GREATER_THAN = exports.OP_BRANCH_NOT_EQUAL = exports.OP_BRANCH_EQUAL = exports.OP_BRANCH_NOT_NULL = exports.OP_BRANCH_NULL = exports.OP_BRANCH_FALSE = exports.OP_BRANCH_TRUE = exports.OP_JUMP = exports.OP_TERM = exports.OP_NOOP = void 0;
-exports.IMPLICIT_CONVERSION_MAP = exports.OP_MAP = exports.OP_CALL_EXTERNAL = exports.OP_CALL_INTERNAL = exports.OP_POP_HEAP = exports.OP_ALLOC_HEAP = exports.OP_POP_STACK = exports.OP_ALLOC_STACK = exports.OP_STORE_ELEMENT = exports.OP_LOAD_ELEMENT = exports.OP_LOAD_EXTERNAL = exports.OP_STORE_MEMBER = exports.OP_LOAD_MEMBER = exports.OP_STORE_LOCAL = exports.OP_LOAD_LOCAL = exports.OP_FLOAT_TO_STRING = exports.OP_INT_TO_STRING = exports.OP_FLOAT_TO_INT = exports.OP_INT_TO_FLOAT = exports.OP_DECREMENT_LOCAL_POST = exports.OP_INCREMENT_LOCAL_POST = void 0;
+exports.OP_LESS_THAN_OR_EQUALi = exports.OP_GREATER_THAN_OR_EQUALi = exports.OP_LESS_THANi = exports.OP_GREATER_THANi = exports.OP_ADDs = exports.OP_POWf = exports.OP_MODf = exports.OP_DIVf = exports.OP_MULf = exports.OP_SUBf = exports.OP_ADDf = exports.OP_POWi = exports.OP_MODi = exports.OP_DIVi = exports.OP_MULi = exports.OP_SUBi = exports.OP_ADDi = exports.OP_LOAD_LITERAL_OBJECT = exports.OP_LOAD_PTR = exports.OP_LOAD_INSTRUCTION_REFERENCE = exports.OP_LOAD_LITERAL_STRING = exports.OP_LOAD_LITERAL_NULL = exports.OP_LOAD_LITERAL_FLOAT64 = exports.OP_LOAD_LITERAL_INT32 = exports.OP_LOAD_LITERAL_BOOL = exports.OP_BRANCH_LESS_THAN_OR_EQUAL64 = exports.OP_BRANCH_LESS_THAN_OR_EQUAL32 = exports.OP_BRANCH_LESS_THAN_OR_EQUAL8 = exports.OP_BRANCH_GREATER_THAN_OR_EQUAL64 = exports.OP_BRANCH_GREATER_THAN_OR_EQUAL32 = exports.OP_BRANCH_GREATER_THAN_OR_EQUAL8 = exports.OP_BRANCH_LESS_THAN64 = exports.OP_BRANCH_LESS_THAN32 = exports.OP_BRANCH_LESS_THAN8 = exports.OP_BRANCH_GREATER_THAN64 = exports.OP_BRANCH_GREATER_THAN32 = exports.OP_BRANCH_GREATER_THAN8 = exports.OP_BRANCH_NOT_EQUAL64 = exports.OP_BRANCH_NOT_EQUAL32 = exports.OP_BRANCH_NOT_EQUAL8 = exports.OP_BRANCH_EQUAL64 = exports.OP_BRANCH_EQUAL32 = exports.OP_BRANCH_EQUAL8 = exports.OP_BRANCH_NOT_NULL = exports.OP_BRANCH_NULL = exports.OP_BRANCH_FALSE = exports.OP_BRANCH_TRUE = exports.OP_JUMP = exports.OP_TERM = exports.OP_NOOP = void 0;
+exports.OP_RETURN32 = exports.OP_RETURN8 = exports.OP_RETURN = exports.OP_CALL_STACK = exports.OP_CALL_EXTERNAL = exports.OP_CALL_INTERNAL = exports.OP_POP_HEAP = exports.OP_ALLOC_HEAP = exports.OP_POP_STACK = exports.OP_ALLOC_STACK = exports.OP_LOAD_EXTERNAL = exports.OP_STORE_ELEMENT64 = exports.OP_STORE_ELEMENT32 = exports.OP_STORE_ELEMENT8 = exports.OP_LOAD_ELEMENT64 = exports.OP_LOAD_ELEMENT32 = exports.OP_LOAD_ELEMENT8 = exports.OP_STORE_MEMBER64 = exports.OP_STORE_MEMBER32 = exports.OP_STORE_MEMBER8 = exports.OP_LOAD_MEMBER64 = exports.OP_LOAD_MEMBER32 = exports.OP_LOAD_MEMBER8 = exports.OP_STORE_LOCAL64 = exports.OP_STORE_LOCAL32 = exports.OP_STORE_LOCAL8 = exports.OP_LOAD_LOCAL64 = exports.OP_LOAD_LOCAL32 = exports.OP_LOAD_LOCAL8 = exports.OP_FLOAT_TO_STRING = exports.OP_INT_TO_STRING = exports.OP_FLOAT_TO_INT = exports.OP_INT_TO_FLOAT = exports.OP_DECREMENT_LOCAL32 = exports.OP_INCREMENT_LOCAL32 = exports.OP_NEGf = exports.OP_NEGi = exports.OP_NOTb = exports.OP_NOT_EQUALs = exports.OP_EQUALs = exports.OP_NOT_EQUALb = exports.OP_EQUALb = exports.OP_NOT_EQUALf = exports.OP_EQUALf = exports.OP_LESS_THAN_OR_EQUALf = exports.OP_GREATER_THAN_OR_EQUALf = exports.OP_LESS_THANf = exports.OP_GREATER_THANf = exports.OP_NOT_EQUALi = exports.OP_EQUALi = void 0;
+exports.IMPLICIT_CONVERSION_MAP = exports.OP_MAP = exports.OP_NAMES = exports.OP_RETURN64 = void 0;
 exports.getOpName = getOpName;
 exports.searchOpMap = searchOpMap;
 exports.printInstruction = printInstruction;
@@ -18,18 +19,33 @@ exports.OP_BRANCH_TRUE = i++;
 exports.OP_BRANCH_FALSE = i++;
 exports.OP_BRANCH_NULL = i++;
 exports.OP_BRANCH_NOT_NULL = i++;
-exports.OP_BRANCH_EQUAL = i++;
-exports.OP_BRANCH_NOT_EQUAL = i++;
-exports.OP_BRANCH_GREATER_THAN = i++;
-exports.OP_BRANCH_LESS_THAN = i++;
-exports.OP_BRANCH_GREATER_THAN_OR_EQUAL = i++;
-exports.OP_BRANCH_LESS_THAN_OR_EQUAL = i++;
+exports.OP_BRANCH_EQUAL8 = i++;
+exports.OP_BRANCH_EQUAL32 = i++;
+exports.OP_BRANCH_EQUAL64 = i++;
+exports.OP_BRANCH_NOT_EQUAL8 = i++;
+exports.OP_BRANCH_NOT_EQUAL32 = i++;
+exports.OP_BRANCH_NOT_EQUAL64 = i++;
+exports.OP_BRANCH_GREATER_THAN8 = i++;
+exports.OP_BRANCH_GREATER_THAN32 = i++;
+exports.OP_BRANCH_GREATER_THAN64 = i++;
+exports.OP_BRANCH_LESS_THAN8 = i++;
+exports.OP_BRANCH_LESS_THAN32 = i++;
+exports.OP_BRANCH_LESS_THAN64 = i++;
+exports.OP_BRANCH_GREATER_THAN_OR_EQUAL8 = i++;
+exports.OP_BRANCH_GREATER_THAN_OR_EQUAL32 = i++;
+exports.OP_BRANCH_GREATER_THAN_OR_EQUAL64 = i++;
+exports.OP_BRANCH_LESS_THAN_OR_EQUAL8 = i++;
+exports.OP_BRANCH_LESS_THAN_OR_EQUAL32 = i++;
+exports.OP_BRANCH_LESS_THAN_OR_EQUAL64 = i++;
 // ============= STACK OPERATIONS =============
-exports.OP_LOAD_CONST_BOOL = i++;
-exports.OP_LOAD_CONST_INT = i++;
-exports.OP_LOAD_CONST_FLOAT = i++;
-exports.OP_LOAD_CONST_NULL = i++;
-exports.OP_LOAD_CONST_STRING = i++;
+exports.OP_LOAD_LITERAL_BOOL = i++;
+exports.OP_LOAD_LITERAL_INT32 = i++;
+exports.OP_LOAD_LITERAL_FLOAT64 = i++;
+exports.OP_LOAD_LITERAL_NULL = i++;
+exports.OP_LOAD_LITERAL_STRING = i++;
+exports.OP_LOAD_INSTRUCTION_REFERENCE = i++;
+exports.OP_LOAD_PTR = i++;
+exports.OP_LOAD_LITERAL_OBJECT = i++;
 // ============= BINARY OPERATIONS =============
 exports.OP_ADDi = i++;
 exports.OP_SUBi = i++;
@@ -64,21 +80,33 @@ exports.OP_NOT_EQUALs = i++;
 exports.OP_NOTb = i++;
 exports.OP_NEGi = i++;
 exports.OP_NEGf = i++;
-exports.OP_INCREMENT_LOCAL_POST = i++;
-exports.OP_DECREMENT_LOCAL_POST = i++;
+exports.OP_INCREMENT_LOCAL32 = i++;
+exports.OP_DECREMENT_LOCAL32 = i++;
 // ============= CONVERSION OPERATIONS =============
 exports.OP_INT_TO_FLOAT = i++;
 exports.OP_FLOAT_TO_INT = i++;
 exports.OP_INT_TO_STRING = i++;
 exports.OP_FLOAT_TO_STRING = i++;
 // ============== VARIABLE OPERATIONS =============
-exports.OP_LOAD_LOCAL = i++;
-exports.OP_STORE_LOCAL = i++;
-exports.OP_LOAD_MEMBER = i++;
-exports.OP_STORE_MEMBER = i++;
+exports.OP_LOAD_LOCAL8 = i++;
+exports.OP_LOAD_LOCAL32 = i++;
+exports.OP_LOAD_LOCAL64 = i++;
+exports.OP_STORE_LOCAL8 = i++;
+exports.OP_STORE_LOCAL32 = i++;
+exports.OP_STORE_LOCAL64 = i++;
+exports.OP_LOAD_MEMBER8 = i++;
+exports.OP_LOAD_MEMBER32 = i++;
+exports.OP_LOAD_MEMBER64 = i++;
+exports.OP_STORE_MEMBER8 = i++;
+exports.OP_STORE_MEMBER32 = i++;
+exports.OP_STORE_MEMBER64 = i++;
+exports.OP_LOAD_ELEMENT8 = i++;
+exports.OP_LOAD_ELEMENT32 = i++;
+exports.OP_LOAD_ELEMENT64 = i++;
+exports.OP_STORE_ELEMENT8 = i++;
+exports.OP_STORE_ELEMENT32 = i++;
+exports.OP_STORE_ELEMENT64 = i++;
 exports.OP_LOAD_EXTERNAL = i++;
-exports.OP_LOAD_ELEMENT = i++;
-exports.OP_STORE_ELEMENT = i++;
 exports.OP_ALLOC_STACK = i++;
 exports.OP_POP_STACK = i++;
 exports.OP_ALLOC_HEAP = i++;
@@ -86,7 +114,12 @@ exports.OP_POP_HEAP = i++;
 // ============== FUNCTION OPERATIONS =============
 exports.OP_CALL_INTERNAL = i++;
 exports.OP_CALL_EXTERNAL = i++;
-const OP_NAMES = [
+exports.OP_CALL_STACK = i++;
+exports.OP_RETURN = i++;
+exports.OP_RETURN8 = i++;
+exports.OP_RETURN32 = i++;
+exports.OP_RETURN64 = i++;
+exports.OP_NAMES = [
     'OP_NOOP',
     'OP_TERM',
     'OP_JUMP',
@@ -94,17 +127,32 @@ const OP_NAMES = [
     'OP_BRANCH_FALSE',
     'OP_BRANCH_NULL',
     'OP_BRANCH_NOT_NULL',
-    'OP_BRANCH_EQUAL',
-    'OP_BRANCH_NOT_EQUAL',
-    'OP_BRANCH_GREATER_THAN',
-    'OP_BRANCH_LESS_THAN',
-    'OP_BRANCH_GREATER_THAN_OR_EQUAL',
-    'OP_BRANCH_LESS_THAN_OR_EQUAL',
+    'OP_BRANCH_EQUAL8',
+    'OP_BRANCH_EQUAL32',
+    'OP_BRANCH_EQUAL64',
+    'OP_BRANCH_NOT_EQUAL8',
+    'OP_BRANCH_NOT_EQUAL32',
+    'OP_BRANCH_NOT_EQUAL64',
+    'OP_BRANCH_GREATER_THAN8',
+    'OP_BRANCH_GREATER_THAN32',
+    'OP_BRANCH_GREATER_THAN64',
+    'OP_BRANCH_LESS_THAN8',
+    'OP_BRANCH_LESS_THAN32',
+    'OP_BRANCH_LESS_THAN64',
+    'OP_BRANCH_GREATER_THAN_OR_EQUAL8',
+    'OP_BRANCH_GREATER_THAN_OR_EQUAL32',
+    'OP_BRANCH_GREATER_THAN_OR_EQUAL64',
+    'OP_BRANCH_LESS_THAN_OR_EQUAL8',
+    'OP_BRANCH_LESS_THAN_OR_EQUAL32',
+    'OP_BRANCH_LESS_THAN_OR_EQUAL64',
     'OP_LOAD_CONST_BOOL',
     'OP_LOAD_CONST_INT',
     'OP_LOAD_CONST_FLOAT',
     'OP_LOAD_CONST_NULL',
     'OP_LOAD_CONST_STRING',
+    'OP_LOAD_INSTRUCTION_REFERENCE',
+    'OP_LOAD_PTR',
+    'OP_LOAD_CONST_OBJECT',
     'OP_ADDi',
     'OP_SUBi',
     'OP_MULi',
@@ -137,28 +185,45 @@ const OP_NAMES = [
     'OP_NOTb',
     'OP_NEGi',
     'OP_NEGf',
-    'OP_INCREMENT_LOCAL_POST',
-    'OP_DECREMENT_LOCAL_POST',
+    'OP_INCREMENT_LOCAL32',
+    'OP_DECREMENT_LOCAL32',
     'OP_INT_TO_FLOAT',
     'OP_FLOAT_TO_INT',
     'OP_INT_TO_STRING',
     'OP_FLOAT_TO_STRING',
-    'OP_LOAD_LOCAL',
-    'OP_STORE_LOCAL',
-    'OP_LOAD_MEMBER',
-    'OP_STORE_MEMBER',
+    'OP_LOAD_LOCAL8', // Also used for arguments when given a negative index
+    'OP_LOAD_LOCAL32', // Also used for arguments when given a negative index
+    'OP_LOAD_LOCAL64', // Also used for arguments when given a negative index
+    'OP_STORE_LOCAL8', // Also used for arguments when given a negative index
+    'OP_STORE_LOCAL32', // Also used for arguments when given a negative index
+    'OP_STORE_LOCAL64', // Also used for arguments when given a negative index
+    'OP_LOAD_MEMBER8',
+    'OP_LOAD_MEMBER32',
+    'OP_LOAD_MEMBER64',
+    'OP_STORE_MEMBER8',
+    'OP_STORE_MEMBER32',
+    'OP_STORE_MEMBER64',
+    'OP_LOAD_ELEMENT8',
+    'OP_LOAD_ELEMENT32',
+    'OP_LOAD_ELEMENT64',
+    'OP_STORE_ELEMENT8',
+    'OP_STORE_ELEMENT32',
+    'OP_STORE_ELEMENT64',
     'OP_LOAD_EXTERNAL',
-    'OP_LOAD_ELEMENT',
-    'OP_STORE_ELEMENT',
     'OP_ALLOC_STACK',
     'OP_POP_STACK',
     'OP_ALLOC_HEAP',
     'OP_POP_HEAP',
     'OP_CALL_INTERNAL',
     'OP_CALL_EXTERNAL',
+    'OP_CALL_STACK',
+    'OP_RETURN',
+    'OP_RETURN8',
+    'OP_RETURN32',
+    'OP_RETURN64',
 ];
 function getOpName(opcode) {
-    return OP_NAMES[opcode];
+    return exports.OP_NAMES[opcode];
 }
 exports.OP_MAP = {
     '-int': { opcode: exports.OP_NEGi, returnDtype: 'int' },
@@ -174,8 +239,8 @@ exports.OP_MAP = {
     'any<any': { opcode: exports.OP_LESS_THANi, returnDtype: 'bool' },
     'any>=any': { opcode: exports.OP_GREATER_THAN_OR_EQUALi, returnDtype: 'bool' },
     'any<=any': { opcode: exports.OP_LESS_THAN_OR_EQUALi, returnDtype: 'bool' },
-    'any++': { opcode: exports.OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
-    'any--': { opcode: exports.OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
+    'any++': { opcode: exports.OP_INCREMENT_LOCAL32, returnDtype: 'int' },
+    'any--': { opcode: exports.OP_DECREMENT_LOCAL32, returnDtype: 'int' },
     // Int
     'int+int': { opcode: exports.OP_ADDi, returnDtype: 'int' },
     'int-int': { opcode: exports.OP_SUBi, returnDtype: 'int' },
@@ -213,10 +278,10 @@ exports.OP_MAP = {
     'string==string': { opcode: exports.OP_EQUALs, returnDtype: 'bool' },
     'string!=string': { opcode: exports.OP_NOT_EQUALs, returnDtype: 'bool' },
     '!bool': { opcode: exports.OP_NOTb, returnDtype: 'bool' },
-    'int++': { opcode: exports.OP_INCREMENT_LOCAL_POST, returnDtype: 'int' },
-    'int--': { opcode: exports.OP_DECREMENT_LOCAL_POST, returnDtype: 'int' },
-    'float++': { opcode: exports.OP_INCREMENT_LOCAL_POST, returnDtype: 'float' },
-    'float--': { opcode: exports.OP_DECREMENT_LOCAL_POST, returnDtype: 'float' },
+    'int++': { opcode: exports.OP_INCREMENT_LOCAL32, returnDtype: 'int' },
+    'int--': { opcode: exports.OP_DECREMENT_LOCAL32, returnDtype: 'int' },
+    'float++': { opcode: exports.OP_INCREMENT_LOCAL32, returnDtype: 'float' },
+    'float--': { opcode: exports.OP_DECREMENT_LOCAL32, returnDtype: 'float' },
 };
 exports.IMPLICIT_CONVERSION_MAP = {
     '(float)int': { opcode: exports.OP_INT_TO_FLOAT, returnDtype: 'float' },

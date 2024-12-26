@@ -26,7 +26,8 @@ function tokenize(code: string) {
 const myModule = {
     name: "myModule",
     exports: [
-        { name: "myObject", type: "constant", object: {x: 1, y: 2, z: 3} }
+        { name: "myObject", type: "constant", object: {x: 1, y: 2, z: 3} },
+        { name: "myFunction", type: "function", object: (a: number, b: number) => a + b }
     ] as NenvExport[]
 } as NenvModule;
 
@@ -44,6 +45,7 @@ function compile(code: string) {
     return compiler.compile([ast] as any);
 }
 
+/*
 const script = `
 let a = 0;
 let b = 0;
@@ -54,7 +56,13 @@ for(let i = 0; i < 10000; i++) {
 }
 a;
 `;
-
+*/
+const script = `
+function addNums(a, b) {
+    return a + b;
+}
+addNums(1, 2);
+`;
 /*
 const script = `
 {
@@ -104,10 +112,10 @@ end = performance.now();
 console.log(result + " in " + (end - start) + "ms  (executor)");
 
 
-const prg2bin = new NSBinaryComplier();
-const binary = prg2bin.compileBinary(program);
-console.log(binary);
+//const prg2bin = new NSBinaryComplier();
+//const binary = prg2bin.compileBinary(program);
+//console.log(binary);
 
 // save file
-const fs = require('fs');
-fs.writeFileSync('out.bin', Buffer.from(binary));
+//const fs = require('fs');
+//fs.writeFileSync('out.bin', Buffer.from(binary));

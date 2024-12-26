@@ -13,5 +13,6 @@ export { InterpretPrimitive as InterpretPrimative } from "./interpret_primitive"
 export { InterpretStringLiteral } from "./interpret_stringliteral";
 export { InterpretMemberAccess } from "./interpret_member_access";
 export { InterpretIndexer } from "./interpret_indexer";
+export { InterpretFunctionDefinition } from "./interpret_function_definition";
 
 

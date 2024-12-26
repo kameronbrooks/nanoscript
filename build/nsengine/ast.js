@@ -81,6 +81,26 @@ function astToString(node, level = 0) {
                 a += astToString(node.initializer, level + 1);
             }
             return a + postfix;
+        case "FunctionDeclaration":
+            a = indent + `[Function]:\n`;
+            a += indent + `[${node.name}]\n`;
+            a += indent + `[Arguments]:\n`;
+            a += node.arguments.map((arg) => astToString(arg, level + 1)).join("");
+            a += indent + `[Body]:\n`;
+            a += astToString(node.body, level + 1);
+            return a + postfix;
+        case "Return":
+            a = indent + `[Return]:\n`;
+            if (node.value) {
+                a += astToString(node.value, level + 1);
+            }
+            return a + postfix;
+        case "Break":
+            return indent + `[Break]:\n` + postfix;
+        case "Continue":
+            return indent + `[Continue]:\n` + postfix;
+        case "Program":
+            return indent + `[Program]:\n${node.statements.map((stmt) => astToString(stmt, level + 1)).join("")}` + postfix;
         default:
             return `Unknown ASTNode type ${node.type}`;
     }

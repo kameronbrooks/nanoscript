@@ -31,6 +31,11 @@ export class InterpretIndexer extends InterpreterStep {
                 object: lnode as ASTNode,
                 indices: argNodes
             } as IndexerNode;
+
+            // Have to check for EOS here
+            if (this.interpreter.match('EOS')) {
+                return lnode;
+            }
             
             // Special case for member access
             let memberAccessNode = this.interpreter.expressionSteps.memberAccess.execute(lnode) as ASTNode;

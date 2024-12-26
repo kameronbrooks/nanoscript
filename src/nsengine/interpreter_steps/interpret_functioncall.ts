@@ -20,6 +20,7 @@ export class InterpretFunctionCall extends InterpreterStep {
             while(!this.interpreter.isEOF() && !this.interpreter.match("RPAREN")) {
                 let argNode = this.interpreter.parseExpression();
                 argNodes.push(argNode as ASTNode);
+                console.log("argNode");
                 console.log(argNode);
                 if (this.interpreter.match("COMMA")) {
                     continue;
@@ -31,6 +32,10 @@ export class InterpretFunctionCall extends InterpreterStep {
                 left: lnode as ASTNode,
                 arguments: argNodes
             } as FunctionCallNode;
+
+            if (this.interpreter.match('EOS')) {
+                return lnode;
+            }
             
             // Special case for member access
             let memberAccessNode = this.interpreter.expressionSteps.memberAccess.execute(lnode) as ASTNode;

@@ -8,7 +8,6 @@ const nenv_1 = require("./nsengine/nenv");
 const executor_1 = require("./nsengine/executor");
 const program_1 = require("./nsengine/program");
 const builtin_1 = require("./nenvmodules/builtin");
-const prg2bin_1 = require("./nsengine/prg2bin");
 function runCode(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
     let tokens = tokenizer.tokenize();
@@ -23,7 +22,8 @@ function tokenize(code) {
 const myModule = {
     name: "myModule",
     exports: [
-        { name: "myObject", type: "constant", object: { x: 1, y: 2, z: 3 } }
+        { name: "myObject", type: "constant", object: { x: 1, y: 2, z: 3 } },
+        { name: "myFunction", type: "function", object: (a, b) => a + b }
     ]
 };
 const _nenv = new nenv_1.Nenv();
@@ -37,6 +37,7 @@ function compile(code) {
     let ast = interpreter.parse();
     return compiler.compile([ast]);
 }
+/*
 const script = `
 let a = 0;
 let b = 0;
@@ -46,6 +47,13 @@ for(let i = 0; i < 10000; i++) {
     }
 }
 a;
+`;
+*/
+const script = `
+function addNums(a, b) {
+    return a + b;
+}
+addNums(1, 2);
 `;
 /*
 const script = `
@@ -86,9 +94,9 @@ start = performance.now();
 result = executor.execute(program);
 end = performance.now();
 console.log(result + " in " + (end - start) + "ms  (executor)");
-const prg2bin = new prg2bin_1.NSBinaryComplier();
-const binary = prg2bin.compileBinary(program);
-console.log(binary);
+//const prg2bin = new NSBinaryComplier();
+//const binary = prg2bin.compileBinary(program);
+//console.log(binary);
 // save file
-const fs = require('fs');
-fs.writeFileSync('out.bin', Buffer.from(binary));
+//const fs = require('fs');
+//fs.writeFileSync('out.bin', Buffer.from(binary));

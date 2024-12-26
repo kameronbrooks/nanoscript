@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InterpretIndexer = exports.InterpretMemberAccess = exports.InterpretStringLiteral = exports.InterpretPrimative = exports.InterpretPreUnary = exports.InterpretPowRoot = exports.InterpretPostUnary = exports.InterpretMulDiv = exports.InterpretIdentifier = exports.InterpretFunctionCall = exports.InterpretEquality = exports.InterpretComparison = exports.InterpretAssignment = exports.InterpretAndOr = exports.InterpretAddSub = void 0;
+exports.InterpretFunctionDefinition = exports.InterpretIndexer = exports.InterpretMemberAccess = exports.InterpretStringLiteral = exports.InterpretPrimative = exports.InterpretPreUnary = exports.InterpretPowRoot = exports.InterpretPostUnary = exports.InterpretMulDiv = exports.InterpretIdentifier = exports.InterpretFunctionCall = exports.InterpretEquality = exports.InterpretComparison = exports.InterpretAssignment = exports.InterpretAndOr = exports.InterpretAddSub = void 0;
 var interpret_addsub_1 = require("./interpret_addsub");
 Object.defineProperty(exports, "InterpretAddSub", { enumerable: true, get: function () { return interpret_addsub_1.InterpretAddSub; } });
 var interpret_andor_1 = require("./interpret_andor");
@@ -31,3 +31,5 @@ var interpret_member_access_1 = require("./interpret_member_access");
 Object.defineProperty(exports, "InterpretMemberAccess", { enumerable: true, get: function () { return interpret_member_access_1.InterpretMemberAccess; } });
 var interpret_indexer_1 = require("./interpret_indexer");
 Object.defineProperty(exports, "InterpretIndexer", { enumerable: true, get: function () { return interpret_indexer_1.InterpretIndexer; } });
+var interpret_function_definition_1 = require("./interpret_function_definition");
+Object.defineProperty(exports, "InterpretFunctionDefinition", { enumerable: true, get: function () { return interpret_function_definition_1.InterpretFunctionDefinition; } });

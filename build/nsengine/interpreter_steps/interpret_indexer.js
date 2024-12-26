@@ -29,6 +29,10 @@ class InterpretIndexer extends interpreter_step_1.InterpreterStep {
                 object: lnode,
                 indices: argNodes
             };
+            // Have to check for EOS here
+            if (this.interpreter.match('EOS')) {
+                return lnode;
+            }
             // Special case for member access
             let memberAccessNode = this.interpreter.expressionSteps.memberAccess.execute(lnode);
             if (memberAccessNode) {

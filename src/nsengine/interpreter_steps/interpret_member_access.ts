@@ -24,6 +24,10 @@ export class InterpretMemberAccess extends InterpreterStep {
                 member: rnode as ASTNode
             } as MemberAccessNode;
 
+            // Have to check for EOS here
+            if (this.interpreter.match('EOS')) {
+                return lnode;
+            }
 
             // Requires a special case for function calls
             let funcCallNode = this.interpreter.expressionSteps.functionCall.execute(lnode) as ASTNode;

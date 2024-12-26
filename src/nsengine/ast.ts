@@ -81,6 +81,16 @@ export interface BreakNode extends ASTNode {
     level: number;
 }
 
+export interface ReturnNode extends ASTNode {
+    type: "Return";
+    value?: ASTNode;
+}
+
+export interface ContinueNode extends ASTNode {
+    type: "Continue";
+    level: number;
+}
+
 export interface MemberAccessNode extends ASTNode {
     type: "MemberAccess";
     object: ASTNode;
@@ -97,6 +107,7 @@ export interface FunctionCallNode extends ASTNode {
     type: "FunctionCall";
     left: ASTNode;
     arguments: ASTNode[];
+    targetLocation: "internal" | "external" | "stack";
 }
 
 export interface DeclarationNode extends ASTNode {
@@ -106,6 +117,14 @@ export interface DeclarationNode extends ASTNode {
     dtype?: string;
     constant?: boolean;
 }
+
+export interface FunctionDeclarationNode extends ASTNode {
+    type: "FunctionDeclaration";
+    name: string;
+    arguments: ASTNode[];
+    body: ASTNode;
+}
+
 
 export function createNumberNode(value: number): NumberNode {
     return { type: "Number", value };
@@ -187,6 +206,26 @@ export function astToString(node: ASTNode, level:number=0): string {
                 a += astToString((node as DeclarationNode).initializer as ASTNode, level+1);
             }
             return a + postfix;
+        case "FunctionDeclaration":
+            a = indent+`[Function]:\n`;
+            a += indent+`[${(node as FunctionDeclarationNode).name}]\n`;
+            a += indent+`[Arguments]:\n`;
+            a += (node as FunctionDeclarationNode).arguments.map((arg) => astToString(arg, level+1)).join("");
+            a += indent+`[Body]:\n`;
+            a += astToString((node as FunctionDeclarationNode).body as ASTNode, level+1);
+            return a + postfix;
+        case "Return":
+            a = indent+`[Return]:\n`;
+            if((node as ReturnNode).value) {
+                a += astToString((node as ReturnNode).value as ASTNode, level+1);
+            }
+            return a + postfix;
+        case "Break":
+            return indent+`[Break]:\n` + postfix;
+        case "Continue":
+            return indent+`[Continue]:\n` + postfix;
+        case "Program":
+            return indent+`[Program]:\n${(node as ProgramNode).statements.map((stmt) => astToString(stmt, level+1)).join("")}` + postfix;
         default:
             return `Unknown ASTNode type ${node.type}`;
     }

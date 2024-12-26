@@ -54,7 +54,8 @@ class Interpreter {
         const comparison = new ist.InterpretComparison(this, addSub);
         const equality = new ist.InterpretEquality(this, comparison);
         const andOr = new ist.InterpretAndOr(this, equality);
-        const assignment = new ist.InterpretAssignment(this, andOr);
+        const functionDefinition = new ist.InterpretFunctionDefinition(this, andOr);
+        const assignment = new ist.InterpretAssignment(this, functionDefinition);
         this.expressionSteps = {
             stringLiteral: stringLiteral,
             primative: primative,
@@ -70,8 +71,12 @@ class Interpreter {
             comparison: comparison,
             equality: equality,
             andOr: andOr,
+            functionDefinition: functionDefinition,
             assignment: assignment
         };
+        for (let step in this.expressionSteps) {
+            this.expressionSteps[step].verboseMode = true;
+        }
     }
     createSubInterpreter(tokens) {
         return new Interpreter(tokens);
@@ -202,6 +207,17 @@ class Interpreter {
             }
         }
     }
+    parseReturnStatement() {
+        if (this.match("RETURN")) {
+            const value = this.parseExpression();
+            this.consume("EOS");
+            return {
+                type: "Return",
+                value
+            };
+        }
+        return null;
+    }
     parseForStatement() {
         if (this.match("FOR")) {
             this.consume("LPAREN"); // Parentheses required
@@ -257,6 +273,9 @@ class Interpreter {
         }
         return null;
     }
+    parseFunctionDeclaration() {
+        return this.expressionSteps.functionDefinition.execute();
+    }
     parseStatement() {
         let node = this.parseIfStatement();
         if (node)
@@ -274,6 +293,12 @@ class Interpreter {
         if (node)
             return node;
         node = this.parseBreakStatement();
+        if (node)
+            return node;
+        node = this.parseFunctionDeclaration();
+        if (node)
+            return node;
+        node = this.parseReturnStatement();
         if (node)
             return node;
         //node = this.parseForStatement();

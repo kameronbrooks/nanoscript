@@ -24,6 +24,7 @@ export type InterpreterSteps = {
     comparison: InterpreterStep;
     equality: InterpreterStep;
     andOr: InterpreterStep;
+    functionDefinition: ist.InterpretFunctionDefinition;
     assignment: InterpreterStep;
     expression: InterpreterStep;
 }
@@ -52,7 +53,8 @@ export class Interpreter {
         const comparison = new ist.InterpretComparison(this, addSub);
         const equality = new ist.InterpretEquality(this, comparison);
         const andOr = new ist.InterpretAndOr(this, equality);
-        const assignment = new ist.InterpretAssignment(this, andOr);
+        const functionDefinition = new ist.InterpretFunctionDefinition(this, andOr);
+        const assignment = new ist.InterpretAssignment(this, functionDefinition);
 
         
 
@@ -71,8 +73,13 @@ export class Interpreter {
             comparison: comparison,
             equality: equality,
             andOr: andOr,
+            functionDefinition: functionDefinition,
             assignment: assignment
         } as InterpreterSteps;
+
+        for (let step in this.expressionSteps) {
+            this.expressionSteps[step as keyof InterpreterSteps].verboseMode = true;
+        }
     }
     
     public createSubInterpreter(tokens: Token[]): Interpreter {
@@ -221,6 +228,18 @@ export class Interpreter {
         }
     }
 
+    private parseReturnStatement(): ASTNode|null|undefined {
+        if (this.match("RETURN")) {
+            const value = this.parseExpression();
+            this.consume("EOS");
+            return {
+                type: "Return",
+                value
+            } as ASTNode;
+        }
+        return null;
+    }
+
     private parseForStatement(): ASTNode|null|undefined {
         if (this.match("FOR")) {
             this.consume("LPAREN");     // Parentheses required
@@ -284,6 +303,10 @@ export class Interpreter {
         return null;
     }
 
+    public parseFunctionDeclaration(): ASTNode|null|undefined {
+        return this.expressionSteps.functionDefinition.execute();
+    }
+
     public parseStatement(): ASTNode|null|undefined {
         let node = this.parseIfStatement();
         if (node) return node;
@@ -296,6 +319,10 @@ export class Interpreter {
         node = this.parseWhileStatement();
         if (node) return node;
         node = this.parseBreakStatement();
+        if (node) return node;
+        node = this.parseFunctionDeclaration();
+        if (node) return node;
+        node = this.parseReturnStatement();
         if (node) return node;
         //node = this.parseForStatement();
         //if (node) return node;

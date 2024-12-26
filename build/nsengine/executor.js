@@ -72,16 +72,31 @@ class JSExecutor {
             this.op_branch_null.bind(this),
             this.op_branch_not_null.bind(this),
             this.op_branch_equal.bind(this),
+            this.op_branch_equal.bind(this),
+            this.op_branch_equal.bind(this),
+            this.op_branch_not_equal.bind(this),
+            this.op_branch_not_equal.bind(this),
             this.op_branch_not_equal.bind(this),
             this.op_branch_greater_than.bind(this),
+            this.op_branch_greater_than.bind(this),
+            this.op_branch_greater_than.bind(this),
+            this.op_branch_less_than.bind(this),
+            this.op_branch_less_than.bind(this),
             this.op_branch_less_than.bind(this),
             this.op_branch_greater_than_or_equal.bind(this),
+            this.op_branch_greater_than_or_equal.bind(this),
+            this.op_branch_greater_than_or_equal.bind(this),
+            this.op_branch_less_than_or_equal.bind(this),
+            this.op_branch_less_than_or_equal.bind(this),
             this.op_branch_less_than_or_equal.bind(this),
             this.op_load_const_bool.bind(this),
             this.op_load_const_int.bind(this),
             this.op_load_const_float.bind(this),
             this.op_load_const_null.bind(this),
             this.op_load_const_string.bind(this),
+            this.op_load_instruction_reference.bind(this),
+            this.op_load_ptr.bind(this),
+            this.op_load_literal_object.bind(this),
             this.op_addi.bind(this),
             this.op_subi.bind(this),
             this.op_muli.bind(this),
@@ -121,18 +136,35 @@ class JSExecutor {
             this.op_int_to_string.bind(this),
             this.op_float_to_string.bind(this),
             this.op_load_local.bind(this),
+            this.op_load_local.bind(this),
+            this.op_load_local.bind(this),
+            this.op_store_local.bind(this),
+            this.op_store_local.bind(this),
             this.op_store_local.bind(this),
             this.op_load_member.bind(this),
+            this.op_load_member.bind(this),
+            this.op_load_member.bind(this),
             this.op_store_member.bind(this),
-            this.op_load_external.bind(this),
+            this.op_store_member.bind(this),
+            this.op_store_member.bind(this),
+            this.op_load_element.bind(this),
+            this.op_load_element.bind(this),
             this.op_load_element.bind(this),
             this.op_store_element.bind(this),
+            this.op_store_element.bind(this),
+            this.op_store_element.bind(this),
+            this.op_load_external.bind(this),
             this.op_alloc_stack.bind(this),
             this.op_pop_stack.bind(this),
             this.op_alloc_heap.bind(this),
             this.op_pop_heap.bind(this),
             this.op_call_internal.bind(this),
-            this.op_call_external.bind(this)
+            this.op_call_external.bind(this),
+            this.op_call_stack.bind(this),
+            this.op_return.bind(this),
+            this.op_return8.bind(this),
+            this.op_return32.bind(this),
+            this.op_return64.bind(this)
         ];
         /*
         let i = 0;
@@ -280,6 +312,21 @@ class JSExecutor {
         this.ip++;
     }
     op_load_const_string() {
+        var _a;
+        this.stack.push((_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand);
+        this.ip++;
+    }
+    op_load_instruction_reference() {
+        var _a;
+        this.stack.push((_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand);
+        this.ip++;
+    }
+    op_load_ptr() {
+        var _a;
+        this.stack.push((_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand);
+        this.ip++;
+    }
+    op_load_literal_object() {
         var _a;
         this.stack.push((_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand);
         this.ip++;
@@ -574,7 +621,52 @@ class JSExecutor {
         this.ip++;
     }
     op_call_internal() {
-        this.ip++;
+        var _a;
+        // push a stack frame
+        this.stack.push(this.fp);
+        // push the return address
+        this.stack.push(this.ip + 1);
+        // set the new frame pointer
+        this.fp = this.sp;
+        // set the new instruction pointer
+        this.ip = (_a = this.program) === null || _a === void 0 ? void 0 : _a.instructions[this.ip].operand;
+    }
+    op_return() {
+        this.ip = this.stack.pop();
+        this.fp = this.stack.pop();
+    }
+    op_return8() {
+        this.ret = this.stack.pop();
+        while (this.stack.length > this.fp) {
+            this.stack.pop();
+        }
+        // set the new instruction pointer to the return address
+        this.ip = this.stack.pop();
+        // restore the frame pointer
+        this.fp = this.stack.pop();
+        this.stack.push(this.ret);
+    }
+    op_return32() {
+        this.ret = this.stack.pop();
+        while (this.stack.length > this.fp) {
+            this.stack.pop();
+        }
+        // set the new instruction pointer to the return address
+        this.ip = this.stack.pop();
+        // restore the frame pointer
+        this.fp = this.stack.pop();
+        this.stack.push(this.ret);
+    }
+    op_return64() {
+        this.ret = this.stack.pop();
+        while (this.stack.length > this.fp) {
+            this.stack.pop();
+        }
+        // set the new instruction pointer to the return address
+        this.ip = this.stack.pop();
+        // restore the frame pointer
+        this.fp = this.stack.pop();
+        this.stack.push(this.ret);
     }
     op_call_external() {
         var _a, _b;
@@ -590,6 +682,16 @@ class JSExecutor {
             this.stack.push(a(...b.reverse()));
         }
         this.ip++;
+    }
+    op_call_stack() {
+        // push a stack frame
+        this.stack.push(this.fp);
+        // push the return address
+        this.stack.push(this.ip + 1);
+        // set the new frame pointer
+        this.fp = this.sp;
+        // set the new instruction pointer
+        this.ip = this.stack.pop();
     }
 }
 exports.JSExecutor = JSExecutor;

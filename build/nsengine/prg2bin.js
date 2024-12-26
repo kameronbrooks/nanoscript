@@ -39,7 +39,7 @@ class NSBinaryComplier {
             if (operand) {
                 if (typeof operand === "number") {
                     console.log("number: " + operand);
-                    if (opcode === program_1.OP_LOAD_CONST_FLOAT) {
+                    if (opcode === program_1.OP_LOAD_LITERAL_FLOAT64) {
                         instructionView.setFloat64(instructionByteOffset, operand, true);
                     }
                     else {

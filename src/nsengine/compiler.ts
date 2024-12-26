@@ -97,7 +97,7 @@ class Scope {
         throw new Error(`Unknown identifier: ${name}`);
     }
 
-    addLocalVariable(name: string, isConst:boolean, datatype: string, value: any) {
+    addLocalVariable(name: string, isConst:boolean, datatype: string, value: any, localStackIndex?: number) {
         if (this.objects.has(name) || this.getFrameVariables().variables.includes(name)) {
             throw new Error(`Variable ${name} already exists`);
         }
@@ -107,11 +107,29 @@ class Scope {
             value,
             type: isConst ? "constant" : "variable",
             location: "internal",
-            localStackIndex: this.getFrameVariables().variables.length,
+            localStackIndex: localStackIndex || (this.getFrameVariables().variables.length),
         } as ScopeObject;
 
         this.objects.set(name, obj);
         this.getFrameVariables().variables.push(name);
+
+        return obj;
+    }
+
+    addFunctionArgument(name: string, isConst:boolean, datatype: string, value: any, localStackIndex: number) {
+        if (this.objects.has(name)) {
+            throw new Error(`Variable ${name} already exists`);
+        }
+        const obj = {
+            name,
+            datatype,
+            value,
+            type: isConst ? "constant" : "variable",
+            location: "internal",
+            localStackIndex: localStackIndex,
+        } as ScopeObject;
+
+        this.objects.set(name, obj);
 
         return obj;
     }
@@ -131,6 +149,14 @@ interface BreakList {
     breakInstructions: prg.Instruction[];
 }
 
+/**
+ * Contains the instructions for a function
+ * - instructions: The instructions for the function
+ */
+interface FunctionInstructionBuffer {
+    instructions: prg.Instruction[];
+}
+
 
 
 /**
@@ -147,6 +173,7 @@ class CompilerState {
     currentScope?: Scope | null;
     breakListStack: BreakList[];
     frameVariableList: FrameVariableList[] = [];
+    isInFunction: number;
 
 
     constructor(currentScope?: Scope) {
@@ -163,6 +190,8 @@ class CompilerState {
         if (this.currentScope) {
             this.currentScope.frameVariablesStack = this.frameVariableList;
         }
+
+        this.isInFunction = 0;
         console.log(this.currentScope);
     }
 
@@ -260,6 +289,10 @@ export class Compiler {
     private globalScope: Scope;
     private frameBeginIndex: number[] = [];
     private instructionReferenceTable: InstructionReferenceTable;
+    private instructionBufferTarget: prg.Instruction[];
+
+    private functionInstructionBuffers: FunctionInstructionBuffer[] = [];
+    
 
 
     constructor(nenv: Nenv) {
@@ -274,11 +307,42 @@ export class Compiler {
         this.state = new CompilerState(this.globalScope);
         this.frameBeginIndex.push(0);
         this.instructionReferenceTable = new InstructionReferenceTable();
+        this.instructionBufferTarget = this.program.instructions;
 
+        this.functionInstructionBuffers = [];
+    }
+
+    /**
+     * Set the target for the instruction buffer
+     * Instructions will be added to this target instead of the main program
+     * @param target 
+     */
+    setInstructionBufferTarget(target: prg.Instruction[]) {
+        this.instructionBufferTarget = target;
+    }
+
+    /**
+     * Clear the instruction buffer target
+     * The main program will be set as the target
+     */
+    clearInstructionBufferTarget() {
+        this.instructionBufferTarget = this.program.instructions;
+    }
+
+    /**
+     * Commit the instruction buffer target to the main program
+     * This will add the instructions in the buffer target to the main program
+     * and clear the buffer target
+     */
+    commitInstructionBufferTarget() {
+        if (this.instructionBufferTarget !== this.program.instructions) {
+            this.program.instructions.push(...this.instructionBufferTarget);
+        }
+        this.clearInstructionBufferTarget();
     }
 
     getTailIndex() {
-        return this.program.instructions.length;
+        return this.instructionBufferTarget.length;
     }
 
 
@@ -286,16 +350,16 @@ export class Compiler {
         const instruction = {
             opcode,
             operand,
-            index: this.program.instructions.length,
+            index: this.instructionBufferTarget.length,
         } as prg.Instruction
-        this.program.instructions.push(instruction);
+        this.instructionBufferTarget.push(instruction);
 
         // push the index of the new instruction to the reference table
         // if there is an open reference, this will close it
         if (!ignoreReference && this.instructionReferenceTable.hasOpenReference()) {
             this.instructionReferenceTable.close(instruction);
         }
-        return this.program.instructions.at(-1);
+        return this.instructionBufferTarget.at(-1);
     }
     insertInstruction(index:number, opcode: number, operand:any = null, ignoreReference = false) {
         const instruction = {
@@ -304,7 +368,7 @@ export class Compiler {
             index,
         } as prg.Instruction;
 
-        this.program.instructions.splice(index, 0, instruction);
+        this.instructionBufferTarget.splice(index, 0, instruction);
 
         // push the index of the new instruction to the reference table
         // if there is an open reference, this will close it
@@ -312,7 +376,16 @@ export class Compiler {
             this.instructionReferenceTable.close(instruction);
         }
 
-        return this.program.instructions.at(index);
+        return this.instructionBufferTarget.at(index);
+    }
+
+    replaceLastInstruction(opcode: number, operand:any = null) {
+        const lastInstruction = this.instructionBufferTarget.at(-1);
+        if (!lastInstruction) {
+            throw new Error("No instructions");
+        }
+        lastInstruction.opcode = opcode;
+        lastInstruction.operand = operand || lastInstruction.operand;
     }
 
     compile(ast: ast.ASTNode[]) {
@@ -351,13 +424,18 @@ export class Compiler {
         // TODO: Implement optimization
     }
     finalize() {
+
+        // Add the function instruction buffers to the main program
+        for (let buffer of this.functionInstructionBuffers) {
+            this.instructionBufferTarget.push(...buffer.instructions);
+        }
         // First, update the instructions to contain the correct indices
-        for (let i = 0; i < this.program.instructions.length; i++) {
-            this.program.instructions[i].index = i;
+        for (let i = 0; i < this.instructionBufferTarget.length; i++) {
+            this.instructionBufferTarget[i].index = i;
         }
         // Next, resolve the branch and jump targets
-        for (let i = 0; i < this.program.instructions.length; i++) {
-            const instruction = this.program.instructions[i];
+        for (let i = 0; i < this.instructionBufferTarget.length; i++) {
+            const instruction = this.instructionBufferTarget[i];
             if (
                 instruction.opcode === prg.OP_BRANCH_FALSE || 
                 instruction.opcode === prg.OP_BRANCH_TRUE || 
@@ -373,7 +451,7 @@ export class Compiler {
 
         }
         // Finally, remove the instruction metadata and return the program
-        this.program.instructions = this.program.instructions.map(instruction => ({
+        this.instructionBufferTarget = this.instructionBufferTarget.map(instruction => ({
             opcode: instruction.opcode,
             operand: instruction.operand
         }));
@@ -437,6 +515,12 @@ export class Compiler {
             case "Break":
                 this.compileBreak(node as ast.BreakNode);
                 break;
+            case "FunctionDeclaration":
+                this.compileFunctionDefinition(node as ast.FunctionDeclarationNode);
+                break;
+            case "Return":
+                this.compileReturn(node as ast.ReturnNode);
+                break;
                 
             default:
                 throw new Error(`Unknown node type: ${node.type}`);
@@ -485,8 +569,8 @@ export class Compiler {
         }
         // if this is a post increment or decrement, we need to change the last instruction
         // need to add cases for member access and element access
-        if (result.opcode == prg.OP_INCREMENT_LOCAL_POST || result.opcode == prg.OP_DECREMENT_LOCAL_POST) {
-            const lastInstruction = this.program.instructions.at(-1);
+        if (result.opcode == prg.OP_INCREMENT_LOCAL32 || result.opcode == prg.OP_DECREMENT_LOCAL32) {
+            const lastInstruction = this.instructionBufferTarget.at(-1);
             if (!lastInstruction) {
                 throw new Error("There is no lvalue");
             }
@@ -501,7 +585,7 @@ export class Compiler {
     }
 
     private compileBoolean(node: ast.BooleanNode) {
-        this.addInstruction(prg.OP_LOAD_CONST_BOOL, node.value);
+        this.addInstruction(prg.OP_LOAD_LITERAL_BOOL, node.value);
         this.state.currentDatatype = 'bool';
         this.state.isLValue = false;
     }
@@ -509,11 +593,11 @@ export class Compiler {
     private compileNumber(node: ast.NumberNode) {
         // Float
         if (node.dtype === 'float') {
-            this.addInstruction(prg.OP_LOAD_CONST_FLOAT, node.value);
+            this.addInstruction(prg.OP_LOAD_LITERAL_FLOAT64, node.value);
         }
         // Int
         else if (node.dtype === 'int') {
-            this.addInstruction(prg.OP_LOAD_CONST_INT, node.value);
+            this.addInstruction(prg.OP_LOAD_LITERAL_INT32, node.value);
         }
         // Set the current datatype
         this.state.currentDatatype = node.dtype || 'float';
@@ -521,13 +605,13 @@ export class Compiler {
     }
 
     private compileString(node: ast.StringNode) {
-        this.addInstruction(prg.OP_LOAD_CONST_STRING, node.value);
+        this.addInstruction(prg.OP_LOAD_LITERAL_STRING, node.value);
         this.state.currentDatatype = 'string';
         this.state.isLValue = false;
     }
 
     private compileNull(node: ast.NullNode) {
-        this.addInstruction(prg.OP_LOAD_CONST_NULL, null);
+        this.addInstruction(prg.OP_LOAD_LITERAL_NULL, null);
 
         this.state.currentDatatype = 'null';
         this.state.isLValue = false;
@@ -544,7 +628,8 @@ export class Compiler {
         this.compileNode(node.object);
 
         // Compile the member
-        this.addInstruction(prg.OP_LOAD_MEMBER, (node.member as ast.IdentifierNode).value);
+        // TODO: figure out the opcode based on the object type
+        this.addInstruction(prg.OP_LOAD_MEMBER32, (node.member as ast.IdentifierNode).value);
 
         // Add the instruction
     }
@@ -566,26 +651,32 @@ export class Compiler {
             }
             else {
                 // Add the instruction to load the object
+                // TODO: figure out the opcode based on the object type
                 if (target.type === "variable") {
-                    this.addInstruction(prg.OP_LOAD_LOCAL, target.localStackIndex);
+                    this.addInstruction(prg.OP_LOAD_LOCAL32, target.localStackIndex);
+                    this.state.isLValue = true;
                 }
                 else if (target.type === "constant") {
                     // TODO: Figure out the opcode based on the datatype
-                    this.addInstruction(prg.OP_LOAD_CONST_FLOAT, target.localStackIndex);
+                    this.addInstruction(prg.OP_LOAD_LITERAL_FLOAT64, target.localStackIndex);
+                    this.state.isLValue = false;
+                }
+                else if (target.type === "function") {
+                    //this.addInstruction(prg.OP_LOAD_EXTERNAL, target.value);
+                    this.addInstruction(prg.OP_LOAD_INSTRUCTION_REFERENCE, target.value);
+                    this.state.isLValue = true;
+
                 }
 
-                this.state.isLValue = true;
                 this.state.currentDatatype = target.datatype;
             }
         } else {
             // Add the instruction
-            this.addInstruction(prg.OP_LOAD_MEMBER, node.value);
+            // TODO: figure out the opcode based on the object type
+            this.addInstruction(prg.OP_LOAD_MEMBER32, node.value);
             this.state.isLValue = true;
         }
 
-        // Load the value
-        // TODO: Figure out the opcode based on the object type
-        // Also figure out if this should be a load or a store
         
     }
 
@@ -636,19 +727,20 @@ export class Compiler {
         }
         const leftDataType = this.state.currentDatatype;
 
-        const lastInstruction = this.program.instructions.at(-1);
+        const lastInstruction = this.instructionBufferTarget.at(-1);
         if (!lastInstruction) {
             throw new Error("No instructions");
         }
         // Switch the last load instruction to a store instruction
-        if (lastInstruction.opcode === prg.OP_LOAD_MEMBER) {
-            lastInstruction.opcode = prg.OP_STORE_MEMBER;
+        // TODO: add support for different types of stores/loads 8, 32, 64
+        if (lastInstruction.opcode === prg.OP_LOAD_MEMBER32) {
+            lastInstruction.opcode = prg.OP_STORE_MEMBER32;
         }
-        else if (lastInstruction.opcode === prg.OP_LOAD_LOCAL) {
-            lastInstruction.opcode = prg.OP_STORE_LOCAL;
+        else if (lastInstruction.opcode === prg.OP_LOAD_LOCAL32) {
+            lastInstruction.opcode = prg.OP_STORE_LOCAL32;
         }
-        else if (lastInstruction.opcode === prg.OP_LOAD_ELEMENT) {
-            lastInstruction.opcode = prg.OP_STORE_ELEMENT;
+        else if (lastInstruction.opcode === prg.OP_LOAD_ELEMENT32) {
+            lastInstruction.opcode = prg.OP_STORE_ELEMENT32;
         }
         this.state.isLValue = false;
         this.state.currentDatatype = rightDataType;
@@ -670,7 +762,8 @@ export class Compiler {
         
         if (node.initializer) {
             this.compileNode(node.initializer);
-            this.addInstruction(prg.OP_STORE_LOCAL, obj?.localStackIndex);
+            // TODO: add support for different types of stores 8, 32, 64
+            this.addInstruction(prg.OP_STORE_LOCAL32, obj?.localStackIndex);
             const initializerDataType = this.state.currentDatatype;
 
             console.log(`initializerDataType: ${initializerDataType} node.dtype: ${node.dtype}`);
@@ -693,9 +786,70 @@ export class Compiler {
 
         // Compile the left node
         this.compileNode(node.left);
+        const lastInstruction = this.instructionBufferTarget.at(-1);
+        if (!lastInstruction) {
+            throw new Error("No instructions");
+        }
 
+        if (lastInstruction.opcode === prg.OP_LOAD_EXTERNAL) {
+            this.addInstruction(prg.OP_CALL_EXTERNAL, node.arguments.length);
+        }
+        else if (lastInstruction.opcode === prg.OP_LOAD_INSTRUCTION_REFERENCE) {
+            this.replaceLastInstruction(prg.OP_CALL_INTERNAL);
+        }
         // Add the instruction
-        this.addInstruction(prg.OP_CALL_EXTERNAL, node.arguments.length);
+        
+    }
+
+    private compileFunctionDefinition(node: ast.FunctionDeclarationNode) {
+        // Add the function to the scope
+        const obj = this.state.currentScope?.addLocalVariable(
+            node.name, 
+            false, 
+            'function', 
+            node
+        );
+
+        console.log(this.state.currentScope)
+
+        const previousFrameVariableList = this.state.frameVariableList;
+        // Push a new scope for the function
+        this.state.pushScope();
+        this.state.frameVariableList = [];
+        // Create a new function instruction buffer and set it as the target
+        const functionBuffer = {
+            instructions: []
+        } as FunctionInstructionBuffer;
+
+        if (this.state.currentScope) {
+            this.state.currentScope.frameVariablesStack = this.state.frameVariableList as FrameVariableList[];
+        }
+
+        this.functionInstructionBuffers.push(functionBuffer);
+        this.setInstructionBufferTarget(functionBuffer.instructions);
+        this.state.isInFunction++;
+
+        let argStackIndex = -2;
+        // Add the arguments to the scope
+        for (let arg of node.arguments) {
+            this.state.currentScope?.addFunctionArgument(
+                (arg as ast.IdentifierNode).value, 
+                false, 
+                'any', 
+                null,
+                argStackIndex--
+            );
+        }
+
+        // Compile the function body
+        this.compileNode(node.body);
+
+
+
+        this.clearInstructionBufferTarget();
+        this.state.popScope();
+        this.state.frameVariableList = previousFrameVariableList;
+        this.state.isInFunction--;
     }
 
     private compileLoopStatement(node: ast.LoopNode) {
@@ -765,6 +919,33 @@ export class Compiler {
             throw new Error("Break list not found at this level");
         }
         breakList.breakInstructions.push(instruction);
+    }
+
+    private compileReturn(node: ast.ReturnNode) {
+        if (this.state.isInFunction > 0) {
+            if (node.value) {
+                this.compileNode(node.value);
+                if (this.state.currentDatatype === 'bool') {
+                    this.addInstruction(prg.OP_RETURN8);
+                }
+                else if (this.state.currentDatatype === 'int') {
+                    this.addInstruction(prg.OP_RETURN32);
+                }
+                else if (this.state.currentDatatype === 'float') {
+                    this.addInstruction(prg.OP_RETURN64);
+                }
+                else {
+                    this.addInstruction(prg.OP_RETURN64);
+                }
+            } else {
+                this.addInstruction(prg.OP_RETURN);
+            }
+        }
+        else {
+            // If outside of a function, return exits the program
+            this.addInstruction(prg.OP_TERM);
+        }
+        
     }
 
 
