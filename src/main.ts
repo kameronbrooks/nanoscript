@@ -63,9 +63,12 @@ function func1(a, b) {
 }
 
 function addNums(a, b) {
-    return a + b;
+    let c = a + b;
+    if (c > 10) {
+        console.log('c is greater than 10');
+    }
+    return c;
 }
-
 
 console.log(addNums(1, 2));
 

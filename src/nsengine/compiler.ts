@@ -57,21 +57,21 @@ class Scope {
     parent: Scope | null;
     objects: Map<string, ScopeObject>;
     nenv?: Nenv;
-    frameVariablesStack: FrameVariableList[] = [];
+    compiler: Compiler;
 
-    constructor(parent: Scope | null = null, nenv?: Nenv, stackVariables?: FrameVariableList[]) {
+    constructor(compiler: Compiler, parent: Scope | null = null, nenv?: Nenv) {
         this.nenv = nenv;
         this.parent = parent;
         this.objects = new Map();
-        this.frameVariablesStack = stackVariables || [];
+        this.compiler = compiler;
     }
 
     createChild() {
-        return new Scope(this, undefined, this.frameVariablesStack);
+        return new Scope(this.compiler, this, undefined);
     }
 
     getFrameVariables() {
-        return this.frameVariablesStack.at(-1) as FrameVariableList;
+        return this.compiler.state.frameVariableListStack.at(-1) as FrameVariableList;
     }
 
     getObject(name: string) : ScopeObject | undefined {
@@ -190,7 +190,7 @@ class CompilerState {
     // TODO: need some kind of object here if we are doing member access
     currentScope?: Scope | null;
     breakListStack: BreakList[];
-    frameVariableList: FrameVariableList[] = [];
+    frameVariableListStack: FrameVariableList[] = [];
     isInFunction: number;
 
 
@@ -199,15 +199,11 @@ class CompilerState {
         this.isLValue = false;
         this.currentScope = currentScope;
         this.breakListStack = [];
-        this.frameVariableList = [
+        this.frameVariableListStack = [
             {
                 variables: []
             } as FrameVariableList
         ];
-
-        if (this.currentScope) {
-            this.currentScope.frameVariablesStack = this.frameVariableList;
-        }
 
         this.isInFunction = 0;
         console.log(this.currentScope);
@@ -303,7 +299,7 @@ export class Compiler {
     private engineVersion = "0.0.1";
     private nenv: Nenv;
     private program: prg.Program;
-    private state: CompilerState;
+    public state: CompilerState;
     private globalScope: Scope;
     private frameBeginIndex: number[] = [];
     private instructionReferenceTable: InstructionReferenceTable;
@@ -321,7 +317,7 @@ export class Compiler {
             nenv: this.nenv,
             instructions: [],
         };
-        this.globalScope = new Scope(null, nenv);
+        this.globalScope = new Scope(this, null, nenv);
         this.state = new CompilerState(this.globalScope);
         this.frameBeginIndex.push(0);
         this.instructionReferenceTable = new InstructionReferenceTable();
@@ -836,18 +832,19 @@ export class Compiler {
 
         console.log(this.state.currentScope)
 
-        const previousFrameVariableList = this.state.frameVariableList;
         // Push a new scope for the function
         this.state.pushScope();
-        this.state.frameVariableList = [];
+        this.state.frameVariableListStack.push({
+            variables: []
+        } as FrameVariableList);
         // Create a new function instruction buffer and set it as the target
         const functionBuffer = {
             instructions: []
         } as FunctionInstructionBuffer;
 
-        if (this.state.currentScope) {
-            this.state.currentScope.frameVariablesStack = this.state.frameVariableList as FrameVariableList[];
-        }
+        this.state.frameVariableListStack.push({
+            variables: []
+        });
 
         this.functionInstructionBuffers.push(functionBuffer);
         this.setInstructionBufferTarget(functionBuffer.instructions);
@@ -876,7 +873,7 @@ export class Compiler {
 
         this.clearInstructionBufferTarget();
         this.state.popScope();
-        this.state.frameVariableList = previousFrameVariableList;
+        this.state.frameVariableListStack.pop();
         this.state.isInFunction--;
     }
 

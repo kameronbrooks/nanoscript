@@ -54,18 +54,17 @@ class ScopeObject {
     }
 }
 class Scope {
-    constructor(parent = null, nenv, stackVariables) {
-        this.frameVariablesStack = [];
+    constructor(compiler, parent = null, nenv) {
         this.nenv = nenv;
         this.parent = parent;
         this.objects = new Map();
-        this.frameVariablesStack = stackVariables || [];
+        this.compiler = compiler;
     }
     createChild() {
-        return new Scope(this, undefined, this.frameVariablesStack);
+        return new Scope(this.compiler, this, undefined);
     }
     getFrameVariables() {
-        return this.frameVariablesStack.at(-1);
+        return this.compiler.state.frameVariableListStack.at(-1);
     }
     getObject(name) {
         let obj = this.objects.get(name);
@@ -148,19 +147,16 @@ class Scope {
  */
 class CompilerState {
     constructor(currentScope) {
-        this.frameVariableList = [];
+        this.frameVariableListStack = [];
         this.currentDatatype = 'none';
         this.isLValue = false;
         this.currentScope = currentScope;
         this.breakListStack = [];
-        this.frameVariableList = [
+        this.frameVariableListStack = [
             {
                 variables: []
             }
         ];
-        if (this.currentScope) {
-            this.currentScope.frameVariablesStack = this.frameVariableList;
-        }
         this.isInFunction = 0;
         console.log(this.currentScope);
     }
@@ -249,7 +245,7 @@ class Compiler {
             nenv: this.nenv,
             instructions: [],
         };
-        this.globalScope = new Scope(null, nenv);
+        this.globalScope = new Scope(this, null, nenv);
         this.state = new CompilerState(this.globalScope);
         this.frameBeginIndex.push(0);
         this.instructionReferenceTable = new InstructionReferenceTable();
@@ -688,17 +684,18 @@ class Compiler {
         // Add the function to the scope
         const obj = (_a = this.state.currentScope) === null || _a === void 0 ? void 0 : _a.addFunction(node.name, 'any', null);
         console.log(this.state.currentScope);
-        const previousFrameVariableList = this.state.frameVariableList;
         // Push a new scope for the function
         this.state.pushScope();
-        this.state.frameVariableList = [];
+        this.state.frameVariableListStack.push({
+            variables: []
+        });
         // Create a new function instruction buffer and set it as the target
         const functionBuffer = {
             instructions: []
         };
-        if (this.state.currentScope) {
-            this.state.currentScope.frameVariablesStack = this.state.frameVariableList;
-        }
+        this.state.frameVariableListStack.push({
+            variables: []
+        });
         this.functionInstructionBuffers.push(functionBuffer);
         this.setInstructionBufferTarget(functionBuffer.instructions);
         this.state.isInFunction++;
@@ -716,7 +713,7 @@ class Compiler {
         this.compileNode(node.body);
         this.clearInstructionBufferTarget();
         this.state.popScope();
-        this.state.frameVariableList = previousFrameVariableList;
+        this.state.frameVariableListStack.pop();
         this.state.isInFunction--;
     }
     compileLoopStatement(node) {
