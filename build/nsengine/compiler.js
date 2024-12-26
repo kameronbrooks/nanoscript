@@ -669,7 +669,10 @@ class Compiler {
         if (!lastInstruction) {
             throw new Error("No instructions");
         }
-        if (lastInstruction.opcode === prg.OP_LOAD_EXTERNAL) {
+        if (lastInstruction.opcode === prg.OP_LOAD_EXTERNAL ||
+            lastInstruction.opcode === prg.OP_LOAD_MEMBER8 ||
+            lastInstruction.opcode === prg.OP_LOAD_MEMBER32 ||
+            lastInstruction.opcode === prg.OP_LOAD_LOCAL64) {
             this.addInstruction(prg.OP_CALL_EXTERNAL, node.arguments.length);
         }
         else if (lastInstruction.opcode === prg.OP_LOAD_INSTRUCTION_REFERENCE) {

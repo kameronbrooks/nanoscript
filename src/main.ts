@@ -58,10 +58,17 @@ a;
 `;
 */
 const script = `
+function func1(a, b) {
+    return a - b;
+}
+
 function addNums(a, b) {
     return a + b;
 }
-addNums(1, 2);
+
+
+console.log(addNums(1, 2));
+
 `;
 /*
 const script = `
