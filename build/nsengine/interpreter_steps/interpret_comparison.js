@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * @file interpret_comparison.ts
+ * @description Contains code to interpret a comparison operator
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretComparison = void 0;
 const interpreter_step_1 = require("./interpreter_step");

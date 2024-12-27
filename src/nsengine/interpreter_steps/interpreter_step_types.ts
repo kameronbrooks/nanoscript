@@ -1,3 +1,8 @@
+/**
+ * @file interpreter_step_types.ts
+ * @description This file is used to export all the interpreter steps
+ * so that they can be accessed from a single file.
+ */
 export { InterpretAddSub } from "./interpret_addsub";
 export { InterpretAndOr } from "./interpret_andor";
 export { InterpretAssignment } from "./interpret_assignment";

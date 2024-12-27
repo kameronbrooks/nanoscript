@@ -58,6 +58,7 @@ export type TokenType = (
     "WHILE" |
     "RETURN" |
     "BREAK" |
+    "CONTINUE" |
     "FOR" |
     "IN" |
     "DECLARE_VARIABLE" |

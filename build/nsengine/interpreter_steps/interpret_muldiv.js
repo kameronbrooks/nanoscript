@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretMulDiv = void 0;
+/**
+ * @file interpret_muldiv.ts
+ * @description Contains code to interpret a multiply or divide operator
+ */
 const interpreter_step_1 = require("./interpreter_step");
 const ast_1 = require("../ast");
 class InterpretMulDiv extends interpreter_step_1.InterpreterStep {

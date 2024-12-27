@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretIdentifier = void 0;
+/**
+ * @file interpret_identifier.ts
+ * @description Contains code to interpret an identifier
+ */
 const interpreter_step_1 = require("./interpreter_step");
 class InterpretIdentifier extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {

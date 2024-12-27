@@ -1,3 +1,8 @@
+/**
+ * @file interpret_functioncall.ts
+ * @description Contains code to interpret a function call
+ */
+
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { createBinaryOpNode, BinaryOpNode, ASTNode, FunctionCallNode } from "../ast";

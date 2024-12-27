@@ -1,3 +1,7 @@
+/**
+ * @file interpret_preunary.ts
+ * @description Contains code to interpret a pre-unary operator
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { UnaryOpNode } from "../ast";

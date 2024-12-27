@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretStringLiteral = void 0;
+/**
+ * @file interpret_stringliteral.ts
+ * @description Contains code to interpret a string literal
+ */
 const interpreter_step_1 = require("./interpreter_step");
 class InterpretStringLiteral extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {

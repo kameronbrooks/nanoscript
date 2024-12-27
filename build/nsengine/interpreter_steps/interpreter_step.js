@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpreterClass = exports.InterpreterStep = void 0;
+/**
+ * @file interpreter_step.ts
+ * @description The base class for all expression interpreter steps
+ */
 const interpreter_1 = require("../interpreter");
 class InterpreterStep {
     constructor(name, description, interpreter, nextStep = null) {

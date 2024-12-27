@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretAndOr = void 0;
+/**
+ * @file interpret_andor.ts
+ * @description Contains code to interpret an and or operator
+ */
 const interpreter_step_1 = require("./interpreter_step");
 const ast_1 = require("../ast");
 class InterpretAndOr extends interpreter_step_1.InterpreterStep {

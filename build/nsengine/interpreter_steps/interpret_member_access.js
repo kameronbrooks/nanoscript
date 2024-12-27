@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * @file interpret_member_access.ts
+ * @description Contains code to interpret member access
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretMemberAccess = void 0;
 const interpreter_step_1 = require("./interpreter_step");

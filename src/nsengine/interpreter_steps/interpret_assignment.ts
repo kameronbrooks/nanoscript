@@ -1,3 +1,7 @@
+/**
+ * @file interpret_assignment.ts
+ * @description Contains code to interpret an assignment operator
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { AssignmentNode, ASTNode } from "../ast";
@@ -24,7 +28,7 @@ export class InterpretAssignment extends InterpreterStep {
                 right: rnode as ASTNode
             } as AssignmentNode;
         }
-        // TODO: Implement function call interpretation
+
         return lnode;
     }
 }

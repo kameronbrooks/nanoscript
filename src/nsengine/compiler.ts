@@ -1,3 +1,8 @@
+/**
+ * @file compiler.ts
+ * @description This file contains the compiler class which is used to compile the AST into a program
+ */
+
 import * as ast from "./ast";
 import { Nenv } from "./nenv";
 import * as prg from "./program";
@@ -168,6 +173,15 @@ interface BreakList {
 }
 
 /**
+ * Constains the continue instructions within a block
+ * Used as an intermediate step in the compilation process to hold references to
+ * the continue instructions that need to be updated after the block is compiled
+ */
+interface ContinueList {
+    continueInstructions: prg.Instruction[];
+}
+
+/**
  * Contains the instructions for a function
  * - instructions: The instructions for the function
  */
@@ -190,6 +204,7 @@ class CompilerState {
     // TODO: need some kind of object here if we are doing member access
     currentScope?: Scope | null;
     breakListStack: BreakList[];
+    continueListStack: ContinueList[];
     frameVariableListStack: FrameVariableList[] = [];
     isInFunction: number;
 
@@ -199,6 +214,7 @@ class CompilerState {
         this.isLValue = false;
         this.currentScope = currentScope;
         this.breakListStack = [];
+        this.continueListStack = [];
         this.frameVariableListStack = [
             {
                 variables: []
@@ -304,8 +320,8 @@ export class Compiler {
     private frameBeginIndex: number[] = [];
     private instructionReferenceTable: InstructionReferenceTable;
     private instructionBufferTarget: prg.Instruction[];
-
     private functionInstructionBuffers: FunctionInstructionBuffer[] = [];
+    private verboseMode: boolean = false;
     
 
 
@@ -324,6 +340,7 @@ export class Compiler {
         this.instructionBufferTarget = this.program.instructions;
 
         this.functionInstructionBuffers = [];
+        this.verboseMode = false;
     }
 
     /**
@@ -367,7 +384,7 @@ export class Compiler {
             index: this.instructionBufferTarget.length,
         } as prg.Instruction
         this.instructionBufferTarget.push(instruction);
-
+ 
         // push the index of the new instruction to the reference table
         // if there is an open reference, this will close it
         if (!ignoreReference && this.instructionReferenceTable.hasOpenReference()) {
@@ -408,6 +425,7 @@ export class Compiler {
             nenv: this.nenv,
             instructions: [],
         };
+        this.instructionBufferTarget = this.program.instructions;
 
         for (let node of ast) {
             this.compileNode(node);
@@ -415,21 +433,26 @@ export class Compiler {
 
         // Terminate the program
         this.addInstruction(prg.OP_TERM);
-        console.log("=====================================");
-        console.log("Pre Linked Program");
-        this.instructionReferenceTable.print();
-        prg.printProgram(this.program); 
-        console.log("=====================================");
+        if (this.verboseMode) {
+            console.log("=====================================");
+            console.log("Pre Linked Program");
+            this.instructionReferenceTable.print();
+            prg.printProgram(this.program); 
+            console.log("=====================================");
+        }
+        
         // Optimize the program to remove unnecessary instructions
         this.optimize();
 
         this.finalize();
 
-        console.log("=====================================");
-        console.log("Final Program");
-        this.instructionReferenceTable.print();
-        prg.printProgram(this.program); 
-        console.log("=====================================");
+        if (this.verboseMode) {
+            console.log("=====================================");
+            console.log("Final Program");
+            this.instructionReferenceTable.print();
+            prg.printProgram(this.program); 
+            console.log("=====================================");
+        }
         // Finalize the program by updating the instruction indices and resolving branch targets
         return this.program;
     }
@@ -438,7 +461,14 @@ export class Compiler {
         // TODO: Implement optimization
     }
     finalize() {
-
+        
+        if (this.verboseMode) {
+            console.log("Finalizing program");
+            console.log("=====================================");
+            console.log(this.program.instructions );
+            console.log("=====================================");
+        }
+        
         // Add the function instruction buffers to the main program
         for (let buffer of this.functionInstructionBuffers) {
             this.instructionBufferTarget.push(...buffer.instructions);
@@ -529,6 +559,9 @@ export class Compiler {
                 break;
             case "Break":
                 this.compileBreak(node as ast.BreakNode);
+                break;
+            case "Continue":
+                this.compileContinue(node as ast.ContinueNode);
                 break;
             case "FunctionDeclaration":
                 this.compileFunctionDefinition(node as ast.FunctionDeclarationNode);
@@ -895,10 +928,12 @@ export class Compiler {
 
         // Push a new break list so break statements can be handled
         this.state.breakListStack.push({ breakInstructions: [] });
+        this.state.continueListStack.push({ continueInstructions: [] });
 
         // Compile the body
         this.compileNode(node.body);
 
+        const endOfBodyRef = this.instructionReferenceTable.open();
         // Compile the increment if there is one (for loop)
         if (node.increment) {
             this.compileNode(node.increment);
@@ -922,9 +957,41 @@ export class Compiler {
         for (let instruction of breakList.breakInstructions) {
             instruction.operand = endOfLoopRef;
         }
+
+        // Handle the continue statements
+        // Retarget the continue instructions to the end of the loop
+        const continueList = this.state.continueListStack.pop();
+        if (!continueList) {
+            throw new Error("Continue list not found");
+        }
+        for (let instruction of continueList.continueInstructions) {
+            instruction.operand = endOfBodyRef;
+        }
     }
 
     private compileBreak(node: ast.BreakNode) {
+        // Add the jump instruction
+        const instruction = this.addInstruction(prg.OP_JUMP, null);
+        if (!instruction) {
+            throw new Error("Failed to add break instruction");
+        }
+
+        // Add the instruction to the break list
+        const breakLevel = node.level;
+        if (breakLevel < 0) {
+            throw new Error("Break level must be greater than or equal to 0");
+        }
+        if (breakLevel > this.state.breakListStack.length) {
+            throw new Error(`Cannot break out farther than loop depth, current depth: ${this.state.breakListStack.length} requested depth: ${breakLevel}`);
+        }
+        const breakList = this.state.breakListStack.at(-breakLevel);
+        if (!breakList) {
+            throw new Error("Break list not found at this level");
+        }
+        breakList.breakInstructions.push(instruction);
+    }
+
+    private compileContinue(node: ast.ContinueNode) {
         // Add the jump instruction
         const instruction = this.addInstruction(prg.OP_JUMP, null);
         if (!instruction) {

@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretEquality = void 0;
+/**
+ * @file interpret_equality.ts
+ * @description Contains code to interpret an equality operator
+ */
 const interpreter_step_1 = require("./interpreter_step");
 const ast_1 = require("../ast");
 class InterpretEquality extends interpreter_step_1.InterpreterStep {

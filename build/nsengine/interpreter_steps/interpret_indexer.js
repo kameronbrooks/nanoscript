@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretIndexer = void 0;
+/**
+ * @file interpret_indexer.ts
+ * @description Contains the code for interpreting an indexer node.
+ */
 const interpreter_step_1 = require("./interpreter_step");
 class InterpretIndexer extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {

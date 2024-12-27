@@ -1,3 +1,8 @@
+/**
+ * @file interpret_member_access.ts
+ * @description Contains code to interpret member access
+ */
+
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { ASTNode, BinaryOpNode, createBinaryOpNode , MemberAccessNode} from "../ast";

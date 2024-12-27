@@ -1,3 +1,7 @@
+/**
+ * @file interpret_muldiv.ts
+ * @description Contains code to interpret a multiply or divide operator
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { createBinaryOpNode, BinaryOpNode, ASTNode } from "../ast";

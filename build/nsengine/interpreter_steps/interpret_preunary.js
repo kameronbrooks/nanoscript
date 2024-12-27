@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretPreUnary = void 0;
+/**
+ * @file interpret_preunary.ts
+ * @description Contains code to interpret a pre-unary operator
+ */
 const interpreter_step_1 = require("./interpreter_step");
 class InterpretPreUnary extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {

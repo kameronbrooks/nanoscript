@@ -1,3 +1,7 @@
+/**
+ * @file interpret_primitive.ts
+ * @description Contains code to interpret a primative value (number, boolean, null)
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { TokenType } from "../tokenizer";

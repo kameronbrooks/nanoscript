@@ -1,3 +1,7 @@
+/**
+ * @file interpret_stringliteral.ts
+ * @description Contains code to interpret a string literal
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { StringBuilderToken, Token, TokenType, Tokenizer } from "../tokenizer";

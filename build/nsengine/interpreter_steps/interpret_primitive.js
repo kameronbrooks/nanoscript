@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretPrimitive = void 0;
+/**
+ * @file interpret_primitive.ts
+ * @description Contains code to interpret a primative value (number, boolean, null)
+ */
 const interpreter_step_1 = require("./interpreter_step");
 class InterpretPrimitive extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {

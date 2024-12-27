@@ -1,3 +1,8 @@
+/**
+ * @file program.ts
+ * @description This file contains the program object and the instructions that make up the program.
+ */
+
 import { Nenv } from "./nenv";
 
 let i = 0;

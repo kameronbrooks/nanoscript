@@ -1,3 +1,7 @@
+/**
+ * @file interpret_indexer.ts
+ * @description Contains the code for interpreting an indexer node.
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { ASTNode, IndexerNode} from "../ast";

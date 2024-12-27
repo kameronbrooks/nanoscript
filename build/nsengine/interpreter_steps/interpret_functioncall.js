@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * @file interpret_functioncall.ts
+ * @description Contains code to interpret a function call
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretFunctionCall = void 0;
 const interpreter_step_1 = require("./interpreter_step");

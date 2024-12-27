@@ -37,18 +37,17 @@ function compile(code) {
     let ast = interpreter.parse();
     return compiler.compile([ast]);
 }
-/*
 const script = `
-let a = 0;
+
+let a = 1+1;
 let b = 0;
-for(let i = 0; i < 10000; i++) {
-    for(let j = 0; j < 10000; j++) {
-        a = i * j;
-    }
+
+for (let i = 0; i < 10; i++) {
+    console.log(i);
 }
-a;
+
 `;
-*/
+/*
 const script = `
 function func1(a, b) {
     return a - b;
@@ -62,9 +61,12 @@ function addNums(a, b) {
     return c;
 }
 
+for (let i = 0; i < 10; i++) {
+    console.log(i);
+}
 console.log(addNums(1, 2));
-
 `;
+*/
 /*
 const script = `
 {

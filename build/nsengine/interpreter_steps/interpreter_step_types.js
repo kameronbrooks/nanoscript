@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretFunctionDefinition = exports.InterpretIndexer = exports.InterpretMemberAccess = exports.InterpretStringLiteral = exports.InterpretPrimative = exports.InterpretPreUnary = exports.InterpretPowRoot = exports.InterpretPostUnary = exports.InterpretMulDiv = exports.InterpretIdentifier = exports.InterpretFunctionCall = exports.InterpretEquality = exports.InterpretComparison = exports.InterpretAssignment = exports.InterpretAndOr = exports.InterpretAddSub = void 0;
+/**
+ * @file interpreter_step_types.ts
+ * @description This file is used to export all the interpreter steps
+ * so that they can be accessed from a single file.
+ */
 var interpret_addsub_1 = require("./interpret_addsub");
 Object.defineProperty(exports, "InterpretAddSub", { enumerable: true, get: function () { return interpret_addsub_1.InterpretAddSub; } });
 var interpret_andor_1 = require("./interpret_andor");

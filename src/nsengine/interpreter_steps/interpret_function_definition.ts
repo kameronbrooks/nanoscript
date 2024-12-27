@@ -1,3 +1,8 @@
+/**
+ * interpret_function_definition.ts
+ * This file contains the function definition interpreter step.
+ */
+
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { ASTNode, FunctionDeclarationNode } from "../ast";

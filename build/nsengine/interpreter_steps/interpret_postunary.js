@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretPostUnary = void 0;
+/**
+ * @file interpret_postunary.ts
+ * @description Contains code to interpret a post-unary operator
+ */
 const interpreter_step_1 = require("./interpreter_step");
 class InterpretPostUnary extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {

@@ -1,3 +1,7 @@
+/**
+ * @file interpret_postunary.ts
+ * @description Contains code to interpret a post-unary operator
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { UnaryOpNode } from "../ast";

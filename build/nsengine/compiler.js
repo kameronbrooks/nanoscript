@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * @file compiler.ts
+ * @description This file contains the compiler class which is used to compile the AST into a program
+ */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -152,6 +156,7 @@ class CompilerState {
         this.isLValue = false;
         this.currentScope = currentScope;
         this.breakListStack = [];
+        this.continueListStack = [];
         this.frameVariableListStack = [
             {
                 variables: []
@@ -239,6 +244,7 @@ class Compiler {
         this.engineVersion = "0.0.1";
         this.frameBeginIndex = [];
         this.functionInstructionBuffers = [];
+        this.verboseMode = false;
         this.nenv = nenv;
         this.program = {
             engineVersion: this.engineVersion,
@@ -251,6 +257,7 @@ class Compiler {
         this.instructionReferenceTable = new InstructionReferenceTable();
         this.instructionBufferTarget = this.program.instructions;
         this.functionInstructionBuffers = [];
+        this.verboseMode = false;
     }
     /**
      * Set the target for the instruction buffer
@@ -323,24 +330,29 @@ class Compiler {
             nenv: this.nenv,
             instructions: [],
         };
+        this.instructionBufferTarget = this.program.instructions;
         for (let node of ast) {
             this.compileNode(node);
         }
         // Terminate the program
         this.addInstruction(prg.OP_TERM);
-        console.log("=====================================");
-        console.log("Pre Linked Program");
-        this.instructionReferenceTable.print();
-        prg.printProgram(this.program);
-        console.log("=====================================");
+        if (this.verboseMode) {
+            console.log("=====================================");
+            console.log("Pre Linked Program");
+            this.instructionReferenceTable.print();
+            prg.printProgram(this.program);
+            console.log("=====================================");
+        }
         // Optimize the program to remove unnecessary instructions
         this.optimize();
         this.finalize();
-        console.log("=====================================");
-        console.log("Final Program");
-        this.instructionReferenceTable.print();
-        prg.printProgram(this.program);
-        console.log("=====================================");
+        if (this.verboseMode) {
+            console.log("=====================================");
+            console.log("Final Program");
+            this.instructionReferenceTable.print();
+            prg.printProgram(this.program);
+            console.log("=====================================");
+        }
         // Finalize the program by updating the instruction indices and resolving branch targets
         return this.program;
     }
@@ -348,6 +360,12 @@ class Compiler {
         // TODO: Implement optimization
     }
     finalize() {
+        if (this.verboseMode) {
+            console.log("Finalizing program");
+            console.log("=====================================");
+            console.log(this.program.instructions);
+            console.log("=====================================");
+        }
         // Add the function instruction buffers to the main program
         for (let buffer of this.functionInstructionBuffers) {
             this.instructionBufferTarget.push(...buffer.instructions);
@@ -433,6 +451,9 @@ class Compiler {
                 break;
             case "Break":
                 this.compileBreak(node);
+                break;
+            case "Continue":
+                this.compileContinue(node);
                 break;
             case "FunctionDeclaration":
                 this.compileFunctionDefinition(node);
@@ -732,8 +753,10 @@ class Compiler {
         const branchInstruction = this.addInstruction(prg.OP_BRANCH_FALSE, null);
         // Push a new break list so break statements can be handled
         this.state.breakListStack.push({ breakInstructions: [] });
+        this.state.continueListStack.push({ continueInstructions: [] });
         // Compile the body
         this.compileNode(node.body);
+        const endOfBodyRef = this.instructionReferenceTable.open();
         // Compile the increment if there is one (for loop)
         if (node.increment) {
             this.compileNode(node.increment);
@@ -754,8 +777,37 @@ class Compiler {
         for (let instruction of breakList.breakInstructions) {
             instruction.operand = endOfLoopRef;
         }
+        // Handle the continue statements
+        // Retarget the continue instructions to the end of the loop
+        const continueList = this.state.continueListStack.pop();
+        if (!continueList) {
+            throw new Error("Continue list not found");
+        }
+        for (let instruction of continueList.continueInstructions) {
+            instruction.operand = endOfBodyRef;
+        }
     }
     compileBreak(node) {
+        // Add the jump instruction
+        const instruction = this.addInstruction(prg.OP_JUMP, null);
+        if (!instruction) {
+            throw new Error("Failed to add break instruction");
+        }
+        // Add the instruction to the break list
+        const breakLevel = node.level;
+        if (breakLevel < 0) {
+            throw new Error("Break level must be greater than or equal to 0");
+        }
+        if (breakLevel > this.state.breakListStack.length) {
+            throw new Error(`Cannot break out farther than loop depth, current depth: ${this.state.breakListStack.length} requested depth: ${breakLevel}`);
+        }
+        const breakList = this.state.breakListStack.at(-breakLevel);
+        if (!breakList) {
+            throw new Error("Break list not found at this level");
+        }
+        breakList.breakInstructions.push(instruction);
+    }
+    compileContinue(node) {
         // Add the jump instruction
         const instruction = this.addInstruction(prg.OP_JUMP, null);
         if (!instruction) {

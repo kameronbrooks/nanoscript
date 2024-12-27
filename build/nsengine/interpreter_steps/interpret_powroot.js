@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * @file interpret_powroot.ts
+ * @description Contains code to interpret a power and sqrt operator
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretPowRoot = void 0;
 const interpreter_step_1 = require("./interpreter_step");

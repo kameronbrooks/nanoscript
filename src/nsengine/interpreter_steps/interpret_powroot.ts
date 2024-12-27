@@ -1,3 +1,8 @@
+/**
+ * @file interpret_powroot.ts
+ * @description Contains code to interpret a power and sqrt operator
+ */
+
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { createBinaryOpNode, BinaryOpNode, ASTNode } from "../ast";

@@ -1,13 +1,17 @@
+/**
+ * @file interpreter.ts
+ * @description The interpreter is responsible for parsing the tokens and creating the AST
+ */
+
 import { Token, TokenType } from "./tokenizer";
 import { InterpreterStep } from "./interpreter_steps/interpreter_step";
-import { ASTNode, ConditionNode, BlockNode, DeclarationNode, LoopNode, ProgramNode, BreakNode } from "./ast";
+import { ASTNode, ConditionNode, BlockNode, DeclarationNode, LoopNode, ProgramNode, BreakNode, ContinueNode } from "./ast";
 import * as ist from "./interpreter_steps/interpreter_step_types";
 
 
 
 
-// -------------------- Parser --------------------
-// A simple recursive descent parser
+
 
 export type InterpreterSteps = {
     stringLiteral: InterpreterStep;
@@ -28,6 +32,9 @@ export type InterpreterSteps = {
     assignment: InterpreterStep;
     expression: InterpreterStep;
 }
+
+// -------------------- Parser --------------------
+// A simple recursive descent parser
 
 export class Interpreter {
     private tokens: Token[];
@@ -78,7 +85,7 @@ export class Interpreter {
         } as InterpreterSteps;
 
         for (let step in this.expressionSteps) {
-            this.expressionSteps[step as keyof InterpreterSteps].verboseMode = true;
+            this.expressionSteps[step as keyof InterpreterSteps].verboseMode = false;
         }
     }
     
@@ -228,6 +235,25 @@ export class Interpreter {
         }
     }
 
+    private parseContinueStatement(): ASTNode|null|undefined {
+        if (this.match("CONTINUE")) {
+            if(this.match("EOS")) {
+                return {
+                    type: "Continue",
+                    level: 1
+                } as ContinueNode;
+            }
+            else {
+                const level = this.consume("NUMBER").value;
+                this.consume("EOS");
+                return {
+                    type: "Continue",
+                    level: parseInt(level as string)
+                } as ContinueNode;
+            }
+        }
+    }
+
     private parseReturnStatement(): ASTNode|null|undefined {
         if (this.match("RETURN")) {
             const value = this.parseExpression();
@@ -320,27 +346,29 @@ export class Interpreter {
         if (node) return node;
         node = this.parseBreakStatement();
         if (node) return node;
+        node = this.parseContinueStatement();
+        if (node) return node;
         node = this.parseFunctionDeclaration();
         if (node) return node;
         node = this.parseReturnStatement();
         if (node) return node;
-        //node = this.parseForStatement();
-        //if (node) return node;
-        //node = this.parseForEachStatement();
-        //if (node) return node;
         node = this.parseBlock();
         if (node) return node;
         //node = this.parsePrintStatement();
         //if (node) return node;
-        if (this.peek().type !== "EOS") {
+        if(this.peek().type !== "EOS" && this.peek().type !== "EOF") {
+            this.consume(this.peek().type);
+            return null;
+        }
+        else {
             node = this.parseExpression();
-            // Dont worry about this yet
+
             this.consume("EOS");
             return node;
         }
 
 
-        throw new Error("Unknown statement");
+        throw new Error("Unknown statement: " + this.peek().type);
     }
     
     /**

@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * interpret_function_definition.ts
+ * This file contains the function definition interpreter step.
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretFunctionDefinition = void 0;
 const interpreter_step_1 = require("./interpreter_step");

@@ -1,3 +1,8 @@
+/**
+ * @file interpret_comparison.ts
+ * @description Contains code to interpret a comparison operator
+ */
+
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { ASTNode, BinaryOpNode, createBinaryOpNode } from "../ast";

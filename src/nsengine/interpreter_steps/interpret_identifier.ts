@@ -1,3 +1,7 @@
+/**
+ * @file interpret_identifier.ts
+ * @description Contains code to interpret an identifier
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { ASTNode } from "../ast";

@@ -1,3 +1,7 @@
+/**
+ * @file interpreter_step.ts
+ * @description The base class for all expression interpreter steps
+ */
 import { Interpreter } from '../interpreter';
 import { ASTNode } from '../ast';
 

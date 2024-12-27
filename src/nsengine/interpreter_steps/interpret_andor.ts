@@ -1,3 +1,7 @@
+/**
+ * @file interpret_andor.ts
+ * @description Contains code to interpret an and or operator
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { ASTNode, BinaryOpNode, createBinaryOpNode } from "../ast";

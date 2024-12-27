@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * @file interpreter.ts
+ * @description The interpreter is responsible for parsing the tokens and creating the AST
+ */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -35,6 +39,8 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Interpreter = void 0;
 const ist = __importStar(require("./interpreter_steps/interpreter_step_types"));
+// -------------------- Parser --------------------
+// A simple recursive descent parser
 class Interpreter {
     constructor(tokens) {
         this.current = 0;
@@ -75,7 +81,7 @@ class Interpreter {
             assignment: assignment
         };
         for (let step in this.expressionSteps) {
-            this.expressionSteps[step].verboseMode = true;
+            this.expressionSteps[step].verboseMode = false;
         }
     }
     createSubInterpreter(tokens) {
@@ -207,6 +213,24 @@ class Interpreter {
             }
         }
     }
+    parseContinueStatement() {
+        if (this.match("CONTINUE")) {
+            if (this.match("EOS")) {
+                return {
+                    type: "Continue",
+                    level: 1
+                };
+            }
+            else {
+                const level = this.consume("NUMBER").value;
+                this.consume("EOS");
+                return {
+                    type: "Continue",
+                    level: parseInt(level)
+                };
+            }
+        }
+    }
     parseReturnStatement() {
         if (this.match("RETURN")) {
             const value = this.parseExpression();
@@ -295,28 +319,30 @@ class Interpreter {
         node = this.parseBreakStatement();
         if (node)
             return node;
+        node = this.parseContinueStatement();
+        if (node)
+            return node;
         node = this.parseFunctionDeclaration();
         if (node)
             return node;
         node = this.parseReturnStatement();
         if (node)
             return node;
-        //node = this.parseForStatement();
-        //if (node) return node;
-        //node = this.parseForEachStatement();
-        //if (node) return node;
         node = this.parseBlock();
         if (node)
             return node;
         //node = this.parsePrintStatement();
         //if (node) return node;
-        if (this.peek().type !== "EOS") {
+        if (this.peek().type !== "EOS" && this.peek().type !== "EOF") {
+            this.consume(this.peek().type);
+            return null;
+        }
+        else {
             node = this.parseExpression();
-            // Dont worry about this yet
             this.consume("EOS");
             return node;
         }
-        throw new Error("Unknown statement");
+        throw new Error("Unknown statement: " + this.peek().type);
     }
     /**
      * Parse the given tokens

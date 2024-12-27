@@ -1,3 +1,7 @@
+/**
+ * @file interpret_equality.ts
+ * @description Contains code to interpret an equality operator
+ */
 import { InterpreterStep } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { createBinaryOpNode, BinaryOpNode, ASTNode } from "../ast";

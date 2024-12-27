@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterpretAssignment = void 0;
+/**
+ * @file interpret_assignment.ts
+ * @description Contains code to interpret an assignment operator
+ */
 const interpreter_step_1 = require("./interpreter_step");
 class InterpretAssignment extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {
@@ -24,7 +28,6 @@ class InterpretAssignment extends interpreter_step_1.InterpreterStep {
                 right: rnode
             };
         }
-        // TODO: Implement function call interpretation
         return lnode;
     }
 }
