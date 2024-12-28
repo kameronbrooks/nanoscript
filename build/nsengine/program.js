@@ -238,11 +238,12 @@ function getOpName(opcode) {
 exports.OP_MAP = {
     '-int': { opcode: exports.OP_NEGi, returnDtype: 'int' },
     // This is for the any case (kind of a hack)
-    'any+any': { opcode: exports.OP_ADDi, returnDtype: 'int' },
-    'any-any': { opcode: exports.OP_SUBi, returnDtype: 'int' },
-    'any*any': { opcode: exports.OP_MULi, returnDtype: 'int' },
-    'any/any': { opcode: exports.OP_DIVi, returnDtype: 'int' },
-    'any%any': { opcode: exports.OP_MODi, returnDtype: 'int' },
+    'any+any': { opcode: exports.OP_ADDi, returnDtype: 'any' },
+    'any-any': { opcode: exports.OP_SUBi, returnDtype: 'any' },
+    'any*any': { opcode: exports.OP_MULi, returnDtype: 'any' },
+    'any/any': { opcode: exports.OP_DIVi, returnDtype: 'any' },
+    'any%any': { opcode: exports.OP_MODi, returnDtype: 'any' },
+    'any**any': { opcode: exports.OP_POWi, returnDtype: 'any' },
     'any==any': { opcode: exports.OP_EQUALi, returnDtype: 'bool' },
     'any!=any': { opcode: exports.OP_NOT_EQUALi, returnDtype: 'bool' },
     'any>any': { opcode: exports.OP_GREATER_THANi, returnDtype: 'bool' },

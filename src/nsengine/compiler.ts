@@ -749,11 +749,13 @@ export class Compiler {
         
         let elseJumpInstruction = null;
         if(node.elseBody) {
-            elseJumpInstruction = this.addInstruction(prg.OP_JUMP, null, true);
+            elseJumpInstruction = this.addInstruction(prg.OP_JUMP, null);
             falseBranchRef = this.instructionReferenceTable.open();
             this.compileNode(node.elseBody);
         }
-        const endOfConditionRef = this.instructionReferenceTable.open();
+        // If this is a multi-condition statement, we need to close the reference
+        // The reference might already be open. Make sure to use the open one if it is
+        const endOfConditionRef = this.instructionReferenceTable.getOpenReference() || this.instructionReferenceTable.open();
 
         // Update the branch instruction
         if (!branchInstruction) {

@@ -50,16 +50,13 @@ function compile(code: string) {
 const script = `
 
 
-function add(a, b) {
-    return a + b;
-}
-
-for (let i = 10; i < 20; i++) {
-    
-    if (i == add(10, 5)) {
-        continue;
-    }
-    console.log(i);
+let x = 5;
+if (x > 10) {
+    console.log('x is greater than 10');
+} else if (x < 10) {
+    console.log('x is less than 10');
+} else {
+    console.log('x is equal to 10');
 }
 
 `;

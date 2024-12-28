@@ -291,11 +291,12 @@ export interface OPResult {
 export const OP_MAP: { [key: string]: OPResult } = {
     '-int': { opcode: OP_NEGi, returnDtype: 'int' },
     // This is for the any case (kind of a hack)
-    'any+any': { opcode: OP_ADDi, returnDtype: 'int' },
-    'any-any': { opcode: OP_SUBi, returnDtype: 'int' },
-    'any*any': { opcode: OP_MULi, returnDtype: 'int' },
-    'any/any': { opcode: OP_DIVi, returnDtype: 'int' },
-    'any%any': { opcode: OP_MODi, returnDtype: 'int' },
+    'any+any': { opcode: OP_ADDi, returnDtype: 'any' },
+    'any-any': { opcode: OP_SUBi, returnDtype: 'any' },
+    'any*any': { opcode: OP_MULi, returnDtype: 'any' },
+    'any/any': { opcode: OP_DIVi, returnDtype: 'any' },
+    'any%any': { opcode: OP_MODi, returnDtype: 'any' },
+    'any**any': { opcode: OP_POWi, returnDtype: 'any' },
     'any==any': { opcode: OP_EQUALi, returnDtype: 'bool' },
     'any!=any': { opcode: OP_NOT_EQUALi, returnDtype: 'bool' },
     'any>any': { opcode: OP_GREATER_THANi, returnDtype: 'bool' },
