@@ -22,19 +22,25 @@ export class InterpretIndexer extends InterpreterStep {
             const argNodes: ASTNode[] = [];
 
             while(!this.interpreter.isEOF() && !this.interpreter.match("RBRACKET")) {
-                let argNode = this.interpreter.parseExpression();
+                let argNode = this.interpreter.parseExpression({
+                    ...params,
+                    returnFunctionCalls: true,
+                });
                 argNodes.push(argNode as ASTNode);
-                console.log(argNode);
                 if (this.interpreter.match("COMMA")) {
                     continue;
                 }
             }
+
+            console.log(argNodes);
 
             lnode = {
                 type: "Indexer",
                 object: lnode as ASTNode,
                 indices: argNodes
             } as IndexerNode;
+
+            console.log("Indexer node", lnode);
 
             // Have to check for EOS here
             if (this.interpreter.match('EOS')) {

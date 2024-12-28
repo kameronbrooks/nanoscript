@@ -554,6 +554,9 @@ export class Compiler {
             case "MemberAccess":
                 this.compileMemberAccess(node as ast.MemberAccessNode);
                 break;
+            case "Indexer":
+                this.compileIndexer(node as ast.IndexerNode);
+                break;
             case "Declaration":
                 this.compileDeclaration(node as ast.DeclarationNode);
                 break;
@@ -686,6 +689,27 @@ export class Compiler {
         this.addInstruction(prg.OP_LOAD_MEMBER32, (node.member as ast.IdentifierNode).value);
 
         // Add the instruction
+    }
+
+    private compileIndexer(node: ast.IndexerNode) {
+
+        console.log("Compiling indexer", node);
+        if (!node.object) {
+            throw new Error("Missing object in indexer");
+        }
+        if (!node.indices) {
+            throw new Error("Missing indices in indexer");
+        }
+        // Compile the object
+        this.compileNode(node.object);
+
+        // Compile the indices
+        for (let index of node.indices) {
+            this.compileNode(index);
+        }
+
+        // Add the instruction
+        this.addInstruction(prg.OP_LOAD_ELEMENT32, node.indices.length);
     }
 
     private compileIdentifier(node: ast.IdentifierNode, isMember = false) {

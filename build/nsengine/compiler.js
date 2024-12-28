@@ -443,6 +443,9 @@ class Compiler {
             case "MemberAccess":
                 this.compileMemberAccess(node);
                 break;
+            case "Indexer":
+                this.compileIndexer(node);
+                break;
             case "Declaration":
                 this.compileDeclaration(node);
                 break;
@@ -559,6 +562,23 @@ class Compiler {
         this.addInstruction(prg.OP_LOAD_MEMBER32, node.member.value);
         // Add the instruction
     }
+    compileIndexer(node) {
+        console.log("Compiling indexer", node);
+        if (!node.object) {
+            throw new Error("Missing object in indexer");
+        }
+        if (!node.indices) {
+            throw new Error("Missing indices in indexer");
+        }
+        // Compile the object
+        this.compileNode(node.object);
+        // Compile the indices
+        for (let index of node.indices) {
+            this.compileNode(index);
+        }
+        // Add the instruction
+        this.addInstruction(prg.OP_LOAD_ELEMENT32, node.indices.length);
+    }
     compileIdentifier(node, isMember = false) {
         var _a;
         // check if the identifier is a member of an object
@@ -616,6 +636,8 @@ class Compiler {
             falseBranchRef = this.instructionReferenceTable.open();
             this.compileNode(node.elseBody);
         }
+        // If this is a multi-condition statement, we need to close the reference
+        // The reference might already be open. Make sure to use the open one if it is
         const endOfConditionRef = this.instructionReferenceTable.getOpenReference() || this.instructionReferenceTable.open();
         // Update the branch instruction
         if (!branchInstruction) {

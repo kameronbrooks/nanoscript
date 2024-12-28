@@ -644,15 +644,15 @@ export class JSExecutor {
     }
 
     op_load_element() {
-        let a = this.stack.pop();
         let b = this.stack.pop();
+        let a = this.stack.pop();
         this.stack.push(a[b]);
         this.ip++;
     }
     op_store_element() {
-        let a = this.stack.pop();
-        let b = this.stack.pop();
         let c = this.stack.pop();
+        let b = this.stack.pop();
+        let a = this.stack.pop();
         a[b] = c;
         this.ip++;
     }

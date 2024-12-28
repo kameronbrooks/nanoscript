@@ -21,18 +21,19 @@ class InterpretIndexer extends interpreter_step_1.InterpreterStep {
             // Fetch the operator and right node
             const argNodes = [];
             while (!this.interpreter.isEOF() && !this.interpreter.match("RBRACKET")) {
-                let argNode = this.interpreter.parseExpression();
+                let argNode = this.interpreter.parseExpression(Object.assign(Object.assign({}, params), { returnFunctionCalls: true }));
                 argNodes.push(argNode);
-                console.log(argNode);
                 if (this.interpreter.match("COMMA")) {
                     continue;
                 }
             }
+            console.log(argNodes);
             lnode = {
                 type: "Indexer",
                 object: lnode,
                 indices: argNodes
             };
+            console.log("Indexer node", lnode);
             // Have to check for EOS here
             if (this.interpreter.match('EOS')) {
                 return lnode;
