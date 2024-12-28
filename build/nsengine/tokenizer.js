@@ -19,6 +19,7 @@ exports.keywordTokenMap = {
     "try": "TRY",
     "catch": "CATCH",
     "break": "BREAK",
+    "continue": "CONTINUE"
 };
 class Tokenizer {
     constructor(input) {

@@ -2,10 +2,10 @@
  * @file interpret_stringliteral.ts
  * @description Contains code to interpret a string literal
  */
-import { InterpreterStep } from "./interpreter_step";
+import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { StringBuilderToken, Token, TokenType, Tokenizer } from "../tokenizer";
-import { StringNode } from "../ast";
+import { StringNode, ASTNode } from "../ast";
 import { StringBuilderNode } from "../ast";
 
 export class InterpretStringLiteral extends InterpreterStep {
@@ -13,7 +13,7 @@ export class InterpretStringLiteral extends InterpreterStep {
         super("InterpretPrimative", "Interpreting a primative value", interpreter, nextStep);
     }
 
-    execute() {
+    execute(params?: InterpreterStepParams): ASTNode | undefined| null {
         if(this.verboseMode) this.log();
         if (this.interpreter.match("STRINGLITERAL")) {
             return { 

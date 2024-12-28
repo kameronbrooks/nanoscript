@@ -1,17 +1,30 @@
 import {Tokenizer}  from "../src/nsengine/tokenizer";
 import {Interpreter} from "../src/nsengine/interpreter";
+import {Compiler} from "../src/nsengine/compiler";
 import * as nenv from "../src/nsengine/nenv";
+
+
+let n_env = new nenv.Nenv();
+let compiler = new Compiler(n_env);
 
 function tokenize(code: string) {
     let tokenizer = new Tokenizer(code);
     return tokenizer.tokenize();
 }
 
-function runCode(code: string) {
+function interpret(code: string) {
     let tokenizer = new Tokenizer(code);
     let tokens = tokenizer.tokenize();
     let interpreter = new Interpreter(tokens);
     return interpreter.parse();
+}
+
+function compile(code: string) {
+    let tokenizer = new Tokenizer(code);
+    let tokens = tokenizer.tokenize();
+    let interpreter = new Interpreter(tokens);
+    let ast = interpreter.parse();
+    return compiler.compile([ast] as any);
 }
 
 const consoleModule = {
@@ -48,13 +61,18 @@ const validScripts = [
 "'Hello world' + '!';",
 "' Hello \\' world ';",
 "`Hello, ${name}`;",
-`console.log(x);`,
 `
+let x = 5;
+console.log(x);
+`,
+`
+let x = 5;
 if (x > 10) {
     console.log('x is greater than 10');
 }
 `,
 `
+let x = 5;
 if (x > 10) {
     console.log('x is greater than 10');
 } else {
@@ -62,6 +80,7 @@ if (x > 10) {
 }
 `,
 `
+let x = 5;
 if (x > 10) {
     console.log('x is greater than 10');
 } else if (x < 10) {
@@ -76,6 +95,9 @@ if (x > 10) {
 `for (let i = 0; i < 10; i++) { 
     console.log(i**2); 
 }`,
+`for (let i = 0; i < 10; i++) { 
+    console.log(i**2); 
+}`,
 `arr[0];`,
 `arr[0,1];`,
 `arr[0,1].g;`,
@@ -83,8 +105,9 @@ if (x > 10) {
 ];
 
 beforeAll(() => {
-    const n_env = new nenv.Nenv();
+    n_env = new nenv.Nenv();
     n_env.addModule(consoleModule);
+    compiler = new Compiler(n_env);
 });
 
 beforeEach(() => {
@@ -105,10 +128,19 @@ describe('Tokenize Valid Script', () => {
 describe('Parse Valid Script', () => {
     for (let script of validScripts) {
         test(script, () => {
-            expect(()=>runCode(script)).not.toThrow();
+            expect(()=>interpret(script)).not.toThrow();
         });
     }
 });
+
+describe('Compile Vaild Script', () => {
+    for (let script of validScripts) {
+        test(script, () => {
+            expect(()=>compile(script)).not.toThrow();
+        });
+    }
+});
+
 
 
 

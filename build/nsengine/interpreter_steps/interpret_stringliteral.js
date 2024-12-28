@@ -10,7 +10,7 @@ class InterpretStringLiteral extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {
         super("InterpretPrimative", "Interpreting a primative value", interpreter, nextStep);
     }
-    execute() {
+    execute(params) {
         var _a;
         if (this.verboseMode)
             this.log();

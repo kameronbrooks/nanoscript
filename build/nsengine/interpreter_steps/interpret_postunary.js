@@ -10,11 +10,11 @@ class InterpretPostUnary extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {
         super("InterpretPostUnary", "Interpreting a post-unary operator", interpreter, nextStep);
     }
-    execute() {
+    execute(params) {
         var _a;
         if (this.verboseMode)
             this.log();
-        let lnode = (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();
+        let lnode = (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute(params);
         if (this.interpreter.match('INCREMENT')) {
             lnode = {
                 type: "UnaryOp",

@@ -127,8 +127,8 @@ class Interpreter {
     previous() {
         return this.tokens[this.current - 1];
     }
-    parseExpression() {
-        return this.expressionSteps.assignment.execute();
+    parseExpression(params) {
+        return this.expressionSteps.assignment.execute(params);
     }
     parseIfStatement() {
         /// TODO: Implement the parseIfStatement method
@@ -222,12 +222,7 @@ class Interpreter {
                 };
             }
             else {
-                const level = this.consume("NUMBER").value;
-                this.consume("EOS");
-                return {
-                    type: "Continue",
-                    level: parseInt(level)
-                };
+                throw new Error("; expected after continue statement");
             }
         }
     }

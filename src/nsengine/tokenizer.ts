@@ -87,6 +87,7 @@ export const keywordTokenMap: { [key: string]: TokenType } = {
     "try": "TRY",
     "catch": "CATCH",
     "break": "BREAK",
+    "continue": "CONTINUE"
 }
 
 export interface Token {

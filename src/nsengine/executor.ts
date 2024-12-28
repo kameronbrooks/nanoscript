@@ -724,7 +724,7 @@ export class JSExecutor {
         else {
             let b = [];
             for (let i = 0; i < this.program?.instructions[this.ip].operand; i++) {
-                b.push(this.stack.pop());
+                b.push(this.stack.at(-(i+1)));
             }
             this.ret = a(...b.reverse());
         }

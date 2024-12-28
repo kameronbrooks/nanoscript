@@ -3,7 +3,7 @@
  * This file contains the function definition interpreter step.
  */
 
-import { InterpreterStep } from "./interpreter_step";
+import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { ASTNode, FunctionDeclarationNode } from "../ast";
 
@@ -12,13 +12,13 @@ export class InterpretFunctionDefinition extends InterpreterStep {
         super("InterpretFunctionDeclaration", "Interpreting an function definition", interpreter, nextStep);
     }
 
-    execute() {
+    execute(params?: InterpreterStepParams): ASTNode | undefined| null {
         if(this.verboseMode) this.log();
+        
         if (this.interpreter.match("FUNCTION")) {
             let isAnonymous = true;
             let functionName = "anonymous";
             if (this.interpreter.match("IDENTIFIER")) {
-                console.log("Function name: " + this.interpreter.previous().value);
                 functionName = this.interpreter.previous().value || "anonymous";
                 isAnonymous = false;
 

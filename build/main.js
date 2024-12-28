@@ -2,11 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tokenizer_1 = require("./nsengine/tokenizer");
 const interpreter_1 = require("./nsengine/interpreter");
-const ast_1 = require("./nsengine/ast");
 const compiler_1 = require("./nsengine/compiler");
 const nenv_1 = require("./nsengine/nenv");
 const executor_1 = require("./nsengine/executor");
-const program_1 = require("./nsengine/program");
 const builtin_1 = require("./nenvmodules/builtin");
 function runCode(code) {
     let tokenizer = new tokenizer_1.Tokenizer(code);
@@ -39,10 +37,16 @@ function compile(code) {
 }
 const script = `
 
-let a = 1+1;
-let b = 0;
 
-for (let i = 0; i < 10; i++) {
+function add(a, b) {
+    return a + b;
+}
+
+for (let i = 10; i < 20; i++) {
+    
+    if (i == add(10, 5)) {
+        continue;
+    }
     console.log(i);
 }
 
@@ -94,8 +98,8 @@ const script = `
 }
 `;
 */
-console.log((0, ast_1.astToString)(runCode(script)));
-(0, program_1.printProgram)(compile(script));
+//console.log(astToString(runCode(script) as any));
+//printProgram(compile(script));
 const executor = new executor_1.JSExecutor();
 let start = performance.now();
 const program = compile(script);

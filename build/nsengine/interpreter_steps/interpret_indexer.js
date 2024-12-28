@@ -10,12 +10,12 @@ class InterpretIndexer extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {
         super("InterpretIndexer", "Interpreting indexing", interpreter, nextStep);
     }
-    execute(backwardsLookingNode) {
+    execute(params) {
         var _a;
         if (this.verboseMode)
             this.log();
         // Capture the left node
-        let lnode = backwardsLookingNode || ((_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute());
+        let lnode = (params === null || params === void 0 ? void 0 : params.backwardsLookingNode) || ((_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute(params));
         // Loop while there are more assignments
         if (this.interpreter.match("LBRACKET")) {
             // Fetch the operator and right node
@@ -38,12 +38,12 @@ class InterpretIndexer extends interpreter_step_1.InterpreterStep {
                 return lnode;
             }
             // Special case for member access
-            let memberAccessNode = this.interpreter.expressionSteps.memberAccess.execute(lnode);
+            let memberAccessNode = this.interpreter.expressionSteps.memberAccess.execute(Object.assign(Object.assign({}, params), { backwardsLookingNode: lnode }));
             if (memberAccessNode) {
                 lnode = memberAccessNode;
             }
             // Special case for function calls
-            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute(lnode);
+            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute(Object.assign(Object.assign({}, params), { backwardsLookingNode: lnode }));
             if (funcCallNode) {
                 lnode = funcCallNode;
             }

@@ -10,7 +10,7 @@ class InterpretIdentifier extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {
         super("InterpretIdentifier", "Interpreting an identifier", interpreter, nextStep);
     }
-    execute() {
+    execute(params) {
         var _a;
         if (this.verboseMode)
             this.log();

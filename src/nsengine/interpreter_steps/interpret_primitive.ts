@@ -2,20 +2,20 @@
  * @file interpret_primitive.ts
  * @description Contains code to interpret a primative value (number, boolean, null)
  */
-import { InterpreterStep } from "./interpreter_step";
+import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { TokenType } from "../tokenizer";
-import { NumberNode, NullNode, BooleanNode, StringNode } from "../ast";
+import { NumberNode, NullNode, BooleanNode, StringNode, ASTNode } from "../ast";
 
 export class InterpretPrimitive extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
         super("InterpretPrimative", "Interpreting a primative value", interpreter, nextStep);
     }
 
-    execute() {
+    execute(params?: InterpreterStepParams): ASTNode | undefined| null {
         if(this.verboseMode) this.log();
         if (this.interpreter.match("LPAREN")) {
-            let node = this.interpreter.parseExpression();
+            let node = this.interpreter.parseExpression(params);
             this.interpreter.consume("RPAREN");
 
             return node;
@@ -51,7 +51,7 @@ export class InterpretPrimitive extends InterpreterStep {
             } as NullNode;
         }
         else {
-            return this.nextStep?.execute();
+            return this.nextStep?.execute(params);
         }
 
         return null;

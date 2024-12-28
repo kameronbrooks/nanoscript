@@ -108,6 +108,7 @@ export interface FunctionCallNode extends ASTNode {
     left: ASTNode;
     arguments: ASTNode[];
     targetLocation: "internal" | "external" | "stack";
+    requireReturn: boolean;
 }
 
 export interface DeclarationNode extends ASTNode {

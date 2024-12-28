@@ -676,7 +676,7 @@ class JSExecutor {
         else {
             let b = [];
             for (let i = 0; i < ((_b = this.program) === null || _b === void 0 ? void 0 : _b.instructions[this.ip].operand); i++) {
-                b.push(this.stack.pop());
+                b.push(this.stack.at(-(i + 1)));
             }
             this.ret = a(...b.reverse());
         }

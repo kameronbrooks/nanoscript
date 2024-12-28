@@ -4,7 +4,7 @@
  */
 
 import { Token, TokenType } from "./tokenizer";
-import { InterpreterStep } from "./interpreter_steps/interpreter_step";
+import { InterpreterStep, InterpreterStepParams } from "./interpreter_steps/interpreter_step";
 import { ASTNode, ConditionNode, BlockNode, DeclarationNode, LoopNode, ProgramNode, BreakNode, ContinueNode } from "./ast";
 import * as ist from "./interpreter_steps/interpreter_step_types";
 
@@ -138,8 +138,8 @@ export class Interpreter {
         return this.tokens[this.current - 1];
     }
 
-    public parseExpression(): ASTNode|null|undefined {
-        return this.expressionSteps.assignment.execute();
+    public parseExpression(params?: InterpreterStepParams): ASTNode | undefined | null {
+        return this.expressionSteps.assignment.execute(params);
     }
 
 
@@ -244,12 +244,7 @@ export class Interpreter {
                 } as ContinueNode;
             }
             else {
-                const level = this.consume("NUMBER").value;
-                this.consume("EOS");
-                return {
-                    type: "Continue",
-                    level: parseInt(level as string)
-                } as ContinueNode;
+                throw new Error("; expected after continue statement");
             }
         }
     }

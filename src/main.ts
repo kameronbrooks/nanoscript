@@ -15,6 +15,7 @@ function runCode(code: string) {
     console.log(tokens);
 
     let interpreter = new Interpreter(tokens);
+    
     return interpreter.parse();
 }
 
@@ -48,10 +49,16 @@ function compile(code: string) {
 
 const script = `
 
-let a = 1+1;
-let b = 0;
 
-for (let i = 0; i < 10; i++) {
+function add(a, b) {
+    return a + b;
+}
+
+for (let i = 10; i < 20; i++) {
+    
+    if (i == add(10, 5)) {
+        continue;
+    }
     console.log(i);
 }
 
@@ -104,10 +111,10 @@ const script = `
 }
 `;
 */
-console.log(astToString(runCode(script) as any));
+//console.log(astToString(runCode(script) as any));
 
 
-printProgram(compile(script));
+//printProgram(compile(script));
 
 const executor = new JSExecutor();
 
@@ -117,8 +124,6 @@ let end = performance.now();
 console.log("Compiled in " + (end - start) + "ms");
 
 let result = null;
-
-
 
 start = performance.now();
 result = executor.execute(program);

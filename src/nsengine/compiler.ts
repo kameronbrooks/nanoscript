@@ -222,7 +222,6 @@ class CompilerState {
         ];
 
         this.isInFunction = 0;
-        console.log(this.currentScope);
     }
 
     pushScope() {
@@ -333,7 +332,7 @@ export class Compiler {
             nenv: this.nenv,
             instructions: [],
         };
-        this.globalScope = new Scope(this, null, nenv);
+        this.globalScope = new Scope(this, null, this.nenv);
         this.state = new CompilerState(this.globalScope);
         this.frameBeginIndex.push(0);
         this.instructionReferenceTable = new InstructionReferenceTable();
@@ -341,6 +340,22 @@ export class Compiler {
 
         this.functionInstructionBuffers = [];
         this.verboseMode = false;
+    }
+
+    private init() {
+        this.program = {
+            engineVersion: this.engineVersion,
+            nenv: this.nenv,
+            instructions: [],
+        };
+        this.globalScope = new Scope(this, null, this.nenv);
+        this.state = new CompilerState(this.globalScope);
+        this.frameBeginIndex.push(0);
+        this.instructionReferenceTable = new InstructionReferenceTable();
+        this.instructionBufferTarget = this.program.instructions;
+
+        this.functionInstructionBuffers = [];
+        this.verboseMode = true;
     }
 
     /**
@@ -420,11 +435,9 @@ export class Compiler {
     }
 
     compile(ast: ast.ASTNode[]) {
-        this.program = {
-            engineVersion: this.engineVersion,
-            nenv: this.nenv,
-            instructions: [],
-        };
+
+        this.init();
+
         this.instructionBufferTarget = this.program.instructions;
 
         for (let node of ast) {
@@ -461,13 +474,6 @@ export class Compiler {
         // TODO: Implement optimization
     }
     finalize() {
-        
-        if (this.verboseMode) {
-            console.log("Finalizing program");
-            console.log("=====================================");
-            console.log(this.program.instructions );
-            console.log("=====================================");
-        }
         
         // Add the function instruction buffers to the main program
         for (let buffer of this.functionInstructionBuffers) {
@@ -814,9 +820,7 @@ export class Compiler {
             this.addInstruction(prg.OP_STORE_LOCAL32, obj?.localStackIndex);
             const initializerDataType = this.state.currentDatatype;
 
-            console.log(`initializerDataType: ${initializerDataType} node.dtype: ${node.dtype}`);
             if (node.dtype == 'any') {
-                console.log(`Setting datatype to ${initializerDataType}`);
                 node.dtype = initializerDataType;
             }
             else if (initializerDataType !== node.dtype) {
@@ -850,8 +854,11 @@ export class Compiler {
         }
         //Clean up the arguments
         this.addInstruction(prg.OP_POP_STACK, node.arguments.length);
-        // Restore the return value
-        this.addInstruction(prg.OP_PUSH_RETURN64);
+        if (node.requireReturn) {
+            // Restore the return value
+            this.addInstruction(prg.OP_PUSH_RETURN64);
+        }
+        
         
     }
 
@@ -862,8 +869,6 @@ export class Compiler {
             'any',
             null 
         );
-
-        console.log(this.state.currentScope)
 
         // Push a new scope for the function
         this.state.pushScope();
@@ -934,6 +939,7 @@ export class Compiler {
         this.compileNode(node.body);
 
         const endOfBodyRef = this.instructionReferenceTable.open();
+        console.log("End of body ref: ", endOfBodyRef);
         // Compile the increment if there is one (for loop)
         if (node.increment) {
             this.compileNode(node.increment);
@@ -941,6 +947,7 @@ export class Compiler {
         // Jump back to the condition
         this.addInstruction(prg.OP_JUMP, conditionRef);
         const endOfLoopRef = this.instructionReferenceTable.open();
+        console.log("End of loop ref: ", endOfLoopRef);
 
 
         if (!branchInstruction) {
@@ -999,19 +1006,19 @@ export class Compiler {
         }
 
         // Add the instruction to the break list
-        const breakLevel = node.level;
-        if (breakLevel < 0) {
-            throw new Error("Break level must be greater than or equal to 0");
+        const continueLevel = node.level;
+        if (continueLevel < 0) {
+            throw new Error("Continue level must be greater than or equal to 0");
         }
-        if (breakLevel > this.state.breakListStack.length) {
-            throw new Error(`Cannot break out farther than loop depth, current depth: ${this.state.breakListStack.length} requested depth: ${breakLevel}`);
+        if (continueLevel > this.state.continueListStack.length) {
+            throw new Error(`Cannot continue farther than loop depth, current depth: ${this.state.continueListStack.length} requested depth: ${continueLevel}`);
         }
-        const breakList = this.state.breakListStack.at(-breakLevel);
-        if (!breakList) {
+        const continueList = this.state.continueListStack.at(-continueLevel);
+        if (!continueList) {
             throw new Error("Break list not found at this level");
         }
-        breakList.breakInstructions.push(instruction);
-    }
+        continueList.continueInstructions.push(instruction);
+    }   
 
     private compileReturn(node: ast.ReturnNode) {
         if (this.state.isInFunction > 0) {

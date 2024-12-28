@@ -358,12 +358,22 @@ function programToString(program) {
  */
 function printProgram(program) {
     console.log(`nscrpt v${program.engineVersion}`);
+    const table = [];
     for (let i = 0; i < program.instructions.length; i++) {
         let instruction = program.instructions[i];
         let operandDisplay = instruction.operand;
-        if (instruction.operand === null) {
-            operandDisplay = '';
+        if (instruction.operand != null) {
+            table.push({
+                opcode: getOpName(instruction.opcode),
+                operand: operandDisplay
+            });
         }
-        console.log(`[${i}]\t${getOpName(instruction.opcode)}\t${operandDisplay}`);
+        else {
+            table.push({
+                opcode: getOpName(instruction.opcode)
+            });
+        }
+        //console.log(`[${i}]\t${getOpName(instruction.opcode)}\t${operandDisplay}`);
     }
+    console.table(table);
 }

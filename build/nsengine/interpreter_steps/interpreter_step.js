@@ -21,7 +21,7 @@ class InterpreterStep {
         }
         console.log(`${this.name}: ${message}  : current_token = ${this.interpreter.peek().type} ${(_a = this.interpreter.peek()) === null || _a === void 0 ? void 0 : _a.value}`);
     }
-    execute() {
+    execute(params) {
         this.log();
         return null;
     }

@@ -10,7 +10,7 @@ class InterpretPreUnary extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {
         super("InterpretPreUnary", "Interpreting a pre-unary operator", interpreter, nextStep);
     }
-    execute() {
+    execute(params) {
         var _a;
         if (this.verboseMode)
             this.log();
@@ -18,10 +18,10 @@ class InterpretPreUnary extends interpreter_step_1.InterpreterStep {
         if (this.interpreter.match('MINUS', 'NOT')) {
             wasSatisfied = true;
             const op = this.interpreter.previous().value;
-            let node = this.execute();
+            let node = this.execute(Object.assign(Object.assign({}, params), { returnFunctionCalls: true }));
             return { type: "UnaryOp", operator: op, operand: node };
         }
-        return (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();
+        return (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute(params);
     }
 }
 exports.InterpretPreUnary = InterpretPreUnary;

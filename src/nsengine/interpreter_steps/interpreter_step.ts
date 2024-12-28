@@ -5,6 +5,12 @@
 import { Interpreter } from '../interpreter';
 import { ASTNode } from '../ast';
 
+export interface InterpreterStepParams {
+    returnFunctionCalls?: boolean;
+    isInFunctionDefinition?: boolean;
+    backwardsLookingNode?: ASTNode;
+}
+
 export abstract class InterpreterStep {
     name: string;
     description: string;
@@ -26,7 +32,7 @@ export abstract class InterpreterStep {
         console.log(`${this.name}: ${message}  : current_token = ${this.interpreter.peek().type} ${this.interpreter.peek()?.value}`);
     }
 
-    execute(): ASTNode | null | undefined {
+    execute(params?:InterpreterStepParams): ASTNode | null | undefined {
         this.log();
         return null;
     }

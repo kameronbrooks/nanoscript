@@ -3,7 +3,7 @@
  * @description Contains code to interpret member access
  */
 
-import { InterpreterStep } from "./interpreter_step";
+import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { ASTNode, BinaryOpNode, createBinaryOpNode , MemberAccessNode} from "../ast";
 
@@ -12,16 +12,20 @@ export class InterpretMemberAccess extends InterpreterStep {
         super("InterpretMemberAccess", "Interpreting member access", interpreter, nextStep);
     }
 
-    execute(backwardLookingNode?: ASTNode) {
+    execute(params?: InterpreterStepParams): ASTNode | undefined| null {
         if(this.verboseMode) this.log();
+
         // Capture the left node
-        let lnode = backwardLookingNode || this.nextStep?.execute();
+        let lnode = params?.backwardsLookingNode || this.nextStep?.execute(params);
 
         // Loop while there are more assignments
         while (!this.interpreter.isEOF() && this.interpreter.match("MEMBER_ACCESS")) {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
-            const rnode = this.nextStep?.execute();
+            const rnode = this.nextStep?.execute({
+                ...params,
+                returnFunctionCalls: true
+            } as InterpreterStepParams);
             
             lnode = {
                 type: "MemberAccess",
@@ -35,12 +39,12 @@ export class InterpretMemberAccess extends InterpreterStep {
             }
 
             // Requires a special case for function calls
-            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute(lnode) as ASTNode;
+            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute({...params, backwardsLookingNode: lnode}) as ASTNode;
             if (funcCallNode) {
                 lnode = funcCallNode;
             }
             // Requires a special case for indexer
-            let indexerNode = this.interpreter.expressionSteps.indexer.execute(lnode) as ASTNode;
+            let indexerNode = this.interpreter.expressionSteps.indexer.execute({...params, backwardsLookingNode: lnode}) as ASTNode;
             if (indexerNode) {
                 lnode = indexerNode;
             }

@@ -163,7 +163,6 @@ class CompilerState {
             }
         ];
         this.isInFunction = 0;
-        console.log(this.currentScope);
     }
     pushScope() {
         if (!this.currentScope) {
@@ -251,13 +250,27 @@ class Compiler {
             nenv: this.nenv,
             instructions: [],
         };
-        this.globalScope = new Scope(this, null, nenv);
+        this.globalScope = new Scope(this, null, this.nenv);
         this.state = new CompilerState(this.globalScope);
         this.frameBeginIndex.push(0);
         this.instructionReferenceTable = new InstructionReferenceTable();
         this.instructionBufferTarget = this.program.instructions;
         this.functionInstructionBuffers = [];
         this.verboseMode = false;
+    }
+    init() {
+        this.program = {
+            engineVersion: this.engineVersion,
+            nenv: this.nenv,
+            instructions: [],
+        };
+        this.globalScope = new Scope(this, null, this.nenv);
+        this.state = new CompilerState(this.globalScope);
+        this.frameBeginIndex.push(0);
+        this.instructionReferenceTable = new InstructionReferenceTable();
+        this.instructionBufferTarget = this.program.instructions;
+        this.functionInstructionBuffers = [];
+        this.verboseMode = true;
     }
     /**
      * Set the target for the instruction buffer
@@ -325,11 +338,7 @@ class Compiler {
         lastInstruction.operand = operand || lastInstruction.operand;
     }
     compile(ast) {
-        this.program = {
-            engineVersion: this.engineVersion,
-            nenv: this.nenv,
-            instructions: [],
-        };
+        this.init();
         this.instructionBufferTarget = this.program.instructions;
         for (let node of ast) {
             this.compileNode(node);
@@ -360,12 +369,6 @@ class Compiler {
         // TODO: Implement optimization
     }
     finalize() {
-        if (this.verboseMode) {
-            console.log("Finalizing program");
-            console.log("=====================================");
-            console.log(this.program.instructions);
-            console.log("=====================================");
-        }
         // Add the function instruction buffers to the main program
         for (let buffer of this.functionInstructionBuffers) {
             this.instructionBufferTarget.push(...buffer.instructions);
@@ -665,9 +668,7 @@ class Compiler {
             // TODO: add support for different types of stores 8, 32, 64
             this.addInstruction(prg.OP_STORE_LOCAL32, obj === null || obj === void 0 ? void 0 : obj.localStackIndex);
             const initializerDataType = this.state.currentDatatype;
-            console.log(`initializerDataType: ${initializerDataType} node.dtype: ${node.dtype}`);
             if (node.dtype == 'any') {
-                console.log(`Setting datatype to ${initializerDataType}`);
                 node.dtype = initializerDataType;
             }
             else if (initializerDataType !== node.dtype) {
@@ -697,14 +698,15 @@ class Compiler {
         }
         //Clean up the arguments
         this.addInstruction(prg.OP_POP_STACK, node.arguments.length);
-        // Restore the return value
-        this.addInstruction(prg.OP_PUSH_RETURN64);
+        if (node.requireReturn) {
+            // Restore the return value
+            this.addInstruction(prg.OP_PUSH_RETURN64);
+        }
     }
     compileFunctionDefinition(node) {
         var _a, _b;
         // Add the function to the scope
         const obj = (_a = this.state.currentScope) === null || _a === void 0 ? void 0 : _a.addFunction(node.name, 'any', null);
-        console.log(this.state.currentScope);
         // Push a new scope for the function
         this.state.pushScope();
         this.state.frameVariableListStack.push({
@@ -757,6 +759,7 @@ class Compiler {
         // Compile the body
         this.compileNode(node.body);
         const endOfBodyRef = this.instructionReferenceTable.open();
+        console.log("End of body ref: ", endOfBodyRef);
         // Compile the increment if there is one (for loop)
         if (node.increment) {
             this.compileNode(node.increment);
@@ -764,6 +767,7 @@ class Compiler {
         // Jump back to the condition
         this.addInstruction(prg.OP_JUMP, conditionRef);
         const endOfLoopRef = this.instructionReferenceTable.open();
+        console.log("End of loop ref: ", endOfLoopRef);
         if (!branchInstruction) {
             throw new Error("Branch instruction not found");
         }
@@ -814,18 +818,18 @@ class Compiler {
             throw new Error("Failed to add break instruction");
         }
         // Add the instruction to the break list
-        const breakLevel = node.level;
-        if (breakLevel < 0) {
-            throw new Error("Break level must be greater than or equal to 0");
+        const continueLevel = node.level;
+        if (continueLevel < 0) {
+            throw new Error("Continue level must be greater than or equal to 0");
         }
-        if (breakLevel > this.state.breakListStack.length) {
-            throw new Error(`Cannot break out farther than loop depth, current depth: ${this.state.breakListStack.length} requested depth: ${breakLevel}`);
+        if (continueLevel > this.state.continueListStack.length) {
+            throw new Error(`Cannot continue farther than loop depth, current depth: ${this.state.continueListStack.length} requested depth: ${continueLevel}`);
         }
-        const breakList = this.state.breakListStack.at(-breakLevel);
-        if (!breakList) {
+        const continueList = this.state.continueListStack.at(-continueLevel);
+        if (!continueList) {
             throw new Error("Break list not found at this level");
         }
-        breakList.breakInstructions.push(instruction);
+        continueList.continueInstructions.push(instruction);
     }
     compileReturn(node) {
         if (this.state.isInFunction > 0) {

@@ -2,7 +2,7 @@
  * @file interpret_indexer.ts
  * @description Contains the code for interpreting an indexer node.
  */
-import { InterpreterStep } from "./interpreter_step";
+import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { ASTNode, IndexerNode} from "../ast";
 
@@ -11,10 +11,10 @@ export class InterpretIndexer extends InterpreterStep {
         super("InterpretIndexer", "Interpreting indexing", interpreter, nextStep);
     }
 
-    execute(backwardsLookingNode?: ASTNode) {
+    execute(params?: InterpreterStepParams): ASTNode | null | undefined {
         if(this.verboseMode) this.log();
         // Capture the left node
-        let lnode = backwardsLookingNode || this.nextStep?.execute();
+        let lnode = params?.backwardsLookingNode || this.nextStep?.execute(params);
 
         // Loop while there are more assignments
         if (this.interpreter.match("LBRACKET")) {
@@ -42,12 +42,12 @@ export class InterpretIndexer extends InterpreterStep {
             }
             
             // Special case for member access
-            let memberAccessNode = this.interpreter.expressionSteps.memberAccess.execute(lnode) as ASTNode;
+            let memberAccessNode = this.interpreter.expressionSteps.memberAccess.execute({...params, backwardsLookingNode: lnode}) as ASTNode;
             if (memberAccessNode) {
                 lnode = memberAccessNode;
             }
             // Special case for function calls
-            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute(lnode) as ASTNode;
+            let funcCallNode = this.interpreter.expressionSteps.functionCall.execute({...params, backwardsLookingNode: lnode}) as ASTNode;
             if (funcCallNode) {
                 lnode = funcCallNode;
             }

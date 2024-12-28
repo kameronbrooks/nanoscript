@@ -2,7 +2,7 @@
  * @file interpret_assignment.ts
  * @description Contains code to interpret an assignment operator
  */
-import { InterpreterStep } from "./interpreter_step";
+import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { AssignmentNode, ASTNode } from "../ast";
 
@@ -11,16 +11,21 @@ export class InterpretAssignment extends InterpreterStep {
         super("InterpretAssignment", "Interpreting an assignment operator", interpreter, nextStep);
     }
     
-    execute() {
+    execute(params?: InterpreterStepParams): ASTNode | undefined| null {
+        const childParams = {
+            ...params,
+            returnFunctionCalls: true
+        } as InterpreterStepParams;
+
         if(this.verboseMode) this.log();
         // Capture the left node
-        let lnode = this.nextStep?.execute();
+        let lnode = this.nextStep?.execute(params);
 
         // Loop while there are more assignments
         while(!this.interpreter.isEOF() && this.interpreter.match("ASSIGN")) {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
-            const rnode = this.nextStep?.execute();
+            const rnode = this.nextStep?.execute(childParams);
             lnode = {
                 type: "Assignment", 
                 operator, 

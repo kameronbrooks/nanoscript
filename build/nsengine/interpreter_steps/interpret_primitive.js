@@ -10,12 +10,12 @@ class InterpretPrimitive extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {
         super("InterpretPrimative", "Interpreting a primative value", interpreter, nextStep);
     }
-    execute() {
+    execute(params) {
         var _a;
         if (this.verboseMode)
             this.log();
         if (this.interpreter.match("LPAREN")) {
-            let node = this.interpreter.parseExpression();
+            let node = this.interpreter.parseExpression(params);
             this.interpreter.consume("RPAREN");
             return node;
         }
@@ -50,7 +50,7 @@ class InterpretPrimitive extends interpreter_step_1.InterpreterStep {
             };
         }
         else {
-            return (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute();
+            return (_a = this.nextStep) === null || _a === void 0 ? void 0 : _a.execute(params);
         }
         return null;
     }

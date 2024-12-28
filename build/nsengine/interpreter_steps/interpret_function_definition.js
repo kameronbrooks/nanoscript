@@ -10,14 +10,13 @@ class InterpretFunctionDefinition extends interpreter_step_1.InterpreterStep {
     constructor(interpreter, nextStep = null) {
         super("InterpretFunctionDeclaration", "Interpreting an function definition", interpreter, nextStep);
     }
-    execute() {
+    execute(params) {
         if (this.verboseMode)
             this.log();
         if (this.interpreter.match("FUNCTION")) {
             let isAnonymous = true;
             let functionName = "anonymous";
             if (this.interpreter.match("IDENTIFIER")) {
-                console.log("Function name: " + this.interpreter.previous().value);
                 functionName = this.interpreter.previous().value || "anonymous";
                 isAnonymous = false;
             }
