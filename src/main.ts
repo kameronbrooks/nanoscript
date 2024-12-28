@@ -48,10 +48,7 @@ function compile(code: string) {
 
 
 const script = `
-
-
 console.log(myObject['x']);
-
 `;
 
 /*
