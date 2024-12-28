@@ -2,6 +2,7 @@ import {Tokenizer}  from "../src/nsengine/tokenizer";
 import {Interpreter} from "../src/nsengine/interpreter";
 import {Compiler} from "../src/nsengine/compiler";
 import * as nenv from "../src/nsengine/nenv";
+import { builtin_module } from "../src/nenvmodules/builtin";
 
 
 let n_env = new nenv.Nenv();
@@ -27,14 +28,26 @@ function compile(code: string) {
     return compiler.compile([ast] as any);
 }
 
-const consoleModule = {
-    name: "io",
+const myModule = {
+    name: "myModule",
     exports: [
-        { name: "console", type: "object", object: {
-            log: (x: any) => console.log(x),
-            error: (x: any) => console.error(x),
-            warn: (x: any) => console
-        }}
+        { name: "myObject", type: "constant", object: {x: 1, y: 2, z: 3} },
+        { name: "myFunction", type: "function", object: (a: number, b: number) => a + b },
+        { name: "o", type: "constant", object: {
+            g: {
+                f: (x: number) => {
+                    return {
+                        bb: (y: number) => x + y
+                    }
+                }
+            },
+            func1: () => ({m: 5}),
+            y: (x:number) => x + 1
+        } },
+        { name: "arr", type: "constant", object: [{g: {f: () => 1}}, {g: {f: () => 2}}] },
+        { name: "func0", type: "function", object: (a: number, b: number, c: number) => a + b + c }
+
+
     ] as nenv.NenvExport[]
 } as nenv.NenvModule;
 
@@ -51,10 +64,19 @@ const validScripts = [
 `1 + 1;`,
 `1 + 1 + 3 + 5 * 5 * 5 + 4;`,
 `1 + -(-1 + 2) * 10 + 2;`,
-`x.func1.m + 1;`,
-`f(x+1, y(x+2), (2+5));`,
-`o.g.f(x.y()).bb(x);`,
-`o.g.f(x);`,
+`o.func1.m + 1;`,
+`
+let x = 5;
+function y(a) {
+    return a + 1;
+}
+func0(x+1, y(x+2), (2+5));`,
+`
+let x = 10;
+o.g.f(x.y()).bb(x);`,
+`
+let x = 10;
+o.g.f(x);`,
 `(1 + 2) * 10;`,
 `let x = 10;`,
 "'Hello world';",
@@ -99,14 +121,15 @@ if (x > 10) {
     console.log(i**2); 
 }`,
 `arr[0];`,
-`arr[0,1];`,
-`arr[0,1].g;`,
-`arr[0,1].g.f();`,
+`arr[0];`,
+`arr[0].g;`,
+`arr[0].g.f();`,
 ];
 
 beforeAll(() => {
     n_env = new nenv.Nenv();
-    n_env.addModule(consoleModule);
+    n_env.addModule(myModule);
+    n_env.addModule(builtin_module);
     compiler = new Compiler(n_env);
 });
 
