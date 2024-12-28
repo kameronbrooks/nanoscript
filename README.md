@@ -44,7 +44,7 @@ To create a nenv module, define a new nenv.NenvModule with a ```name``` and ```e
 
 The ```exports``` property should contain a list of NenvExports. Each export needs to have a ```name```, ```type```, and ```object```.
 
-typescript```
+```typescript
 const myModule = {
     name: "myModule",
     exports: [
@@ -54,6 +54,27 @@ const myModule = {
     ] as nenv.NenvExport[]
 } as nenv.NenvModule;
 ```
+
+To add your module to the engine, use the ```addModules``` method
+
+
+```typescript
+const engine = new NSEngine();
+engine.addModules([
+    myModule,
+    ...
+])
+```
+
+To compile and execute nanoscript code, use the ```compileAndRun``` method
+
+
+```typescript
+const output = engine.compileAndRun(code);
+```
+
+
+
 
 ## Syntax Overview
 
