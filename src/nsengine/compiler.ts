@@ -578,6 +578,10 @@ export class Compiler {
             case "Return":
                 this.compileReturn(node as ast.ReturnNode);
                 break;
+
+            case "StringBuilder":
+                this.compileStringBuilder(node as ast.StringBuilderNode);
+                break;
                 
             default:
                 throw new Error(`Unknown node type: ${node.type}`);
@@ -663,6 +667,19 @@ export class Compiler {
 
     private compileString(node: ast.StringNode) {
         this.addInstruction(prg.OP_LOAD_LITERAL_STRING, node.value);
+        this.state.currentDatatype = 'string';
+        this.state.isLValue = false;
+    }
+
+    private compileStringBuilder(node: ast.StringBuilderNode) {
+        // get reversed expression list 
+        let reversedExpressions = node.expressions.slice().reverse();
+        for (let expression of reversedExpressions) {
+            this.compileNode(expression);
+        }
+        this.addInstruction(prg.OP_LOAD_LITERAL_STRING, node.string);
+        this.addInstruction(prg.OP_SB_REPLACE_s, reversedExpressions.length);
+        
         this.state.currentDatatype = 'string';
         this.state.isLValue = false;
     }

@@ -103,6 +103,7 @@ export class JSExecutor {
             this.op_powf.bind(this),
 
             this.op_adds.bind(this),
+            this.op_sb_replace_s.bind(this),
 
             this.op_greater_than_i.bind(this),
             this.op_less_than_i.bind(this),
@@ -426,6 +427,17 @@ export class JSExecutor {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a + b);
+        this.ip++;
+    }
+
+    op_sb_replace_s() {
+        // Get string
+        let str = this.stack.pop();
+        let elements = this.program?.instructions[this.ip].operand;
+        for (let i = 0; i < elements; i++) {
+            let replace = this.stack.pop();
+            str = str.replace(`\${${i}}`, replace.toString());
+        }
         this.ip++;
     }
 

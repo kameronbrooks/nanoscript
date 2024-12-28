@@ -82,7 +82,7 @@ o.g.f(x);`,
 "'Hello world';",
 "'Hello world' + '!';",
 "' Hello \\' world ';",
-"`Hello, ${name}`;",
+"let name='john'; `Hello, ${name}`;",
 `
 let x = 5;
 console.log(x);

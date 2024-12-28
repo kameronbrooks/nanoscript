@@ -28,7 +28,32 @@ nanoscript operates on a lightweight engine that runs seamlessly in both browser
 
 ## Installation
 
-Coming soon
+Install using NPM
+
+```npm install @creation-wasteland/nanoscript```
+
+## Usage
+
+Import NSEngine from the module
+
+```import { NSEngine } from "@creation-wasteland/nanoscript";```
+
+Add any required modules so that your API can be called from the engine.
+
+To create a nenv module, define a new nenv.NenvModule with a ```name``` and ```exports```
+
+The ```exports``` property should contain a list of NenvExports. Each export needs to have a ```name```, ```type```, and ```object```.
+
+typescript```
+const myModule = {
+    name: "myModule",
+    exports: [
+        { name: "myObject", type: "constant", object: {x: 1, y: 2, z: 3} },
+        { name: "myFunction", type: "function", object: (a: number, b: number) => a + b },
+        ...
+    ] as nenv.NenvExport[]
+} as nenv.NenvModule;
+```
 
 ## Syntax Overview
 
