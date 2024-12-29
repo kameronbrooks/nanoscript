@@ -6,9 +6,10 @@ import { Interpreter } from '../interpreter';
 import { ASTNode } from '../ast';
 
 export interface InterpreterStepParams {
-    returnFunctionCalls?: boolean;
-    isInFunctionDefinition?: boolean;
-    backwardsLookingNode?: ASTNode;
+    returnFunctionCalls?: boolean;      // if any function calls are encountered, they need to return something
+    isInFunctionDefinition?: boolean;   // if we are in a function definition
+    backwardsLookingNode?: ASTNode;     // the node that we are looking back at
+    executeInStatementMode?: boolean;   // if we are executing in statement mode, do not execute next expression if not a match
 }
 
 export abstract class InterpreterStep {

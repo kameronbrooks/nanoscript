@@ -185,13 +185,6 @@ export class JSExecutor {
             this.op_push_return32.bind(this),
             this.op_push_return64.bind(this)
         ];
-        /*
-        let i = 0;
-        while (i < prg.OP_CALL_EXTERNAL) {
-            console.log(`${i}: ${prg.getOpName(i)} ${this.ops[i]}`);
-            i++;
-        }
-        */
     }
 
     execute(program: prg.Program) {
@@ -201,7 +194,6 @@ export class JSExecutor {
 
         while (program.instructions[this.ip].opcode != prg.OP_TERM) {
             this.ops[program.instructions[this.ip].opcode]();
-            this.printStack();
         }
 
         if (this.stack.length > 0) {
@@ -484,6 +476,7 @@ export class JSExecutor {
             let replace = this.stack.pop();
             str = str.replace(`\${${i}}`, replace.toString());
         }
+        this.stack.push(str);
         this.ip++;
     }
 

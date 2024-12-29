@@ -51,7 +51,10 @@ export class InterpretFunctionDefinition extends InterpreterStep {
             throw new Error("Expected a function body");
         }
         else {
-            return (this.nextStep) ? this.nextStep.execute() : null;
+            if (!params?.executeInStatementMode) {
+                return (this.nextStep) ? this.nextStep.execute() : null;
+            }
+            
         }
     }
 }

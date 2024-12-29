@@ -44,7 +44,7 @@ export class Interpreter {
     public readonly expressionSteps: ExpressionInterpreterSteps;
 
   
-    constructor(tokens: Token[]) {
+    constructor(tokens: Token[], params?: {verboseMode?: boolean}) {
         this.tokens = tokens;
 
         // Initialize the expression steps
@@ -91,7 +91,7 @@ export class Interpreter {
         } as ExpressionInterpreterSteps;
 
         for (let step in this.expressionSteps) {
-            this.expressionSteps[step as keyof ExpressionInterpreterSteps].verboseMode = false;
+            this.expressionSteps[step as keyof ExpressionInterpreterSteps].verboseMode = params?.verboseMode || false;
         }
     }
     
@@ -155,6 +155,7 @@ export class Interpreter {
             this.consume("LPAREN");     // Parentheses required
             const condition = this.parseExpression();
             this.consume("RPAREN");     // Parentheses required
+            console.log("In condition -> parsing body", this.peek());
             const body = this.parseStatement();
             
             // Body
@@ -339,7 +340,9 @@ export class Interpreter {
     }
 
     public parseStatement(): ASTNode|null|undefined {
-        let node = this.parseIfStatement();
+        let node = this.parseBlock();
+        if (node) return node;
+        node = this.parseIfStatement();
         if (node) return node;
         node = this.parseWhileStatement();
         if (node) return node;
@@ -357,8 +360,7 @@ export class Interpreter {
         if (node) return node;
         node = this.parseReturnStatement();
         if (node) return node;
-        node = this.parseBlock();
-        if (node) return node;
+        
         //node = this.parsePrintStatement();
         //if (node) return node;
         if(this.peek().type !== "EOS" && this.peek().type !== "EOF") {

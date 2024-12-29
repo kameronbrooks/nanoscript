@@ -325,7 +325,7 @@ export class Compiler {
     
 
 
-    constructor(nenv: Nenv) {
+    constructor(nenv: Nenv, params?: {verboseMode?: boolean}) {
         this.nenv = nenv;
         
         this.program = {
@@ -340,7 +340,7 @@ export class Compiler {
         this.instructionBufferTarget = this.program.instructions;
 
         this.functionInstructionBuffers = [];
-        this.verboseMode = false;
+        this.verboseMode = params?.verboseMode || false;
     }
 
     private init() {
@@ -356,7 +356,6 @@ export class Compiler {
         this.instructionBufferTarget = this.program.instructions;
 
         this.functionInstructionBuffers = [];
-        this.verboseMode = true;
     }
 
     /**
@@ -606,6 +605,7 @@ export class Compiler {
             case "ArrayLiteral":
                 this.compileListLiteral(node as ast.ArrayLiteralNode);
                 break;
+
             case "ObjectLiteral":
                 this.compileObjectLiteral(node as ast.ObjectLiteralNode);
                 break;

@@ -14,7 +14,7 @@ function runCode(code: string) {
 
     console.log(tokens);
 
-    let interpreter = new Interpreter(tokens);
+    let interpreter = new Interpreter(tokens, {verboseMode: false});
     
     return interpreter.parse();
 }
@@ -40,20 +40,14 @@ function compile(code: string) {
     let tokenizer = new Tokenizer(code);
     let tokens = tokenizer.tokenize();
     let compiler = new Compiler(_nenv);
-    let interpreter = new Interpreter(tokens);
+    let interpreter = new Interpreter(tokens, {verboseMode: false});
     let ast = interpreter.parse();
 
     return compiler.compile([ast] as any);
 }
 
 
-const script = `
-return {
-    'x': (10**2),
-    'y': 20 + 1,
-    'z': 30
-}.x;
-`;
+const script = "return `Hello ${5+5} you are ${10-5}`;";
 
 /*
 const script = `
@@ -102,10 +96,10 @@ const script = `
 }
 `;
 */
-console.log(astToString(runCode(script) as any));
+//console.log(astToString(runCode(script) as any));
 
 
-printProgram(compile(script));
+//printProgram(compile(script));
 
 const executor = new JSExecutor();
 

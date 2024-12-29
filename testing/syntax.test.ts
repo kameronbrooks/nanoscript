@@ -120,10 +120,33 @@ if (x > 10) {
 `for (let i = 0; i < 10; i++) { 
     console.log(i**2); 
 }`,
+`
+let x = 0;
+while (x < 10) {
+    x++;
+}`,
 `arr[0];`,
 `arr[0];`,
 `arr[0].g;`,
 `arr[0].g.f();`,
+`return {
+    'x': (10**2),
+    'y': 20 + 1,
+    'z': 30
+}.x;
+`,
+`return {
+    'x': (10**2),
+    'y': 20 + 1,
+    'z': 30 - 10
+};
+`,
+`return [0,1,2,3,4];`,
+`return [];`,
+`return ['s','t','o','p'];`,
+`return {};`,
+`let x = {};
+return x;`
 ];
 
 beforeAll(() => {
