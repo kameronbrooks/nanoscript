@@ -180,8 +180,39 @@ function func(a, b) {
 func(1,2);      // 3
  
 ```
-
 *Currently, functions are not designed to easily be used as first class objects. Still working on this.*
+
+### List Literals
+
+Lists can be declared with list literal syntax, similar to javascript
+```javascript
+let arr = [0,1,2,3,4,5];    // js list with 6 elements
+let arr2 = [];              // empty list
+
+```
+
+*Lists are constructed at script runtime, further optimizations will be added to allow for the creation of  compile-time lists to improve performance when possible.*
+
+### Object Literals
+
+Objects can be created with a familiar syntax as well. 
+
+*Note: Object keys must be enclosed with single or double quotes like strings.*
+```javascript
+let o = {
+    'x': 1.0,
+    'y': 2.5
+};
+
+let dog = {
+    'name': 'Dogmeat',
+    'level': 42
+};
+
+```
+
+*Objects are constructed at script runtime, further optimizations will be added to allow for the creation of  compile-time objects to improve performance when possible.*
+
 
 
 ## Examples
