@@ -29,6 +29,7 @@ _nenv.addModule(myModule);
 function compile(code: string) {
     let tokenizer = new Tokenizer(code);
     let tokens = tokenizer.tokenize();
+    //console.log(tokens);
     let compiler = new Compiler(_nenv, {verboseMode: false});
     let interpreter = new Interpreter(tokens, {verboseMode: false});
     let ast = interpreter.parse();
@@ -41,18 +42,7 @@ function compile(code: string) {
 
 const script = `
 
-for (let i = 0; i < 10; i++) { 
-    console.log(i**2); 
-}
-
-//console.log('Hello World');
-
-for (let j = 0; j < 20; j++) { 
-    console.log(j**2);
-}
-
-
-return 8;`;
+return true || false;`;
 
 
 /*

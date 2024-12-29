@@ -150,7 +150,21 @@ while (x < 10) {
     }    
     return n * factorial(n - 1);
 }
-return factorial(5);`
+return factorial(5);`,
+`
+for (let i = 0; i < 10; i++) { 
+    console.log(i**2); 
+}
+
+//console.log('Hello World');
+
+for (let j = 0; j < 20; j++) { 
+    console.log(j**2);
+}
+
+
+return 8;
+`
 ];
 
 beforeAll(() => {

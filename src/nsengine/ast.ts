@@ -375,6 +375,10 @@ export function astToString(node: ASTNode, level: number = 0): string {
 
     let a, b, c, d, e;
     switch (node.type) {
+        case "Null":
+            return indent + `[null]\n` + postfix;
+        case "Boolean":
+            return indent + `[${(node as BooleanNode).value.toString()}]\n` + postfix
         case "Number":
             return indent + `[${(node as NumberNode).value.toString()}]\n` + postfix;
         case "ArrayLiteral":

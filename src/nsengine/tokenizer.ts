@@ -464,7 +464,7 @@ export class Tokenizer {
             }
 
             if (keywordTokenMap[identifier]) {
-                this.tokens.push({ type: keywordTokenMap[identifier] });
+                this.tokens.push({ type: keywordTokenMap[identifier], value: identifier, line: this.currentLine });
                 return true;
             }
             else {
