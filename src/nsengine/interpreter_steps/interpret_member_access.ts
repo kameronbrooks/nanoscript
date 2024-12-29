@@ -24,7 +24,8 @@ export class InterpretMemberAccess extends InterpreterStep {
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute({
                 ...params,
-                returnFunctionCalls: true
+                returnFunctionCalls: true,
+                backwardsLookingNode: undefined // We want to consume the backwards looking node if there is one
             } as InterpreterStepParams);
             
             lnode = {

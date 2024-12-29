@@ -6,18 +6,8 @@ import { Nenv, NenvModule, NenvExport } from "./nsengine/nenv";
 import { JSExecutor } from "./nsengine/executor";
 import { printProgram } from "./nsengine/program";
 import { builtin_module } from "./nenvmodules/builtin";
-import { NSBinaryComplier } from "./nsengine/prg2bin";
 
-function runCode(code: string) {
-    let tokenizer = new Tokenizer(code);
-    let tokens = tokenizer.tokenize();
 
-    console.log(tokens);
-
-    let interpreter = new Interpreter(tokens, {verboseMode: false});
-    
-    return interpreter.parse();
-}
 
 function tokenize(code: string) {
     let tokenizer = new Tokenizer(code);
@@ -39,15 +29,31 @@ _nenv.addModule(myModule);
 function compile(code: string) {
     let tokenizer = new Tokenizer(code);
     let tokens = tokenizer.tokenize();
-    let compiler = new Compiler(_nenv);
+    let compiler = new Compiler(_nenv, {verboseMode: false});
     let interpreter = new Interpreter(tokens, {verboseMode: false});
     let ast = interpreter.parse();
 
+    console.log(astToString(ast as any));
     return compiler.compile([ast] as any);
 }
 
 
-const script = "return `Hello ${5+5} you are ${10-5}`;";
+
+const script = `
+
+for (let i = 0; i < 10; i++) { 
+    console.log(i**2); 
+}
+
+//console.log('Hello World');
+
+for (let j = 0; j < 20; j++) { 
+    console.log(j**2);
+}
+
+
+return 8;`;
+
 
 /*
 const script = `
@@ -96,7 +102,6 @@ const script = `
 }
 `;
 */
-//console.log(astToString(runCode(script) as any));
 
 
 //printProgram(compile(script));
@@ -110,11 +115,13 @@ console.log("Compiled in " + (end - start) + "ms");
 
 let result = null;
 
+
 start = performance.now();
 result = executor.execute(program);
 end = performance.now();
 console.log(result + " in " + (end - start) + "ms  (executor)");
-console.log(result);    
+console.log(result);  
+
 
 
 //const prg2bin = new NSBinaryComplier();

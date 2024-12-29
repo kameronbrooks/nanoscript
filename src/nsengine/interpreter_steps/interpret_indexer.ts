@@ -25,14 +25,21 @@ export class InterpretIndexer extends InterpreterStep {
                 let argNode = this.interpreter.parseExpression({
                     ...params,
                     returnFunctionCalls: true,
+                    backwardsLookingNode: undefined // We want to consume the backwards looking node if there is one
                 });
                 argNodes.push(argNode as ASTNode);
                 if (this.interpreter.match("COMMA")) {
                     continue;
                 }
+
+                // If we have a closing bracket, we are done
+                if (this.interpreter.match("RBRACKET")) {
+                    break;
+                }
+                // Otherwise, we have an error
+                this.interpreter.error(`Expected a comma or closing bracket in indexer, found ${this.interpreter.peek().type}`);
             }
 
-            console.log(argNodes);
 
             lnode = {
                 type: "Indexer",
@@ -40,7 +47,6 @@ export class InterpretIndexer extends InterpreterStep {
                 indices: argNodes
             } as IndexerNode;
 
-            console.log("Indexer node", lnode);
 
             // Have to check for EOS here
             if (this.interpreter.peek().type === 'EOS') {

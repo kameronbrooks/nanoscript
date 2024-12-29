@@ -22,8 +22,9 @@ export class InterpretAssignment extends InterpreterStep {
         let lnode = this.nextStep?.execute(params);
 
         // Loop while there are more assignments
-        while(!this.interpreter.isEOF() && this.interpreter.match("ASSIGN")) {
+        if(!this.interpreter.isEOF() && this.interpreter.match("ASSIGN", "INCREMENT_ASSIGN", "DECREMENT_ASSIGN", "MULTIPLY_ASSIGN", "DIVIDE_ASSIGN")) {
             // Fetch the operator and right node
+
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute(childParams);
             lnode = {

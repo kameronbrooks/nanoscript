@@ -202,6 +202,23 @@ export class JSExecutor {
         return 0;
     }
 
+    executeDebug(program: prg.Program) {
+        this.program = program;
+        this.ip = 0;
+        this.fp = 0;
+
+        while (program.instructions[this.ip].opcode != prg.OP_TERM) {
+            console.log(printInstruction(program.instructions[this.ip]));
+            this.ops[program.instructions[this.ip].opcode]();
+            this.printStack();
+        }
+
+        if (this.stack.length > 0) {
+            return this.stack.pop();
+        }
+        return 0;
+    }
+
     printStack() {
         console.log("Stack: " + this.stack);
     }

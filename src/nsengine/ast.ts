@@ -392,7 +392,8 @@ export function astToString(node: ASTNode, level: number = 0): string {
         case "MemberAccess":
             return indent + `[.]:\n${astToString((node as MemberAccessNode).object, level + 1)}${astToString((node as MemberAccessNode).member, level + 1)}` + postfix;
         case "FunctionCall":
-            return indent + `[()->{}]:\n${astToString((node as FunctionCallNode).left, level + 1)}` + (node as FunctionCallNode).arguments.map((arg) => astToString(arg, level + 1)).join("") + postfix;
+            a = (node as FunctionCallNode).requireReturn ? '[()->{}] -> x' : '[()->{}] -> void';
+            return indent + `${a}:\n${astToString((node as FunctionCallNode).left, level + 1)}` + (node as FunctionCallNode).arguments.map((arg) => astToString(arg, level + 1)).join("") + postfix;
         case "Indexer":
             return indent + `[[]]:\n${astToString((node as IndexerNode).object, level + 1)}` + (node as IndexerNode).indices.map((arg) => astToString(arg, level + 1)).join("") + postfix;
         case "String":

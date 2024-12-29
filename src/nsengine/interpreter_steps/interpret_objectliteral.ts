@@ -39,6 +39,13 @@ export class InterpretObjectLiteral extends InterpreterStep {
                 if (this.interpreter.match("COMMA")) {
                     continue;
                 }
+
+                // If we have a closing brace, we are done
+                if (this.interpreter.match("RBRACE")) {
+                    break;
+                }
+                // Otherwise, we have an error
+                this.interpreter.error(`Expected a comma or closing brace, found ${this.interpreter.peek().type}`);
             }
 
             // TODO: Add compile-time array literal support if all the elements can be evaluated at compile time

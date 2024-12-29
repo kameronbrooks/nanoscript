@@ -123,7 +123,7 @@ export class Interpreter {
         this.current++;
         return token;
       }
-      throw new Error(`Expected token ${type} but got ${token.type}`);
+      this.error(`Expected token ${type} but got ${token.type}`);
     }
     
     /**
@@ -153,20 +153,22 @@ export class Interpreter {
         /// TODO: Implement the parseIfStatement method
         if (this.match("IF")) {
             this.consume("LPAREN");     // Parentheses required
-            const condition = this.parseExpression();
+            const condition = this.parseExpression({
+                returnFunctionCalls: true
+            });
             this.consume("RPAREN");     // Parentheses required
-            console.log("In condition -> parsing body", this.peek());
+
             const body = this.parseStatement();
             
             // Body
             if (!condition || !body) {
-                throw new Error("Invalid if statement");
+                this.error("Invalid if statement");
             }
 
             if (this.match("ELSE")) {
                 const elseBody = this.parseStatement();
                 if (!elseBody) {
-                    throw new Error("Invalid else statement");
+                    this.error("Invalid else statement");
                 }
                 return {
                     type: "Condition",
@@ -205,13 +207,15 @@ export class Interpreter {
     private parseWhileStatement(): ASTNode|null|undefined {
         if (this.match("WHILE")) {
             this.consume("LPAREN");     // Parentheses required
-            const condition = this.parseExpression();
+            const condition = this.parseExpression({
+                returnFunctionCalls: true
+            });
             this.consume("RPAREN");     // Parentheses required
             const body = this.parseStatement();
             
             // Body
             if (!condition || !body) {
-                throw new Error("Invalid while statement");
+                this.error("Invalid while statement");
             }
 
             return {
@@ -240,6 +244,7 @@ export class Interpreter {
                 } as BreakNode;
             }
         }
+        return null;
     }
 
     private parseContinueStatement(): ASTNode|null|undefined {
@@ -254,11 +259,20 @@ export class Interpreter {
                 throw new Error("; expected after continue statement");
             }
         }
+        return null;
     }
 
     private parseReturnStatement(): ASTNode|null|undefined {
         if (this.match("RETURN")) {
-            const value = this.parseExpression();
+
+            if (this.match("EOS")) {
+                return {
+                    type: "Return",
+                    value: null
+                } as ASTNode;
+            }
+
+            const value = this.parseExpression({returnFunctionCalls: true});
             this.consume("EOS");
             return {
                 type: "Return",
@@ -272,7 +286,9 @@ export class Interpreter {
         if (this.match("FOR")) {
             this.consume("LPAREN");     // Parentheses required
             const initializer = this.parseStatement();
-            const condition = this.parseExpression();
+            const condition = this.parseExpression({
+                returnFunctionCalls: true
+            });
             this.consume("EOS");
             const increment = this.parseExpression();
             this.consume("RPAREN");     // Parentheses required
@@ -299,7 +315,9 @@ export class Interpreter {
             
             let value = undefined;
             if (this.match("ASSIGN")) {
-                value = this.parseExpression();
+                value = this.parseExpression({
+                    returnFunctionCalls: true
+                });
             }
             this.consume("EOS");
 
@@ -316,7 +334,9 @@ export class Interpreter {
             
             let value = undefined;
             if (this.match("ASSIGN")) {
-                value = this.parseExpression();
+                value = this.parseExpression({
+                    returnFunctionCalls: true
+                });
             }
             this.consume("EOS");
 
@@ -332,11 +352,14 @@ export class Interpreter {
     }
 
     public parseFunctionDeclaration(): ASTNode|null|undefined {
-        return this.expressionSteps.functionDefinition.execute();
+        return this.expressionSteps.functionDefinition.execute({
+            executeInStatementMode: true
+        });
     }
 
     public error(message: string): never {
-        throw new Error(message);
+        const line = this.peek().line;
+        throw new Error(`Interpreter Error on line (${line}): ` + message);
     }
 
     public parseStatement(): ASTNode|null|undefined {
@@ -363,13 +386,13 @@ export class Interpreter {
         
         //node = this.parsePrintStatement();
         //if (node) return node;
-        if(this.peek().type !== "EOS" && this.peek().type !== "EOF") {
+        if(this.peek().type == "EOS" || this.peek().type == "EOF") {
+
             this.consume(this.peek().type);
             return null;
         }
         else {
             node = this.parseExpression();
-
             this.consume("EOS");
             return node;
         }

@@ -13,7 +13,7 @@ import { JSExecutor } from "./executor";
 export class NSEngine {
     _nenv: Nenv;
     _excutor: JSExecutor;
-    version: string = "0.0.1";
+    version: string = "0.0.5";
 
     constructor() {
         this._nenv = new Nenv();

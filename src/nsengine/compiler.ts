@@ -80,6 +80,19 @@ class Scope {
         return this.compiler.state.frameVariableListStack.at(-1) as FrameVariableList;
     }
 
+    doesObjectExist(name: string) : boolean {
+        if (this.objects.has(name)) {
+            return true;
+        }
+        else if (this.parent) {
+            return this.parent.doesObjectExist(name);
+        }
+        else if (this.nenv) {
+            return this.nenv.hasObject(name);
+        }
+        return false;
+    }
+
     getObject(name: string) : ScopeObject | undefined {
         let obj = this.objects.get(name);
         if(obj) {
@@ -104,7 +117,12 @@ class Scope {
     }
 
     addLocalVariable(name: string, isConst:boolean, datatype: string, value: any, localStackIndex?: number) {
+        /*
         if (this.objects.has(name) || this.getFrameVariables().variables.includes(name)) {
+            throw new Error(`Variable ${name} already exists`);
+        }
+        */
+        if (this.doesObjectExist(name)) {
             throw new Error(`Variable ${name} already exists`);
         }
         const obj = {
@@ -123,7 +141,7 @@ class Scope {
     }
 
     addFunction(name: string, datatype: string, value: any) {
-        if (this.objects.has(name) || this.getFrameVariables().variables.includes(name)) {
+        if (this.doesObjectExist(name)) {
             throw new Error(`Variable ${name} already exists`);
         }
         const obj = {
@@ -230,6 +248,7 @@ class CompilerState {
             throw new Error("No scope to push");
         }
         this.currentScope = this.currentScope.createChild();
+
     }
     popScope() {
         if (this.currentScope && !this.currentScope.isGlobal()) {
@@ -295,6 +314,10 @@ class InstructionReferenceTable {
         }
     }
 
+    cancel() {
+        this.openReference = null;
+    }
+
     getOpenReference() {
         return this.openReference;
     }
@@ -312,7 +335,7 @@ class InstructionReferenceTable {
 }
 
 export class Compiler {
-    private engineVersion = "0.0.1";
+    private engineVersion = "0.0.4";
     private nenv: Nenv;
     private program: prg.Program;
     public state: CompilerState;
@@ -445,7 +468,11 @@ export class Compiler {
         }
 
         // Terminate the program
-        this.addInstruction(prg.OP_TERM);
+        const lastInstruction = this.program.instructions.at(-1);
+        if (!lastInstruction || lastInstruction.opcode !== prg.OP_TERM) {
+            this.addInstruction(prg.OP_TERM);
+        }
+        
         if (this.verboseMode) {
             console.log("=====================================");
             console.log("Pre Linked Program");
@@ -737,7 +764,6 @@ export class Compiler {
 
     private compileIndexer(node: ast.IndexerNode) {
 
-        console.log("Compiling indexer", node);
         if (!node.object) {
             throw new Error("Missing object in indexer");
         }
@@ -992,11 +1018,20 @@ export class Compiler {
         if (!node.body) {
             throw new Error("Missing body in while loop");
         }
+        // Push a new scope for the loop
+        this.state.pushScope();
+
+        // This fixes an issue where the loops dont work if there are at least 2 in a row
+        // I have no idea why the reference table has to have the reference closed before the first instruction
+        if (this.instructionReferenceTable.hasOpenReference()) {
+            this.addInstruction(prg.OP_NOOP);
+        }
+
         // Compile the initializer if there is one (for loop)
         if (node.initializer) {
             this.compileNode(node.initializer);
         }
-        const conditionRef = this.instructionReferenceTable.open();
+        const conditionRef = this.instructionReferenceTable.getOpenReference() || this.instructionReferenceTable.open();
 
         this.compileNode(node.condition);
         const branchInstruction = this.addInstruction(prg.OP_BRANCH_FALSE, null);
@@ -1008,7 +1043,7 @@ export class Compiler {
         // Compile the body
         this.compileNode(node.body);
         // Open a reference for the end of the body to close on the next instruction
-        const endOfBodyRef = this.instructionReferenceTable.open();
+        const endOfBodyRef = this.instructionReferenceTable.getOpenReference() || this.instructionReferenceTable.open();
 
         // Compile the increment if there is one (for loop)
         if (node.increment) {
@@ -1017,7 +1052,7 @@ export class Compiler {
         // Jump back to the condition
         this.addInstruction(prg.OP_JUMP, conditionRef);
         // Open a reference for the end of the loop to close on the next instruction
-        const endOfLoopRef = this.instructionReferenceTable.open();
+        const endOfLoopRef = this.instructionReferenceTable.getOpenReference() || this.instructionReferenceTable.open();
 
         if (!branchInstruction) {
             throw new Error("Branch instruction not found");
@@ -1043,6 +1078,9 @@ export class Compiler {
         for (let instruction of continueList.continueInstructions) {
             instruction.operand = endOfBodyRef;
         }
+
+        // Pop the loop scope
+        this.state.popScope();
     }
 
     private compileBreak(node: ast.BreakNode) {

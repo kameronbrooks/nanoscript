@@ -26,12 +26,20 @@ export class InterpretFunctionCall extends InterpreterStep {
             while(!this.interpreter.isEOF() && !this.interpreter.match("RPAREN")) {
                 let argNode = this.interpreter.parseExpression( {
                     ...params,
-                    returnFunctionCalls: true   // if any function calls are encountered, they need to return something
+                    returnFunctionCalls: true,   // if any function calls are encountered, they need to return something
+                    backwardsLookingNode: undefined // we have to consume the backwards looking node if there is one. Do not pass it on to the arguments
                 });
                 argNodes.push(argNode as ASTNode);
                 if (this.interpreter.match("COMMA")) {
                     continue;
                 }
+
+                // If we have a closing parenthesis, we are done
+                if (this.interpreter.match("RPAREN")) {
+                    break;
+                }
+                // Otherwise, we have an error
+                this.interpreter.error(`Expected a comma or closing parenthesis in function call, found ${this.interpreter.peek().type}`);
             }
             
             lnode = {

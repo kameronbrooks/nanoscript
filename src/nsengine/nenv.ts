@@ -59,9 +59,12 @@ export class Nenv {
         }
     }
 
+    hasObject(name: string): boolean {
+        return (this.references[name] !== undefined) || (this.modules[name] !== undefined) || false;
+    }
+
     getObject(name: string): any {
         let output = this.references[name];
-        console.log(output);
         if (output) {
             return output.export;
         }

@@ -31,7 +31,7 @@ export class InterpretFunctionDefinition extends InterpreterStep {
                     if (this.interpreter.match("IDENTIFIER")) {
                         argNodes.push({ type: "Identifier", value: this.interpreter.previous().value } as ASTNode);
                     } else {
-                        throw new Error("Expected an identifier in function arguments");
+                        this.interpreter.error("Expected an identifier in function arguments");
                     }
                     if (this.interpreter.match("COMMA")) {
                         continue;
@@ -48,11 +48,14 @@ export class InterpretFunctionDefinition extends InterpreterStep {
                 } as FunctionDeclarationNode;
             }
 
-            throw new Error("Expected a function body");
+            this.interpreter.error("Expected a function body");
         }
         else {
-            if (!params?.executeInStatementMode) {
-                return (this.nextStep) ? this.nextStep.execute() : null;
+            if (params?.executeInStatementMode) {
+                return null;
+            }
+            else {
+                return (this.nextStep) ? this.nextStep.execute(params) : null;
             }
             
         }

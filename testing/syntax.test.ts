@@ -109,11 +109,7 @@ if (x > 10) {
     console.log('x is less than 10');
 } else {
     console.log('x is equal to 10');
-}
-`,
-`
-}
-`,
+}`,
 `for (let i = 0; i < 10; i++) { 
     console.log(i**2); 
 }`,
@@ -146,7 +142,15 @@ while (x < 10) {
 `return ['s','t','o','p'];`,
 `return {};`,
 `let x = {};
-return x;`
+ return x;`,
+ `
+ function factorial(n) {
+    if (n < 1) {
+        return 1;
+    }    
+    return n * factorial(n - 1);
+}
+return factorial(5);`
 ];
 
 beforeAll(() => {

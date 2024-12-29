@@ -304,10 +304,10 @@ export const OP_NAMES: string[] = [
     'OP_CALL_EXTERNAL',
     'OP_CALL_STACK',
 
-    'OP_RETURN',
-    'OP_RETURN8',
-    'OP_RETURN32',
-    'OP_RETURN64',
+    'OP_STACKPOP_VOID ',
+    'OP_STACKPOP_RET8',
+    'OP_STACKPOP_RET32',
+    'OP_STACKPOP_RET64',
 
     'OP_PUSH_RETURN8',
     'OP_PUSH_RETURN32',
