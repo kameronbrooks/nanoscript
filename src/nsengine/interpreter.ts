@@ -13,10 +13,11 @@ import * as ist from "./interpreter_steps/interpreter_step_types";
 
 
 
-export type InterpreterSteps = {
+export type ExpressionInterpreterSteps = {
     stringLiteral: InterpreterStep;
     primative: InterpreterStep;
     arrayLiteral: ist.InterpretArrayLiteral;
+    objectLiteral: ist.InterpretObjectLiteral;
     identifier: InterpreterStep;
     memberAccess: ist.InterpretMemberAccess;
     indexer: ist.InterpretIndexer;
@@ -40,7 +41,7 @@ export type InterpreterSteps = {
 export class Interpreter {
     private tokens: Token[];
     private current: number = 0;
-    public readonly expressionSteps: InterpreterSteps;
+    public readonly expressionSteps: ExpressionInterpreterSteps;
 
   
     constructor(tokens: Token[]) {
@@ -50,7 +51,8 @@ export class Interpreter {
         const stringLiteral = new ist.InterpretStringLiteral(this, null);
         const primative = new ist.InterpretPrimative(this, stringLiteral);
         const arrayLiteral = new ist.InterpretArrayLiteral(this, primative);
-        const identifier = new ist.InterpretIdentifier(this, arrayLiteral);
+        const objectLiteral = new ist.InterpretObjectLiteral(this, arrayLiteral);
+        const identifier = new ist.InterpretIdentifier(this, objectLiteral);
         const memberAccess = new ist.InterpretMemberAccess(this, identifier);
         const indexer = new ist.InterpretIndexer(this, memberAccess);
         const functionCall = new ist.InterpretFunctionCall(this, indexer);
@@ -71,6 +73,7 @@ export class Interpreter {
             stringLiteral: stringLiteral,
             primative: primative,
             arrayLiteral: arrayLiteral,
+            objectLiteral: objectLiteral,
             identifier: identifier,
             memberAccess: memberAccess,
             indexer: indexer,
@@ -85,10 +88,10 @@ export class Interpreter {
             andOr: andOr,
             functionDefinition: functionDefinition,
             assignment: assignment
-        } as InterpreterSteps;
+        } as ExpressionInterpreterSteps;
 
         for (let step in this.expressionSteps) {
-            this.expressionSteps[step as keyof InterpreterSteps].verboseMode = false;
+            this.expressionSteps[step as keyof ExpressionInterpreterSteps].verboseMode = false;
         }
     }
     
@@ -329,6 +332,10 @@ export class Interpreter {
 
     public parseFunctionDeclaration(): ASTNode|null|undefined {
         return this.expressionSteps.functionDefinition.execute();
+    }
+
+    public error(message: string): never {
+        throw new Error(message);
     }
 
     public parseStatement(): ASTNode|null|undefined {

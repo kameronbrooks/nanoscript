@@ -48,7 +48,11 @@ function compile(code: string) {
 
 
 const script = `
-return [0,1,2,3,4,5,6,7,8,9].length;
+return {
+    'x': (10**2),
+    'y': 20 + 1,
+    'z': 30
+}.x;
 `;
 
 /*
@@ -116,6 +120,7 @@ start = performance.now();
 result = executor.execute(program);
 end = performance.now();
 console.log(result + " in " + (end - start) + "ms  (executor)");
+console.log(result);    
 
 
 //const prg2bin = new NSBinaryComplier();

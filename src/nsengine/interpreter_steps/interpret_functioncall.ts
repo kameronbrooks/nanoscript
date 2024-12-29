@@ -23,13 +23,10 @@ export class InterpretFunctionCall extends InterpreterStep {
             // Fetch the operator and right node
             const argNodes: ASTNode[] = [];
 
-            //console.log("params");
-            //console.log(params);
-
             while(!this.interpreter.isEOF() && !this.interpreter.match("RPAREN")) {
                 let argNode = this.interpreter.parseExpression( {
                     ...params,
-                    returnFunctionCalls: true
+                    returnFunctionCalls: true   // if any function calls are encountered, they need to return something
                 });
                 argNodes.push(argNode as ASTNode);
                 if (this.interpreter.match("COMMA")) {

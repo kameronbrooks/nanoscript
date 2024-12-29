@@ -7,6 +7,7 @@
 
 import * as prg from "./program";
 import { printInstruction } from "./program";
+import { generateObject, IObjectGenerator } from "../utilities/object_generator";
 
 
 class ExternalFunction {
@@ -124,6 +125,11 @@ export class JSExecutor {
             this.op_not_equal_b.bind(this),
             this.op_equal_s.bind(this),
             this.op_not_equal_s.bind(this),
+
+            this.op_and_b.bind(this),
+            this.op_or_b.bind(this),
+            this.op_xor_b.bind(this),
+
             this.op_not_b.bind(this),
             this.op_neg_i.bind(this),
             this.op_neg_f.bind(this),
@@ -301,6 +307,27 @@ export class JSExecutor {
         }
     }
 
+    op_and_b() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a && b);
+        this.ip++;
+    }
+
+    op_or_b() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a || b);
+        this.ip++;
+    }
+
+    op_xor_b() {
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        this.stack.push(a ^ b);
+        this.ip++;
+    }
+    
     op_load_const_bool() {
         this.stack.push(this.program?.instructions[this.ip].operand);
         this.ip++;
@@ -346,7 +373,15 @@ export class JSExecutor {
     }
 
     op_load_literal_object() {
-        this.stack.push(this.program?.instructions[this.ip].operand);
+        const generator = this.program?.instructions[this.ip].operand as IObjectGenerator;
+        const propertyCount = generator.properties.length;
+
+        const values = [];
+        for (let i = 0; i < propertyCount; i++) {
+            values.push(this.stack.pop());
+        }
+            
+        this.stack.push(generateObject(generator, values));
         this.ip++;
     }
 

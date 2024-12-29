@@ -25,6 +25,11 @@ export type TokenType = (
 
     "BITWISE_AND" |
     "BITWISE_OR" |
+
+    "CARET" |
+
+    "LEFT_SHIFT" |
+    "RIGHT_SHIFT" |
     
     "INCREMENT" |
     "DECREMENT" |
@@ -50,6 +55,8 @@ export type TokenType = (
     "RBRACE" |
 
     "COMMA" |
+    "COLON" |
+    "ELLIPSIS" |
 
     "MEMBER_ACCESS" |
 
@@ -218,8 +225,17 @@ export class Tokenizer {
             return true;
         }
         if (char === ".") {
-            this.tokens.push({ type: "MEMBER_ACCESS", value: char, line: this.currentLine });
             this.index++;
+            if ((this.index < this.input.length-3) && (this.input[this.index] === ".") && (this.input[this.index + 1] === ".")) {
+                this.tokens.push({ type: "ELLIPSIS", value: "...", line: this.currentLine });
+                this.index+=2;
+                return true;
+            }
+            else {
+                this.tokens.push({ type: "MEMBER_ACCESS", value: char, line: this.currentLine });
+            }
+            
+            
             return true;
         }
         if (char === "+") {
@@ -422,6 +438,14 @@ export class Tokenizer {
             this.index++;
             return true;
         }
+
+        if (char === ":") {
+            this.tokens.push({ type: "COLON", value: ":", line: this.currentLine });
+            this.index++;
+            return true;
+        }
+
+
 
         return false;
     }

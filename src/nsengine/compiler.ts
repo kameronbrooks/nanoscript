@@ -6,6 +6,7 @@
 import * as ast from "./ast";
 import { Nenv } from "./nenv";
 import * as prg from "./program";
+import { IObjectGenerator } from "../utilities/object_generator";
 
 
 
@@ -605,6 +606,9 @@ export class Compiler {
             case "ArrayLiteral":
                 this.compileListLiteral(node as ast.ArrayLiteralNode);
                 break;
+            case "ObjectLiteral":
+                this.compileObjectLiteral(node as ast.ObjectLiteralNode);
+                break;
                 
             default:
                 throw new Error(`Unknown node type: ${node.type}`);
@@ -1003,18 +1007,17 @@ export class Compiler {
 
         // Compile the body
         this.compileNode(node.body);
-
+        // Open a reference for the end of the body to close on the next instruction
         const endOfBodyRef = this.instructionReferenceTable.open();
-        console.log("End of body ref: ", endOfBodyRef);
+
         // Compile the increment if there is one (for loop)
         if (node.increment) {
             this.compileNode(node.increment);
         }
         // Jump back to the condition
         this.addInstruction(prg.OP_JUMP, conditionRef);
+        // Open a reference for the end of the loop to close on the next instruction
         const endOfLoopRef = this.instructionReferenceTable.open();
-        console.log("End of loop ref: ", endOfLoopRef);
-
 
         if (!branchInstruction) {
             throw new Error("Branch instruction not found");
@@ -1121,6 +1124,20 @@ export class Compiler {
             this.compileNode(element);
         }
         this.addInstruction(prg.OP_LOAD_LITERAL_LIST, node.elements.length);
+    }
+
+    private compileObjectLiteral(node: ast.ObjectLiteralNode) {
+        for (let element of node.properties.slice().reverse()) {
+            this.compileNode(element.value);
+        }
+
+        const properties = node.properties.map(prop => ({
+            name: prop.key,
+        }));
+
+        this.addInstruction(prg.OP_LOAD_LITERAL_OBJECT, {
+            properties
+        } as IObjectGenerator);
     }
 
 

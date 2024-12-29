@@ -106,6 +106,12 @@ export const OP_NOT_EQUALb                      = i++;              // Not equal
 export const OP_EQUALs                          = i++;              // Equal comparison of two strings
 export const OP_NOT_EQUALs                      = i++;              // Not equal comparison of two strings
 
+export const OP_ANDb                            = i++;              // Logical AND of two booleans
+export const OP_ORb                             = i++;              // Logical OR of two booleans
+export const OP_XORb                            = i++;              // Logical XOR of two booleans
+
+
+
 // ============= UNARY OPERATIONS =============
 export const OP_NOTb                            = i++;              // Logical NOT of a boolean
 export const OP_NEGi                            = i++;              // Negation of an integer
@@ -248,6 +254,11 @@ export const OP_NAMES: string[] = [
     'OP_NOT_EQUALb',
     'OP_EQUALs',
     'OP_NOT_EQUALs',
+
+    'OP_ANDb',
+    'OP_ORb',
+    'OP_XORb',
+
     'OP_NOTb',
     'OP_NEGi',
     'OP_NEGf',
@@ -367,6 +378,9 @@ export const OP_MAP: { [key: string]: OPResult } = {
     'string==string': { opcode: OP_EQUALs, returnDtype: 'bool' },
     'string!=string': { opcode: OP_NOT_EQUALs, returnDtype: 'bool' },
     '!bool': { opcode: OP_NOTb, returnDtype: 'bool' },
+    'bool&&bool': { opcode: OP_ANDb, returnDtype: 'bool' },
+    'bool||bool': { opcode: OP_ORb, returnDtype: 'bool' },
+    'bool^bool': { opcode: OP_XORb, returnDtype: 'bool' },
     'int++': { opcode: OP_INCREMENT_LOCAL32, returnDtype: 'int' },
     'int--': { opcode: OP_DECREMENT_LOCAL32, returnDtype: 'int' },
     'float++': { opcode: OP_INCREMENT_LOCAL32, returnDtype: 'float' },

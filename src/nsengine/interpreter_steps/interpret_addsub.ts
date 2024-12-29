@@ -10,7 +10,7 @@ export class InterpretAddSub extends InterpreterStep {
     execute(params?: InterpreterStepParams): ASTNode | undefined| null {
         const childParams = {
             ...params,
-            returnFunctionCalls: true
+            returnFunctionCalls: true   // if any function calls are encountered, they need to return something
         } as InterpreterStepParams;
 
         if(this.verboseMode) this.log();

@@ -228,11 +228,25 @@ export interface FunctionDeclarationNode extends ASTNode {
     body: ASTNode;
 }
 
+/**
+ * Array literal node
+ * When an array literal is encountered
+ */
 export interface ArrayLiteralNode extends ASTNode {
     type: "ArrayLiteral";
     elements: ASTNode[];
     dtype?: string;
-    canBePreallocated?: boolean;
+    isKnownAtCompileTime?: boolean;
+}
+
+/**
+ * Object literal node
+ * When an object literal is encountered
+ */
+export interface ObjectLiteralNode extends ASTNode {
+    type: "ObjectLiteral";
+    properties: { key: string, value: ASTNode }[];
+    isKnownAtCompileTime?: boolean;
 }
 
 // =================================================================================================
@@ -365,6 +379,8 @@ export function astToString(node: ASTNode, level: number = 0): string {
             return indent + `[${(node as NumberNode).value.toString()}]\n` + postfix;
         case "ArrayLiteral":
             return indent + `[Array]:\n${(node as ArrayLiteralNode).elements.map((el) => astToString(el, level + 1)).join("")}` + postfix;
+        case "ObjectLiteral":
+            return indent + `[Object]:\n${(node as ObjectLiteralNode).properties.map((prop) => indent + `[${prop.key}]:\n${astToString(prop.value, level + 1)}`).join("")}` + postfix;
         case "UnaryOp":
             return indent + `[${(node as UnaryOpNode).operator}]:\n${astToString((node as UnaryOpNode).operand, level + 1)}` + postfix;
         case "BinaryOp":
