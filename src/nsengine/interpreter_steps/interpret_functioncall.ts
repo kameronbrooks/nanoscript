@@ -44,7 +44,7 @@ export class InterpretFunctionCall extends InterpreterStep {
                 requireReturn: params?.returnFunctionCalls || false
             } as FunctionCallNode;
 
-            if (this.interpreter.match('EOS')) {
+            if (this.interpreter.peek().type === 'EOS') {
                 return lnode;
             }
             

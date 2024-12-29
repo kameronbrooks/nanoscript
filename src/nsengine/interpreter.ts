@@ -16,6 +16,7 @@ import * as ist from "./interpreter_steps/interpreter_step_types";
 export type InterpreterSteps = {
     stringLiteral: InterpreterStep;
     primative: InterpreterStep;
+    arrayLiteral: ist.InterpretArrayLiteral;
     identifier: InterpreterStep;
     memberAccess: ist.InterpretMemberAccess;
     indexer: ist.InterpretIndexer;
@@ -48,7 +49,8 @@ export class Interpreter {
         // Initialize the expression steps
         const stringLiteral = new ist.InterpretStringLiteral(this, null);
         const primative = new ist.InterpretPrimative(this, stringLiteral);
-        const identifier = new ist.InterpretIdentifier(this, primative);
+        const arrayLiteral = new ist.InterpretArrayLiteral(this, primative);
+        const identifier = new ist.InterpretIdentifier(this, arrayLiteral);
         const memberAccess = new ist.InterpretMemberAccess(this, identifier);
         const indexer = new ist.InterpretIndexer(this, memberAccess);
         const functionCall = new ist.InterpretFunctionCall(this, indexer);
@@ -68,6 +70,7 @@ export class Interpreter {
         this.expressionSteps = {
             stringLiteral: stringLiteral,
             primative: primative,
+            arrayLiteral: arrayLiteral,
             identifier: identifier,
             memberAccess: memberAccess,
             indexer: indexer,
@@ -371,17 +374,17 @@ export class Interpreter {
      * @returns the AST
      */
     parse(): ASTNode|null|undefined {
-    const node = {
-        type: "Program",
-        statements: []
-    } as ProgramNode
-    while (!this.isEOF()) {
-        const statement = this.parseStatement();
-        if (statement) {
-            node.statements.push(statement);
+        const node = {
+            type: "Program",
+            statements: []
+        } as ProgramNode
+        while (!this.isEOF()) {
+            const statement = this.parseStatement();
+            if (statement) {
+                node.statements.push(statement);
+            }
         }
-    }
-    this.consume("EOF");
-    return node;
+        this.consume("EOF");
+        return node;
     }
   }

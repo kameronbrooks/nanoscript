@@ -68,6 +68,7 @@ export const OP_LOAD_LITERAL_NULL                 = i++;            // Load a nu
 export const OP_LOAD_LITERAL_STRING               = i++;            // Load a string literal
 export const OP_LOAD_INSTRUCTION_REFERENCE        = i++;            // Load an instruction reference
 export const OP_LOAD_PTR                          = i++;            // Load a pointer
+export const OP_LOAD_LITERAL_LIST                 = i++;            // Load a list literal
 export const OP_LOAD_LITERAL_OBJECT               = i++;            // Load an object literal
 
 // ============= BINARY OPERATIONS =============
@@ -157,10 +158,10 @@ export const OP_CALL_INTERNAL               = i++;                  // Call an i
 export const OP_CALL_EXTERNAL               = i++;                  // Call an external function
 export const OP_CALL_STACK                  = i++;                  // Call a function on the stack
 
-export const OP_RETURN                      = i++;                  // Return from a function
-export const OP_RETURN8                     = i++;                  // Return an 8-bit value
-export const OP_RETURN32                    = i++;                  // Return a 32-bit value
-export const OP_RETURN64                    = i++;                  // Return a 64-bit value
+export const OP_STACKPOP_VOID               = i++;                  // Return from a function
+export const OP_STACKPOP_RET8               = i++;                  // Return an 8-bit value
+export const OP_STACKPOP_RET32              = i++;                  // Return a 32-bit value
+export const OP_STACKPOP_RET64              = i++;                  // Return a 64-bit value
 
 export const OP_PUSH_RETURN8                = i++;                  // Push an 8-bit return value onto the stack
 export const OP_PUSH_RETURN32               = i++;                  // Push a 32-bit return value onto the stack
@@ -202,13 +203,14 @@ export const OP_NAMES: string[] = [
     'OP_BRANCH_LESS_THAN_OR_EQUAL32',
     'OP_BRANCH_LESS_THAN_OR_EQUAL64',
 
-    'OP_LOAD_CONST_BOOL',
-    'OP_LOAD_CONST_INT',
-    'OP_LOAD_CONST_FLOAT',
-    'OP_LOAD_CONST_NULL',
-    'OP_LOAD_CONST_STRING',
+    'OP_LOAD_LITERAL_BOOL',
+    'OP_LOAD_LITERAL_INT',
+    'OP_LOAD_LITERAL_FLOAT',
+    'OP_LOAD_LITERAL_NULL',
+    'OP_LOAD_LITERAL_STRING',
     'OP_LOAD_INSTRUCTION_REFERENCE',
     'OP_LOAD_PTR',
+    'OP_LOAD_LITERAL_LIST',
     'OP_LOAD_CONST_OBJECT',
 
     'OP_ADDi',

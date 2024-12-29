@@ -86,6 +86,7 @@ export class JSExecutor {
             this.op_load_const_string.bind(this),
             this.op_load_instruction_reference.bind(this),
             this.op_load_ptr.bind(this),
+            this.op_load_literal_list.bind(this),
             this.op_load_literal_object.bind(this),
 
             this.op_addi.bind(this),
@@ -194,6 +195,7 @@ export class JSExecutor {
 
         while (program.instructions[this.ip].opcode != prg.OP_TERM) {
             this.ops[program.instructions[this.ip].opcode]();
+            this.printStack();
         }
 
         if (this.stack.length > 0) {
@@ -331,6 +333,15 @@ export class JSExecutor {
 
     op_load_ptr() {
         this.stack.push(this.program?.instructions[this.ip].operand);
+        this.ip++;
+    }
+
+    op_load_literal_list() {
+        const l = new Array(this.program?.instructions[this.ip].operand);
+        for (let i = 0; i < l.length; i++) {
+            l[i] = this.stack.pop();
+        }
+        this.stack.push(l);
         this.ip++;
     }
 

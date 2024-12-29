@@ -19,8 +19,6 @@ export class InterpretEquality extends InterpreterStep {
 
         if(this.verboseMode) this.log();
 
-        console.log("in comparison", params);
-
         // Capture the left node
         let lnode = this.nextStep?.execute(params);
 

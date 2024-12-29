@@ -228,6 +228,13 @@ export interface FunctionDeclarationNode extends ASTNode {
     body: ASTNode;
 }
 
+export interface ArrayLiteralNode extends ASTNode {
+    type: "ArrayLiteral";
+    elements: ASTNode[];
+    dtype?: string;
+    canBePreallocated?: boolean;
+}
+
 // =================================================================================================
 // Helper functions to create AST nodes
 // =================================================================================================
@@ -260,6 +267,23 @@ export function createUnaryOpNode(operator: string, operand: ASTNode): UnaryOpNo
  */
 export function createBinaryOpNode(operator: string, left?: ASTNode, right?: ASTNode): BinaryOpNode {
     return { type: "BinaryOp", operator: operator, left: left as ASTNode, right: right as ASTNode };
+}
+
+
+export function isKnownAtCompileTime(node: ASTNode): boolean {
+    if (node.type == "Number" || node.type == "String" || node.type == "Boolean" || node.type == "Null") {
+        return true;
+    }
+    if (node.type == "UnaryOp") {
+        return isKnownAtCompileTime((node as UnaryOpNode).operand);
+    }
+    if (node.type == "BinaryOp") {
+        return isKnownAtCompileTime((node as BinaryOpNode).left) && isKnownAtCompileTime((node as BinaryOpNode).right);
+    }
+    if (node.type == "ArrayLiteral") {
+        return (node as ArrayLiteralNode).elements.every((el) => isKnownAtCompileTime(el));
+    }
+    return false;
 }
 
 
@@ -317,6 +341,9 @@ export function getASTNodeCount(node: ASTNode | null | undefined): number {
     else if (node.type == "Return") {
         count += getASTNodeCount((node as ReturnNode).value);
     }
+    else if (node.type == "ArrayLiteral") {
+        count += (node as ArrayLiteralNode).elements.map((arg) => getASTNodeCount(arg)).reduce((a, b) => a + b, 0);
+    }
     return count;
 }
 
@@ -336,6 +363,8 @@ export function astToString(node: ASTNode, level: number = 0): string {
     switch (node.type) {
         case "Number":
             return indent + `[${(node as NumberNode).value.toString()}]\n` + postfix;
+        case "ArrayLiteral":
+            return indent + `[Array]:\n${(node as ArrayLiteralNode).elements.map((el) => astToString(el, level + 1)).join("")}` + postfix;
         case "UnaryOp":
             return indent + `[${(node as UnaryOpNode).operator}]:\n${astToString((node as UnaryOpNode).operand, level + 1)}` + postfix;
         case "BinaryOp":

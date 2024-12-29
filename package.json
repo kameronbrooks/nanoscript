@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "test": "jest --verbose",
-    "dev": "tsc & node ./dist/main.js",
+    "dev": "tsc & node ./build/main.js",
     "dev-client": "tsc -w & node client.js",
     "build": "tsup",
     "build-node": "tsup-node ./src/npm-main.ts --format esm,cjs --dts"

@@ -515,27 +515,35 @@ export class Compiler {
             case "Assignment":
                 this.compileAssignment(node as ast.AssignmentNode);
                 break;
+
             case "BinaryOp":
                 this.compileBinaryOp(node as ast.BinaryOpNode);
                 break;
+
             case "UnaryOp":
                 this.compileUnaryOp(node as ast.UnaryOpNode);
                 break;
+
             case "Boolean":
                 this.compileBoolean(node as ast.BooleanNode);
                 break;
+
             case "Number":
                 this.compileNumber(node as ast.NumberNode);
                 break;
+
             case "String":
                 this.compileString(node as ast.StringNode);
                 break;
+
             case "Null":
                 this.compileNull(node as ast.NullNode);
                 break;
+
             case "Identifier":
                 this.compileIdentifier(node as ast.IdentifierNode);
                 break;
+
             case "Block":
                 this.state.pushScope();
                 for (let statement of (node as ast.BlockNode).statements) {
@@ -543,44 +551,59 @@ export class Compiler {
                 }
                 this.state.popScope();
                 break;
+
             case "Program":
                 for (let statement of (node as ast.BlockNode).statements) {
                     this.compileNode(statement);
                 }
                 break;
+
             case "Condition":
                 this.compileCondition(node as ast.ConditionNode);
                 break;
+
             case "MemberAccess":
                 this.compileMemberAccess(node as ast.MemberAccessNode);
                 break;
+
             case "Indexer":
                 this.compileIndexer(node as ast.IndexerNode);
                 break;
+
             case "Declaration":
                 this.compileDeclaration(node as ast.DeclarationNode);
                 break;
+
             case "FunctionCall":
                 this.compileFunctionCall(node as ast.FunctionCallNode);
                 break;
+
             case "Loop":
                 this.compileLoopStatement(node as ast.LoopNode);
                 break;
+
             case "Break":
                 this.compileBreak(node as ast.BreakNode);
                 break;
+
             case "Continue":
                 this.compileContinue(node as ast.ContinueNode);
                 break;
+
             case "FunctionDeclaration":
                 this.compileFunctionDefinition(node as ast.FunctionDeclarationNode);
                 break;
+
             case "Return":
                 this.compileReturn(node as ast.ReturnNode);
                 break;
 
             case "StringBuilder":
                 this.compileStringBuilder(node as ast.StringBuilderNode);
+                break;
+
+            case "ArrayLiteral":
+                this.compileListLiteral(node as ast.ArrayLiteralNode);
                 break;
                 
             default:
@@ -1068,26 +1091,36 @@ export class Compiler {
             if (node.value) {
                 this.compileNode(node.value);
                 if (this.state.currentDatatype === 'bool') {
-                    this.addInstruction(prg.OP_RETURN8);
+                    this.addInstruction(prg.OP_STACKPOP_RET8);
                 }
                 else if (this.state.currentDatatype === 'int') {
-                    this.addInstruction(prg.OP_RETURN32);
+                    this.addInstruction(prg.OP_STACKPOP_RET32);
                 }
                 else if (this.state.currentDatatype === 'float') {
-                    this.addInstruction(prg.OP_RETURN64);
+                    this.addInstruction(prg.OP_STACKPOP_RET64);
                 }
                 else {
-                    this.addInstruction(prg.OP_RETURN64);
+                    this.addInstruction(prg.OP_STACKPOP_RET64);
                 }
             } else {
-                this.addInstruction(prg.OP_RETURN);
+                this.addInstruction(prg.OP_STACKPOP_VOID);
             }
         }
         else {
+            if (node.value) {
+                this.compileNode(node.value);
+            }
             // If outside of a function, return exits the program
             this.addInstruction(prg.OP_TERM);
         }
         
+    }
+
+    private compileListLiteral(node: ast.ArrayLiteralNode) {
+        for (let element of node.elements.slice().reverse()) {
+            this.compileNode(element);
+        }
+        this.addInstruction(prg.OP_LOAD_LITERAL_LIST, node.elements.length);
     }
 
 

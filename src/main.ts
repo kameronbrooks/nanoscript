@@ -48,7 +48,7 @@ function compile(code: string) {
 
 
 const script = `
-console.log(myObject['x']);
+return [0,1,2,3,4,5,6,7,8,9].length;
 `;
 
 /*
@@ -98,10 +98,10 @@ const script = `
 }
 `;
 */
-//console.log(astToString(runCode(script) as any));
+console.log(astToString(runCode(script) as any));
 
 
-//printProgram(compile(script));
+printProgram(compile(script));
 
 const executor = new JSExecutor();
 

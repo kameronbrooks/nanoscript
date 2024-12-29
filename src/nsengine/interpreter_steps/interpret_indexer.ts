@@ -43,7 +43,7 @@ export class InterpretIndexer extends InterpreterStep {
             console.log("Indexer node", lnode);
 
             // Have to check for EOS here
-            if (this.interpreter.match('EOS')) {
+            if (this.interpreter.peek().type === 'EOS') {
                 return lnode;
             }
             

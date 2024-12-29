@@ -34,7 +34,7 @@ export class InterpretMemberAccess extends InterpreterStep {
             } as MemberAccessNode;
 
             // Have to check for EOS here
-            if (this.interpreter.match('EOS')) {
+            if (this.interpreter.peek().type === 'EOS') {
                 return lnode;
             }
 
