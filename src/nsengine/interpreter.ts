@@ -314,18 +314,21 @@ export class Interpreter {
             const name = this.consume("IDENTIFIER").value;
             
             let value = undefined;
+            let datatype = 'any';
             if (this.match("ASSIGN")) {
                 value = this.parseExpression({
                     returnFunctionCalls: true
                 });
+                datatype = (value as any)?.dtype || 'any';
             }
             this.consume("EOS");
+            
 
             return {
                 type: "Declaration",
                 identifier: name as string,
                 initializer: value,
-                dtype: 'any',
+                dtype: datatype,
                 constant: false
             } as DeclarationNode;
         }
@@ -333,10 +336,12 @@ export class Interpreter {
             const name = this.consume("IDENTIFIER").value;
             
             let value = undefined;
+            let datatype = 'any';
             if (this.match("ASSIGN")) {
                 value = this.parseExpression({
                     returnFunctionCalls: true
                 });
+                datatype = (value as any)?.dtype || 'any';
             }
             this.consume("EOS");
 
@@ -344,7 +349,7 @@ export class Interpreter {
                 type: "Declaration",
                 identifier: name as string,
                 initializer: value,
-                dtype: 'any',
+                dtype: datatype,
                 constant: true
             } as DeclarationNode;
         }

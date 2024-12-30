@@ -242,7 +242,11 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "+") {
-                this.tokens.push({ type: "INCREMENT", value: "++" , line: this.currentLine});
+                //this.tokens.push({ type: "INCREMENT", value: "++" , line: this.currentLine});
+                // A bit of a hack to make the increment operator work
+                // We push the increment assign token and then a number token with value 1
+                this.tokens.push({ type: "INCREMENT_ASSIGN", value: "+=", line: this.currentLine });
+                this.tokens.push({ type: "NUMBER", value: "1", line: this.currentLine });
                 this.index++;
                 return true;
             }
@@ -260,7 +264,11 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "-") {
-                this.tokens.push({ type: "DECREMENT", value: "--", line: this.currentLine });
+                //this.tokens.push({ type: "DECREMENT", value: "--", line: this.currentLine });
+                // A bit of a hack to make the decrement operator work
+                // We push the decrement assign token and then a number token with value 1
+                this.tokens.push({ type: "DECREMENT_ASSIGN", value: "-=", line: this.currentLine });
+                this.tokens.push({ type: "NUMBER", value: "1", line: this.currentLine });
                 this.index++;
                 return true;
             }

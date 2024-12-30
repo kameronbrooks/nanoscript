@@ -7,6 +7,7 @@ import * as ast from "./ast";
 import { Nenv } from "./nenv";
 import * as prg from "./program";
 import { IObjectGenerator } from "../utilities/object_generator";
+import { DType } from "./dtypes/dtype";
 
 
 
@@ -329,7 +330,7 @@ class InstructionReferenceTable {
     print() {
         console.log("Instruction Reference Table");
         for (let [key, value] of this.table) {
-            console.log(`${key}: ${value.opcode}  index [${value.index}]`);
+            console.log(`${key}: ${prg.OP_NAMES[value.opcode]}  index [${value.index}]`);
         }
     }
 }
@@ -410,6 +411,10 @@ export class Compiler {
         this.clearInstructionBufferTarget();
     }
 
+    error(message: string) {
+        throw new Error(message);
+    }
+
     getTailIndex() {
         return this.instructionBufferTarget.length;
     }
@@ -455,6 +460,18 @@ export class Compiler {
         }
         lastInstruction.opcode = opcode;
         lastInstruction.operand = operand || lastInstruction.operand;
+    }
+
+    getLastInstruction() {
+        return this.instructionBufferTarget.at(-1);
+    }
+
+    getDataType(name: string) : DType {
+        return this.nenv.getDataType(name);
+    }
+
+    getState() {
+        return this.state;
     }
 
     compile(ast: ast.ASTNode[]) {
@@ -661,29 +678,46 @@ export class Compiler {
         }
 
         // Look up the opcode based on the left and right datatypes
+        // This was the old way of doing it
+        /*
         const opKey = leftDataType + node.operator + rightDataType;
         const result = prg.searchOpMap(opKey);
         if (!result) {
             throw new Error(`Unknown operator: ${opKey}`);
         }
-        
+
         // Add the instruction
-        this.addInstruction(result.opcode, null);
-        this.state.currentDatatype = result.returnDtype;
-        this.state.isLValue = false;
+        this.addInstruction(result.opcode, null)
+        */
+
+        const opKey = leftDataType + node.operator + rightDataType;
+        const typeOperation = this.getDataType(leftDataType).getOperation(opKey);
+        if (!typeOperation) {
+            throw new Error(`Unknown operator: ${opKey}`);
+        }
+        
+        const resultDataType = typeOperation(this);
+
+        this.state.currentDatatype = resultDataType.datatype;
+        this.state.isLValue = resultDataType.lvalue;
     }
 
     private compileUnaryOp(node: ast.UnaryOpNode) {
         this.compileNode(node.operand);
         const datatype = this.state.currentDatatype;
         const opKey = node.postfix ? datatype + node.operator: node.operator + datatype;
-        const result = prg.searchOpMap(opKey);
-
-        if (!result) {
+        //const result = prg.searchOpMap(opKey);
+        const typeOperation = this.getDataType(datatype).getOperation(opKey);
+        
+        if (!typeOperation) {
             throw new Error(`Unknown operator: ${opKey}`);
         }
+        console.log("opkey", opKey);    
+        const result = typeOperation(this);
+
         // if this is a post increment or decrement, we need to change the last instruction
         // need to add cases for member access and element access
+        /*
         if (result.opcode == prg.OP_INCREMENT_LOCAL32 || result.opcode == prg.OP_DECREMENT_LOCAL32) {
             const lastInstruction = this.instructionBufferTarget.at(-1);
             if (!lastInstruction) {
@@ -694,9 +728,9 @@ export class Compiler {
             // Add the instruction
             this.addInstruction(result.opcode);
         }
-
-        
-        this.state.currentDatatype = result.returnDtype;
+        */
+        this.state.currentDatatype = result.datatype;
+        this.state.isLValue = result.lvalue;
     }
 
     private compileBoolean(node: ast.BooleanNode) {
@@ -798,15 +832,42 @@ export class Compiler {
                 this.state.isLValue = false;
             }
             else {
-                // Add the instruction to load the object
-                // TODO: figure out the opcode based on the object type
+                // Handle variables and consts
+                if (target.type == "variable" || target.type == "constant") {
+                    const datatype = this.getDataType(target.datatype);
+
+                    // The datatype should be any if not already defined
+                    if (!datatype) {
+                        throw new Error(`Unknown datatype: ${target.datatype}`);
+                    }
+                    // Get the load_local operation from the datatype
+                    let typeOperation = datatype.getOperation("load_local");
+                    if (!typeOperation) {
+                        throw new Error(`Unknown operator: load_local ${target.datatype}`);
+                    }
+
+                    const result = typeOperation(this, {operand: target.localStackIndex});
+
+                    this.state.currentDatatype = result.datatype;
+                    this.state.isLValue = (target.type != "constant");
+
+                }
+                else if (target.type == "function") {
+                    //this.addInstruction(prg.OP_LOAD_EXTERNAL, target.value);
+                    this.addInstruction(prg.OP_LOAD_INSTRUCTION_REFERENCE, '$'+target.name);
+                    this.state.isLValue = true;
+
+                    this.state.currentDatatype = target.datatype;
+                }
+
+                /*
                 if (target.type === "variable") {
                     this.addInstruction(prg.OP_LOAD_LOCAL32, target.localStackIndex);
                     this.state.isLValue = true;
                 }
                 else if (target.type === "constant") {
                     // TODO: Figure out the opcode based on the datatype
-                    this.addInstruction(prg.OP_LOAD_LITERAL_FLOAT64, target.localStackIndex);
+                    this.addInstruction(prg.OP_LOAD_LOCAL32, target.localStackIndex);
                     this.state.isLValue = false;
                 }
                 else if (target.type === "function") {
@@ -817,6 +878,7 @@ export class Compiler {
                 }
 
                 this.state.currentDatatype = target.datatype;
+                */
             }
         } else {
             // Add the instruction
@@ -881,8 +943,22 @@ export class Compiler {
         if (!lastInstruction) {
             throw new Error("No instructions");
         }
+
+        const opKey = leftDataType + node.operator + rightDataType;
+
+        const typeOperation = this.getDataType(leftDataType).getOperation(opKey);
+        if (!typeOperation) {
+            throw new Error(`Unknown operator: ${opKey}`);
+        }
+
+        const result = typeOperation(this);
+
+        this.state.currentDatatype = result.datatype;
+        this.state.isLValue = result.lvalue;
+
         // Switch the last load instruction to a store instruction
         // TODO: add support for different types of stores/loads 8, 32, 64
+        /*
         if (lastInstruction.opcode === prg.OP_LOAD_MEMBER32) {
             lastInstruction.opcode = prg.OP_STORE_MEMBER32;
         }
@@ -894,6 +970,7 @@ export class Compiler {
         }
         this.state.isLValue = false;
         this.state.currentDatatype = rightDataType;
+        */
     }
 
     private compileDeclaration(node: ast.DeclarationNode) {
@@ -908,7 +985,8 @@ export class Compiler {
             node.dtype || 'any', 
             node.initializer
         );
-        this.insertInstruction(currentFrameStartIndex, prg.OP_ALLOC_STACK, 1);
+        // Insert the instruction to allocate space on the stack ( make sure that this does not close any open instruction refrerences)
+        this.insertInstruction(currentFrameStartIndex, prg.OP_ALLOC_STACK, 1, true);
         
         if (node.initializer) {
             this.compileNode(node.initializer);
@@ -939,10 +1017,14 @@ export class Compiler {
             throw new Error("No instructions");
         }
 
-        if (lastInstruction.opcode === prg.OP_LOAD_EXTERNAL|| 
-            lastInstruction.opcode === prg.OP_LOAD_MEMBER8 || 
-            lastInstruction.opcode === prg.OP_LOAD_MEMBER32 || 
-            lastInstruction.opcode === prg.OP_LOAD_LOCAL64) {
+        if (lastInstruction.opcode === prg.OP_LOAD_EXTERNAL  || 
+            lastInstruction.opcode === prg.OP_LOAD_MEMBER8   || 
+            lastInstruction.opcode === prg.OP_LOAD_MEMBER32  || 
+            lastInstruction.opcode === prg.OP_LOAD_MEMBER64  ||
+            lastInstruction.opcode === prg.OP_LOAD_ELEMENT8  ||
+            lastInstruction.opcode === prg.OP_LOAD_ELEMENT32 ||
+            lastInstruction.opcode === prg.OP_LOAD_ELEMENT64
+        ) {
             this.addInstruction(prg.OP_CALL_EXTERNAL, node.arguments.length);
         }
         else if (lastInstruction.opcode === prg.OP_LOAD_INSTRUCTION_REFERENCE) {
@@ -1162,6 +1244,8 @@ export class Compiler {
             this.compileNode(element);
         }
         this.addInstruction(prg.OP_LOAD_LITERAL_LIST, node.elements.length);
+
+        this.state.currentDatatype = 'list';
     }
 
     private compileObjectLiteral(node: ast.ObjectLiteralNode) {
@@ -1176,6 +1260,8 @@ export class Compiler {
         this.addInstruction(prg.OP_LOAD_LITERAL_OBJECT, {
             properties
         } as IObjectGenerator);
+
+        this.state.currentDatatype = 'object';
     }
 
 

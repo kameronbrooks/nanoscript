@@ -89,52 +89,72 @@ export class JSExecutor {
             this.op_load_ptr.bind(this),
             this.op_load_literal_list.bind(this),
             this.op_load_literal_object.bind(this),
+            // Integers
+            this.op_add.bind(this),
+            this.op_sub.bind(this),
+            this.op_mul.bind(this),
+            this.op_div.bind(this),
+            this.op_mod.bind(this),
+            this.op_pow.bind(this),
+            // Floats
+            this.op_add.bind(this),
+            this.op_sub.bind(this),
+            this.op_mul.bind(this),
+            this.op_div.bind(this),
+            this.op_mod.bind(this),
+            this.op_pow.bind(this),
 
-            this.op_addi.bind(this),
-            this.op_subi.bind(this),
-            this.op_muli.bind(this),
-            this.op_divi.bind(this),
-            this.op_modi.bind(this),
-            this.op_powi.bind(this),
-
-            this.op_addf.bind(this),
-            this.op_subf.bind(this),
-            this.op_mulf.bind(this),
-            this.op_divf.bind(this),
-            this.op_modf.bind(this),
-            this.op_powf.bind(this),
-
-            this.op_adds.bind(this),
+            this.op_add.bind(this),
             this.op_sb_replace_s.bind(this),
+            // Integers
+            this.op_greater_than.bind(this),
+            this.op_less_than.bind(this),
+            this.op_greater_than_or_equal.bind(this),
+            this.op_less_than_or_equal.bind(this),
+            this.op_equal.bind(this),
+            this.op_not_equal.bind(this),
+            // Floats
+            this.op_greater_than.bind(this),
+            this.op_less_than.bind(this),
+            this.op_greater_than_or_equal.bind(this),
+            this.op_less_than_or_equal.bind(this),
+            this.op_equal.bind(this),
+            this.op_not_equal.bind(this),
 
-            this.op_greater_than_i.bind(this),
-            this.op_less_than_i.bind(this),
-            this.op_greater_than_or_equal_i.bind(this),
-            this.op_less_than_or_equal_i.bind(this),
-            this.op_equal_i.bind(this),
-            this.op_not_equal_i.bind(this),
+            this.op_equal.bind(this),
+            this.op_not_equal.bind(this),
 
-            this.op_greater_than_f.bind(this),
-            this.op_less_than_f.bind(this),
-            this.op_greater_than_or_equal_f.bind(this),
-            this.op_less_than_or_equal_f.bind(this),
-            this.op_equal_f.bind(this),
-            this.op_not_equal_f.bind(this),
+            this.op_equal.bind(this),
+            this.op_not_equal.bind(this),
 
-            this.op_equal_b.bind(this),
-            this.op_not_equal_b.bind(this),
-            this.op_equal_s.bind(this),
-            this.op_not_equal_s.bind(this),
+            this.op_equal.bind(this),
+            this.op_not_equal.bind(this),
 
             this.op_and_b.bind(this),
             this.op_or_b.bind(this),
             this.op_xor_b.bind(this),
 
             this.op_not_b.bind(this),
-            this.op_neg_i.bind(this),
-            this.op_neg_f.bind(this),
+            this.op_neg.bind(this),
+            this.op_neg.bind(this),
+
             this.op_increment_local_post.bind(this),
             this.op_decrement_local_post.bind(this),
+
+            this.op_increment_local_post.bind(this),
+            this.op_decrement_local_post.bind(this),
+
+            this.op_increment_member_post.bind(this),
+            this.op_decrement_member_post.bind(this),
+
+            this.op_increment_member_post.bind(this),
+            this.op_decrement_member_post.bind(this),
+
+            this.op_increment_element_post.bind(this),
+            this.op_decrement_element_post.bind(this),
+
+            this.op_increment_element_post.bind(this),
+            this.op_decrement_element_post.bind(this),
 
             this.op_int_to_float.bind(this),
             this.op_float_to_int.bind(this),
@@ -394,96 +414,48 @@ export class JSExecutor {
         this.ip++;
     }
 
-    op_addi() {
+    op_add() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a + b);
         this.ip++;
     }
 
-    op_subi() {
+    op_sub() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a - b);
         this.ip++;
     }
 
-    op_muli() {
+    op_mul() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a * b);
         this.ip++;
     }
 
-    op_divi() {
+    op_div() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a / b);
         this.ip++;
     }
 
-    op_modi() {
+    op_mod() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a % b);
         this.ip++;
     }
 
-    op_powi() {
+    op_pow() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a ** b);
         this.ip++;
     }
 
-    op_addf() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a + b);
-        this.ip++;
-    }
-
-    op_subf() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a - b);
-        this.ip++;
-    }
-
-    op_mulf() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a * b);
-        this.ip++;
-    }
-
-    op_divf() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a / b);
-        this.ip++;
-    }
-
-    op_modf() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a % b);
-        this.ip++;
-    }
-
-    op_powf() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a ** b);
-        this.ip++;
-    }
-
-    op_adds() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a + b);
-        this.ip++;
-    }
 
     op_sb_replace_s() {
         // Get string
@@ -497,112 +469,42 @@ export class JSExecutor {
         this.ip++;
     }
 
-    op_greater_than_i() {
+    op_greater_than() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a > b);
         this.ip++;
     }
 
-    op_less_than_i() {
+    op_less_than() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a < b);
         this.ip++;
     }
 
-    op_greater_than_or_equal_i() {
+    op_greater_than_or_equal() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a >= b);
         this.ip++;
     }
 
-    op_less_than_or_equal_i() {
+    op_less_than_or_equal() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a <= b);
         this.ip++;
     }
 
-    op_equal_i() {
+    op_equal() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a == b);
         this.ip++;
     }
 
-    op_not_equal_i() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a != b);
-        this.ip++;
-    }
-
-    op_greater_than_f() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a > b);
-        this.ip++;
-    }
-
-    op_less_than_f() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a < b);
-        this.ip++;
-    }
-
-    op_greater_than_or_equal_f() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a >= b);
-        this.ip++;
-    }
-
-    op_less_than_or_equal_f() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a <= b);
-        this.ip++;
-    }
-
-    op_equal_f() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a == b);
-        this.ip++;
-    }
-
-    op_not_equal_f() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a != b);
-        this.ip++;
-    }
-
-    op_equal_b() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a == b);
-        this.ip++;
-    }
-
-    op_not_equal_b() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a != b);
-        this.ip++;
-    }
-
-    op_equal_s() {
-        let b = this.stack.pop();
-        let a = this.stack.pop();
-        this.stack.push(a == b);
-        this.ip++;
-    }
-
-    op_not_equal_s() {
+    op_not_equal() {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a != b);
@@ -615,25 +517,47 @@ export class JSExecutor {
         this.ip++;
     }
 
-    op_neg_i() {
-        let a = this.stack.pop();
-        this.stack.push(-a);
-        this.ip++;
-    }
-
-    op_neg_f() {
+    op_neg() {
         let a = this.stack.pop();
         this.stack.push(-a);
         this.ip++;
     }
 
     op_increment_local_post() {
-        this.stack[this.fp + this.program?.instructions[this.ip].operand]++;
+        this.stack[this.fp + this.program?.instructions[this.ip].operand] += this.stack.pop();
         this.ip++;
     }
 
     op_decrement_local_post() {
-        this.stack[this.fp + this.program?.instructions[this.ip].operand]--;
+        this.stack[this.fp + this.program?.instructions[this.ip].operand] -= this.stack.pop();
+        this.ip++;
+    }
+
+    op_increment_member_post() {
+        let a = this.stack.pop();
+        a[this.program?.instructions[this.ip].operand] += this.stack.pop();
+        this.ip++;
+    }
+
+    op_decrement_member_post() {
+        let a = this.stack.pop();
+        a[this.program?.instructions[this.ip].operand] -= this.stack.pop();
+        this.ip++;
+    }
+
+    op_increment_element_post() {
+        let c = this.stack.pop();
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        a[b] += c;
+        this.ip++;
+    }
+
+    op_decrement_element_post() {
+        let c = this.stack.pop();
+        let b = this.stack.pop();
+        let a = this.stack.pop();
+        a[b] -= c;
         this.ip++;
     }
 

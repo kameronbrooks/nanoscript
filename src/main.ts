@@ -30,8 +30,8 @@ function compile(code: string) {
     let tokenizer = new Tokenizer(code);
     let tokens = tokenizer.tokenize();
     //console.log(tokens);
-    let compiler = new Compiler(_nenv, {verboseMode: false});
-    let interpreter = new Interpreter(tokens, {verboseMode: false});
+    let compiler = new Compiler(_nenv, {verboseMode: true});
+    let interpreter = new Interpreter(tokens, {verboseMode: true});
     let ast = interpreter.parse();
 
     console.log(astToString(ast as any));
@@ -41,8 +41,17 @@ function compile(code: string) {
 
 
 const script = `
+let a = 10;
+let name = "Timmy";
+for (let i = 0; i < 10; i += 2) {
+    console.log(i);
+}
 
-return true || false;`;
+//console.log(name);
+const c = 20;
+
+return c;
+`;
 
 
 /*
@@ -105,13 +114,13 @@ console.log("Compiled in " + (end - start) + "ms");
 
 let result = null;
 
-
+/*
 start = performance.now();
 result = executor.execute(program);
 end = performance.now();
 console.log(result + " in " + (end - start) + "ms  (executor)");
 console.log(result);  
-
+*/
 
 
 //const prg2bin = new NSBinaryComplier();

@@ -105,6 +105,8 @@ export const OP_EQUALb                          = i++;              // Equal com
 export const OP_NOT_EQUALb                      = i++;              // Not equal comparison of two booleans
 export const OP_EQUALs                          = i++;              // Equal comparison of two strings
 export const OP_NOT_EQUALs                      = i++;              // Not equal comparison of two strings
+export const OP_EQUALo                          = i++;              // Equal comparison of two objects
+export const OP_NOT_EQUALo                      = i++;              // Not equal comparison of two objects
 
 export const OP_ANDb                            = i++;              // Logical AND of two booleans
 export const OP_ORb                             = i++;              // Logical OR of two booleans
@@ -116,8 +118,24 @@ export const OP_XORb                            = i++;              // Logical X
 export const OP_NOTb                            = i++;              // Logical NOT of a boolean
 export const OP_NEGi                            = i++;              // Negation of an integer
 export const OP_NEGf                            = i++;              // Negation of a float
-export const OP_INCREMENT_LOCAL32               = i++;              // Increment a local variable
-export const OP_DECREMENT_LOCAL32               = i++;              // Decrement a local variable
+
+export const OP_INCREMENT_LOCALi32              = i++;              // Increment a local variable
+export const OP_DECREMENT_LOCALi32              = i++;              // Decrement a local variable
+
+export const OP_INCREMENT_LOCALf64              = i++;              // Increment a local variable
+export const OP_DECREMENT_LOCALf64              = i++;              // Decrement a local variable
+
+export const OP_INCREMENT_MEMBERi32             = i++;              // Increment a member variable
+export const OP_DECREMENT_MEMBERi32             = i++;              // Decrement a member variable
+
+export const OP_INCREMENT_MEMBERf64             = i++;              // Increment a member variable
+export const OP_DECREMENT_MEMBERf64             = i++;              // Decrement a member variable
+
+export const OP_INCREMENT_ELEMENTi32            = i++;              // Increment an element
+export const OP_DECREMENT_ELEMENTi32            = i++;              // Decrement an element
+
+export const OP_INCREMENT_ELEMENTf64            = i++;              // Increment an element
+export const OP_DECREMENT_ELEMENTf64            = i++;              // Decrement an element
 
 // ============= CONVERSION OPERATIONS =============
 export const OP_INT_TO_FLOAT                    = i++;              // Convert an integer to a float
@@ -255,6 +273,9 @@ export const OP_NAMES: string[] = [
     'OP_EQUALs',
     'OP_NOT_EQUALs',
 
+    'OP_EQUALo',
+    'OP_NOT_EQUALo',
+
     'OP_ANDb',
     'OP_ORb',
     'OP_XORb',
@@ -263,8 +284,24 @@ export const OP_NAMES: string[] = [
     'OP_NEGi',
     'OP_NEGf',
 
-    'OP_INCREMENT_LOCAL32',
-    'OP_DECREMENT_LOCAL32',
+    'OP_INCREMENT_LOCALi32',
+    'OP_DECREMENT_LOCALi32',
+
+    'OP_INCREMENT_LOCALf64',
+    'OP_DECREMENT_LOCALf64',
+
+    'OP_INCREMENT_MEMBERi32',
+    'OP_DECREMENT_MEMBERi32',
+
+    'OP_INCREMENT_MEMBERf64',
+    'OP_DECREMENT_MEMBERf64',
+
+    'OP_INCREMENT_ELEMENTi32',
+    'OP_DECREMENT_ELEMENTi32',
+
+    'OP_INCREMENT_ELEMENTf64',
+    'OP_DECREMENT_ELEMENTf64',
+
     'OP_INT_TO_FLOAT',
     'OP_FLOAT_TO_INT',
     'OP_INT_TO_STRING',
@@ -339,8 +376,8 @@ export const OP_MAP: { [key: string]: OPResult } = {
     'any<any': { opcode: OP_LESS_THANi, returnDtype: 'bool' },
     'any>=any': { opcode: OP_GREATER_THAN_OR_EQUALi, returnDtype: 'bool' },
     'any<=any': { opcode: OP_LESS_THAN_OR_EQUALi, returnDtype: 'bool' },
-    'any++': { opcode: OP_INCREMENT_LOCAL32, returnDtype: 'int' },
-    'any--': { opcode: OP_DECREMENT_LOCAL32, returnDtype: 'int' },
+    'any++': { opcode: OP_INCREMENT_LOCALi32, returnDtype: 'int' },
+    'any--': { opcode: OP_DECREMENT_LOCALi32, returnDtype: 'int' },
     // Int
     'int+int': { opcode: OP_ADDi, returnDtype: 'int' },
     'int-int': { opcode: OP_SUBi, returnDtype: 'int' },
@@ -381,10 +418,10 @@ export const OP_MAP: { [key: string]: OPResult } = {
     'bool&&bool': { opcode: OP_ANDb, returnDtype: 'bool' },
     'bool||bool': { opcode: OP_ORb, returnDtype: 'bool' },
     'bool^bool': { opcode: OP_XORb, returnDtype: 'bool' },
-    'int++': { opcode: OP_INCREMENT_LOCAL32, returnDtype: 'int' },
-    'int--': { opcode: OP_DECREMENT_LOCAL32, returnDtype: 'int' },
-    'float++': { opcode: OP_INCREMENT_LOCAL32, returnDtype: 'float' },
-    'float--': { opcode: OP_DECREMENT_LOCAL32, returnDtype: 'float' },
+    'int++': { opcode: OP_INCREMENT_LOCALi32, returnDtype: 'int' },
+    'int--': { opcode: OP_DECREMENT_LOCALi32, returnDtype: 'int' },
+    'float++': { opcode: OP_INCREMENT_LOCALf64, returnDtype: 'float' },
+    'float--': { opcode: OP_DECREMENT_LOCALf64, returnDtype: 'float' },
 };
 
 export const IMPLICIT_CONVERSION_MAP: { [key: string]: OPResult } = {

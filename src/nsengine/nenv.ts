@@ -1,4 +1,5 @@
-
+import { DType } from "./dtypes/dtype";
+import * as builtin_types from "./dtypes/builtin_dtypes";
 
 export interface NenvExport {
     name: string;
@@ -26,10 +27,33 @@ export interface NenvReference {
 export class Nenv {
     private modules: { [key: string]: NenvModule };
     private references: { [key: string]: NenvReference };
+    private datatypes: { [key: string]: DType};
+
     constructor() {
         this.modules = {};
         this.references = {};
+        this.datatypes = {};
 
+        // Add builtin datatypes
+        for (const [key, value] of Object.entries(builtin_types)) {
+            this.addDatatype(new (value as any)());
+        }
+    }
+
+    getDataType(name:string): DType {
+        return this.datatypes[name];
+    }
+
+    addDatatype(datatype: DType) {
+        if (this.datatypes[datatype.id]) {
+            throw new Error(`Datatype ${datatype.id} already exists`);
+        }
+        this.datatypes[datatype.id] = datatype;
+        if(datatype.aliases) {
+            for(let alias of datatype.aliases) {
+                this.datatypes[alias] = datatype;
+            }
+        }
     }
 
     addModule(module: NenvModule) {
