@@ -80,6 +80,81 @@ export class AnyType extends DType {
                         lvalue: false
                     }
                 },
+                "any=any": (compiler) => {
+                    const lastInstruction = compiler.getLastInstruction();
+
+                    if (!lastInstruction) {
+                        throw compiler.error("No previous instruction to increment");
+                    }
+                    prg.printInstruction(lastInstruction);
+                    switch (lastInstruction.opcode) {
+                        case prg.OP_LOAD_LOCAL32:
+                            compiler.replaceLastInstruction(prg.OP_STORE_LOCAL32);
+                            break;
+                        case prg.OP_LOAD_MEMBER32:
+                            compiler.replaceLastInstruction(prg.OP_STORE_MEMBER32);
+                            break;
+                        case prg.OP_LOAD_ELEMENT32:
+                            compiler.replaceLastInstruction(prg.OP_STORE_ELEMENT32);
+                            break;
+                        default:
+                            throw compiler.error("Cannot increment previous instruction");
+                    }
+                    return {
+                        datatype: "any",
+                        lvalue: false
+                    }
+                },
+                "any+=any": (compiler) => {
+                    const lastInstruction = compiler.getLastInstruction();
+
+                    if (!lastInstruction) {
+                        throw compiler.error("No previous instruction to increment");
+                    }
+                    prg.printInstruction(lastInstruction);
+                    switch (lastInstruction.opcode) {
+                        case prg.OP_LOAD_LOCAL32:
+                            compiler.replaceLastInstruction(prg.OP_INCREMENT_LOCALi32);
+                            break;
+                        case prg.OP_LOAD_MEMBER32:
+                            compiler.replaceLastInstruction(prg.OP_INCREMENT_MEMBERi32);
+                            break;
+                        case prg.OP_LOAD_ELEMENT32:
+                            compiler.replaceLastInstruction(prg.OP_INCREMENT_ELEMENTi32);
+                            break;
+                        default:
+                            throw compiler.error("Cannot increment previous instruction");
+                    }
+                    return {
+                        datatype: "any",
+                        lvalue: false
+                    }
+                },
+                "any-=any": (compiler) => {
+                    const lastInstruction = compiler.getLastInstruction();
+
+                    if (!lastInstruction) {
+                        throw compiler.error("No previous instruction to increment");
+                    }
+                    prg.printInstruction(lastInstruction);
+                    switch (lastInstruction.opcode) {
+                        case prg.OP_LOAD_LOCAL32:
+                            compiler.replaceLastInstruction(prg.OP_DECREMENT_LOCALi32);
+                            break;
+                        case prg.OP_LOAD_MEMBER32:
+                            compiler.replaceLastInstruction(prg.OP_DECREMENT_MEMBERi32);
+                            break;
+                        case prg.OP_LOAD_ELEMENT32:
+                            compiler.replaceLastInstruction(prg.OP_DECREMENT_ELEMENTi32);
+                            break;
+                        default:
+                            throw compiler.error("Cannot increment previous instruction");
+                    }
+                    return {
+                        datatype: "any",
+                        lvalue: false
+                    }
+                },
                 "any==any": (compiler) => {
                     compiler.addInstruction(prg.OP_EQUALi);
                     return {

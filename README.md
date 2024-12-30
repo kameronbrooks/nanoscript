@@ -1,6 +1,6 @@
 # nanoscript (nscript)
 
-## current version 0.0.1
+## current version 0.0.7
 
 # This is a Work in Progress (not functional yet)
 
@@ -186,6 +186,8 @@ func(1,2);      // 3
 
 Lists can be declared with list literal syntax, similar to javascript
 ```javascript
+// nanoscript
+
 let arr = [0,1,2,3,4,5];    // js list with 6 elements
 let arr2 = [];              // empty list
 
@@ -199,6 +201,8 @@ Objects can be created with a familiar syntax as well.
 
 *Note: Object keys must be enclosed with single or double quotes like strings.*
 ```javascript
+// nanoscript
+
 let o = {
     'x': 1.0,
     'y': 2.5

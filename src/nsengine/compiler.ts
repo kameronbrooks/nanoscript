@@ -10,6 +10,8 @@ import { IObjectGenerator } from "../utilities/object_generator";
 import { DType } from "./dtypes/dtype";
 
 
+export const COMPILER_VERSION = "0.0.7";
+
 
 /**
  * Contains the list of variables in a frame
@@ -336,7 +338,7 @@ class InstructionReferenceTable {
 }
 
 export class Compiler {
-    private engineVersion = "0.0.4";
+    private engineVersion = COMPILER_VERSION;
     private nenv: Nenv;
     private program: prg.Program;
     public state: CompilerState;
@@ -931,17 +933,26 @@ export class Compiler {
     private compileAssignment(node: ast.AssignmentNode) {
         
         this.compileNode(node.right);
-        const rightDataType = this.state.currentDatatype;
+        let rightDataType = this.state.currentDatatype;
 
         this.compileNode(node.left);
         if (!this.state.isLValue) {
             throw new Error("Invalid assignment target");
         }
-        const leftDataType = this.state.currentDatatype;
+        let leftDataType = this.state.currentDatatype;
 
         const lastInstruction = this.instructionBufferTarget.at(-1);
         if (!lastInstruction) {
             throw new Error("No instructions");
+        }
+
+        // Check for type mismatch
+        // TODO: Implement type coercion
+        if(leftDataType==='any' || rightDataType==='any') {
+            rightDataType = leftDataType = 'any';
+        }
+        if (leftDataType !== rightDataType) {
+            throw new Error(`Type mismatch: ${leftDataType} and ${rightDataType}`);
         }
 
         const opKey = leftDataType + node.operator + rightDataType;

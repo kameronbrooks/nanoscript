@@ -2,7 +2,7 @@ import { builtin_module } from "../nenvmodules/builtin";
 import { Nenv, NenvExport, NenvModule } from "./nenv";
 import { Tokenizer } from "./tokenizer";
 import { Interpreter } from "./interpreter";
-import { Compiler } from "./compiler";
+import { Compiler, COMPILER_VERSION } from "./compiler";
 import { Program } from "./program";
 import { JSExecutor } from "./executor";
 
@@ -13,7 +13,7 @@ import { JSExecutor } from "./executor";
 export class NSEngine {
     _nenv: Nenv;
     _excutor: JSExecutor;
-    version: string = "0.0.5";
+    version: string = COMPILER_VERSION;
 
     constructor() {
         this._nenv = new Nenv();
