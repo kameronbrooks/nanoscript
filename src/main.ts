@@ -30,8 +30,8 @@ function compile(code: string) {
     let tokenizer = new Tokenizer(code);
     let tokens = tokenizer.tokenize();
     //console.log(tokens);
-    let compiler = new Compiler(_nenv, {verboseMode: false});
-    let interpreter = new Interpreter(tokens, {verboseMode: false});
+    let compiler = new Compiler(_nenv, {verboseMode: true});
+    let interpreter = new Interpreter(tokens, {verboseMode: true});
     let ast = interpreter.parse();
 
     console.log(astToString(ast as any));
@@ -41,14 +41,25 @@ function compile(code: string) {
 
 
 const script = `
-let a = {
-    'x': 10
-};
 
-a.x += 1;
+// comment this is a comment
+/* this is a block comment */
 
-return a;
+let arr = [1,2,3,4,5];
+
+arr[0] = 10;
+return arr;
 `;
+
+const tokeizer = new Tokenizer(script, {
+    allowUnknown: true,
+    disableReplacements: true,
+    keepComments: true,
+    keepWhitespace: true,
+});
+
+const tokens = tokeizer.tokenize();
+console.log(tokens);
 
 
 /*
@@ -101,6 +112,7 @@ const script = `
 
 
 //printProgram(compile(script));
+
 
 const executor = new JSExecutor();
 

@@ -10,7 +10,7 @@ import { IObjectGenerator } from "../utilities/object_generator";
 import { DType } from "./dtypes/dtype";
 
 
-export const COMPILER_VERSION = "0.0.7";
+export const COMPILER_VERSION = "0.0.8";
 
 
 /**
@@ -795,6 +795,7 @@ export class Compiler {
         // TODO: figure out the opcode based on the object type
         this.addInstruction(prg.OP_LOAD_MEMBER32, (node.member as ast.IdentifierNode).value);
         this.state.currentDatatype = 'any';
+        this.state.isLValue = true;
         // Add the instruction
     }
 
@@ -817,6 +818,7 @@ export class Compiler {
         // Add the instruction
         this.addInstruction(prg.OP_LOAD_ELEMENT32, node.indices.length);
         this.state.currentDatatype = 'any';
+        this.state.isLValue = true;
     }
 
     private compileIdentifier(node: ast.IdentifierNode, isMember = false) {

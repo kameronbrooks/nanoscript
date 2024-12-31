@@ -76,7 +76,9 @@ export type TokenType = (
     "EOS" |
     "EOF" |
 
-    "UNKNOWN"
+    "UNKNOWN" |
+    "COMMENT" |
+    "WHITESPACE"
 );
 
 export const keywordTokenMap: { [key: string]: TokenType } = {
@@ -116,14 +118,24 @@ export class Tokenizer {
     private index: number;
     private tokens: Token[];
     private currentLine: number;
-    private allowUnknown: boolean;
+    private options: { 
+        allowUnknown?: boolean, 
+        disableReplacements?: boolean, 
+        keepWhitespace?: boolean, 
+        keepComments?: boolean 
+    };
 
-    constructor(input: string, params?: { allowUnknown?: boolean }) {
+    constructor(input: string, params?: { allowUnknown?: boolean, disableReplacements?: boolean, keepWhitespace?: boolean, keepComments?: boolean }) {
         this.input = input;
         this.index = 0;
         this.tokens = [];
         this.currentLine = 1;
-        this.allowUnknown = params?.allowUnknown || false;
+        this.options = {
+            allowUnknown: params?.allowUnknown || false,
+            disableReplacements: params?.disableReplacements || false,
+            keepWhitespace: params?.keepWhitespace || false,
+            keepComments: params?.keepComments || false
+        }
     }
 
     tokenize(): Token[] {
@@ -152,7 +164,7 @@ export class Tokenizer {
                 continue;
             }
             
-            if (this.allowUnknown) {
+            if (this.options.allowUnknown) {
                 this.tokens.push({ type: "UNKNOWN", value: this.input[i], line: this.currentLine });
                 this.index++;
                 continue;
@@ -165,27 +177,47 @@ export class Tokenizer {
         return this.tokens;
     }
 
+    /**
+     * Try to parse an end of statement token
+     * @returns 
+     */
     tryParseEOS(): boolean {
         const char = this.input[this.index];
         if (char === ";") {
-            this.tokens.push({ type: "EOS" , line: this.currentLine});
+            this.tokens.push({ type: "EOS" , value: ";", line: this.currentLine});
             this.index++;
             return true;
         }
         return false;
     }
 
+    /**
+     * Try to parse whitespace
+     * Will add a whitespace token if the option is set
+     * @returns 
+     */
     tryParseWhiteSpace(): boolean {
-        const char = this.input[this.index];
-        if (/\s/.test(char)) {
+        let outputValue = "";
+        while (this.index < this.input.length && /\s/.test(this.input[this.index])) {
+            const char = this.input[this.index];
             if (char === "\n") {
                 this.currentLine++;
             }
+            outputValue += char;
             this.index++;
-            return true;
+            continue;
         }
-        return false;
+        // Keep whitespace if the option is set
+        if (outputValue.length > 0 && this.options.keepWhitespace) {
+            this.tokens.push({ type: "WHITESPACE", value: outputValue, line: this.currentLine });
+        }
+        return outputValue.length > 0;
     }
+
+    /**
+     * Parse a number literal
+     * @returns 
+     */
     tryParseNumber(): boolean {
         const char = this.input[this.index];
         if ("0123456789".includes(char)) {
@@ -252,11 +284,14 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "+") {
-                //this.tokens.push({ type: "INCREMENT", value: "++" , line: this.currentLine});
-                // A bit of a hack to make the increment operator work
-                // We push the increment assign token and then a number token with value 1
-                this.tokens.push({ type: "INCREMENT_ASSIGN", value: "+=", line: this.currentLine });
-                this.tokens.push({ type: "NUMBER", value: "1", line: this.currentLine });
+
+                if (this.options.disableReplacements) {
+                    this.tokens.push({ type: "INCREMENT", value: "++", line: this.currentLine });
+                }
+                else {
+                    this.tokens.push({ type: "INCREMENT_ASSIGN", value: "+=", line: this.currentLine });
+                    this.tokens.push({ type: "NUMBER", value: "1", line: this.currentLine });
+                }
                 this.index++;
                 return true;
             }
@@ -274,11 +309,13 @@ export class Tokenizer {
             this.index++;
             char = this.input[this.index];
             if (char === "-") {
-                //this.tokens.push({ type: "DECREMENT", value: "--", line: this.currentLine });
-                // A bit of a hack to make the decrement operator work
-                // We push the decrement assign token and then a number token with value 1
-                this.tokens.push({ type: "DECREMENT_ASSIGN", value: "-=", line: this.currentLine });
-                this.tokens.push({ type: "NUMBER", value: "1", line: this.currentLine });
+                if (this.options.disableReplacements) {
+                    this.tokens.push({ type: "DECREMENT", value: "--", line: this.currentLine });
+                }
+                else {
+                    this.tokens.push({ type: "DECREMENT_ASSIGN", value: "-=", line: this.currentLine });
+                    this.tokens.push({ type: "NUMBER", value: "1", line: this.currentLine });
+                }
                 this.index++;
                 return true;
             }
@@ -319,13 +356,19 @@ export class Tokenizer {
             char = this.input[this.index];
             // Comment
             if (char === "/") {
+                const startIndex = this.index-1;
                 while (this.index < this.input.length && this.input[this.index] !== "\n") {
                     this.index++;
+                }
+                if (this.options.keepComments) {
+                    this.tokens.push({ type: "COMMENT", value: this.input.substring(startIndex, this.index), line: this.currentLine });
                 }
                 return true;
             }
             // Block comment
             if (char === "*") {
+                const startIndex = this.index-1;
+
                 this.index++;
                 while (this.index < this.input.length-1) {
                     if (this.input[this.index] === "*" && this.input[this.index + 1] === "/") {
@@ -333,6 +376,9 @@ export class Tokenizer {
                         break;
                     }
                     this.index++;
+                }
+                if (this.options.keepComments) {
+                    this.tokens.push({ type: "COMMENT", value: this.input.substring(startIndex, this.index), line: this.currentLine });
                 }
                 return true;
             }
@@ -468,6 +514,10 @@ export class Tokenizer {
         return false;
     }
 
+    /**
+     * Try to parse an identifier
+     * @returns 
+     */
     tryParseIdentifier(): boolean {
         const char = this.input[this.index];
         const allowedFirstChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';
@@ -494,6 +544,7 @@ export class Tokenizer {
         return false;
     }
 
+
     private tryParseSpecialChar(): string | null {
         let localIndex = this.index;
         let char = this.input[localIndex];
@@ -505,6 +556,10 @@ export class Tokenizer {
         }
         return null;
     }
+    /**
+     * Try to parse a string literal
+     * @returns 
+     */
     tryParseStringLiteral(): boolean {
         const char = this.input[this.index];
         if (char === '"') {

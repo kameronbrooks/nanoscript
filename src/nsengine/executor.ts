@@ -642,9 +642,10 @@ export class JSExecutor {
         this.ip++;
     }
     op_store_element() {
-        let c = this.stack.pop();
+        
         let b = this.stack.pop();
         let a = this.stack.pop();
+        let c = this.stack.pop();
         a[b] = c;
         this.ip++;
     }

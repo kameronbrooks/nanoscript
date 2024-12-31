@@ -47,7 +47,6 @@ export class InterpretIndexer extends InterpreterStep {
                 indices: argNodes
             } as IndexerNode;
 
-
             // Have to check for EOS here
             if (this.interpreter.peek().type === 'EOS') {
                 return lnode;
