@@ -794,7 +794,7 @@ export class Compiler {
         // Compile the member
         // TODO: figure out the opcode based on the object type
         this.addInstruction(prg.OP_LOAD_MEMBER32, (node.member as ast.IdentifierNode).value);
-
+        this.state.currentDatatype = 'any';
         // Add the instruction
     }
 
@@ -816,6 +816,7 @@ export class Compiler {
 
         // Add the instruction
         this.addInstruction(prg.OP_LOAD_ELEMENT32, node.indices.length);
+        this.state.currentDatatype = 'any';
     }
 
     private compileIdentifier(node: ast.IdentifierNode, isMember = false) {

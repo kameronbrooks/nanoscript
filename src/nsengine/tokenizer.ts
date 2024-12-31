@@ -74,7 +74,9 @@ export type TokenType = (
     "TRY" |
     "CATCH" |
     "EOS" |
-    "EOF"
+    "EOF" |
+
+    "UNKNOWN"
 );
 
 export const keywordTokenMap: { [key: string]: TokenType } = {
@@ -114,12 +116,14 @@ export class Tokenizer {
     private index: number;
     private tokens: Token[];
     private currentLine: number;
+    private allowUnknown: boolean;
 
-    constructor(input: string) {
+    constructor(input: string, params?: { allowUnknown?: boolean }) {
         this.input = input;
         this.index = 0;
         this.tokens = [];
         this.currentLine = 1;
+        this.allowUnknown = params?.allowUnknown || false;
     }
 
     tokenize(): Token[] {
@@ -148,7 +152,13 @@ export class Tokenizer {
                 continue;
             }
             
-            throw new Error(`Unexpected token at index ${i}`);
+            if (this.allowUnknown) {
+                this.tokens.push({ type: "UNKNOWN", value: this.input[i], line: this.currentLine });
+                this.index++;
+                continue;
+            }
+
+            throw new Error(`Unexpected token at index ${i} line ${this.currentLine}`);
         }
 
         this.tokens.push({ type: "EOF" });
