@@ -145,7 +145,9 @@ export class Interpreter {
     }
 
     public parseExpression(params?: InterpreterStepParams): ASTNode | undefined | null {
-        return this.expressionSteps.assignment.execute(params);
+        const node = this.expressionSteps.assignment.execute(params);
+        this.associateCurrentLine(node);
+        return node;
     }
 
 
@@ -181,7 +183,8 @@ export class Interpreter {
             return {
                 type: "Condition",
                 condition,
-                body
+                body,
+                line: this.previous().line
             } as ConditionNode;
         }
         return null;
@@ -198,7 +201,8 @@ export class Interpreter {
             }
             return {
                 type: "Block",
-                statements
+                statements,
+                line: this.previous().line
             } as BlockNode;
         }
         return null;
@@ -221,7 +225,8 @@ export class Interpreter {
             return {
                 type: "Loop",
                 condition,
-                body
+                body,
+                line: this.previous().line
             } as LoopNode;
         }
         return null;
@@ -232,7 +237,8 @@ export class Interpreter {
             if(this.match("EOS")) {
                 return {
                     type: "Break",
-                    level: 1
+                    level: 1,
+                    line: this.previous().line
                 } as BreakNode;
             }
             else {
@@ -240,7 +246,8 @@ export class Interpreter {
                 this.consume("EOS");
                 return {
                     type: "Break",
-                    level: parseInt(level as string)
+                    level: parseInt(level as string),
+                    line: this.previous().line
                 } as BreakNode;
             }
         }
@@ -252,7 +259,8 @@ export class Interpreter {
             if(this.match("EOS")) {
                 return {
                     type: "Continue",
-                    level: 1
+                    level: 1,
+                    line: this.previous().line
                 } as ContinueNode;
             }
             else {
@@ -268,7 +276,8 @@ export class Interpreter {
             if (this.match("EOS")) {
                 return {
                     type: "Return",
-                    value: null
+                    value: null,
+                    line: this.previous().line
                 } as ASTNode;
             }
 
@@ -276,7 +285,8 @@ export class Interpreter {
             this.consume("EOS");
             return {
                 type: "Return",
-                value
+                value,
+                line: this.previous().line
             } as ASTNode;
         }
         return null;
@@ -304,7 +314,8 @@ export class Interpreter {
                 initializer,
                 condition,
                 increment,
-                body
+                body,
+                line: this.previous().line
             } as LoopNode;
         }
     }
@@ -329,7 +340,8 @@ export class Interpreter {
                 identifier: name as string,
                 initializer: value,
                 dtype: datatype,
-                constant: false
+                constant: false,
+                line: this.previous().line
             } as DeclarationNode;
         }
         else if (this.match("DECLARE_CONSTANT")) {
@@ -350,7 +362,8 @@ export class Interpreter {
                 identifier: name as string,
                 initializer: value,
                 dtype: datatype,
-                constant: true
+                constant: true,
+                line: this.previous().line
             } as DeclarationNode;
         }
         return null;
@@ -366,6 +379,17 @@ export class Interpreter {
         const line = this.peek().line;
         throw new Error(`Interpreter Error on line (${line}): ` + message);
     }
+
+    /**
+     * Associate the current line number with the given node
+     * @param node 
+     */
+    public associateCurrentLine(node: ASTNode | null | undefined): void {
+        if(node && node.line === undefined) {
+            node.line = this.previous().line
+        }
+    }
+
 
     public parseStatement(): ASTNode|null|undefined {
         let node = this.parseBlock();
@@ -398,6 +422,10 @@ export class Interpreter {
         }
         else {
             node = this.parseExpression();
+
+            // Associate the current line number with the node for error reporting
+            this.associateCurrentLine(node);
+
             this.consume("EOS");
             return node;
         }
@@ -417,6 +445,11 @@ export class Interpreter {
         } as ProgramNode
         while (!this.isEOF()) {
             const statement = this.parseStatement();
+
+            // Associate the current line number with the node for error reporting
+            // Will catch nodes that are not already associated with a line number
+            this.associateCurrentLine(statement);
+
             if (statement) {
                 node.statements.push(statement);
             }

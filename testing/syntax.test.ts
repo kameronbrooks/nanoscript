@@ -1,6 +1,7 @@
 import {Tokenizer}  from "../src/nsengine/tokenizer";
 import {Interpreter} from "../src/nsengine/interpreter";
 import {Compiler} from "../src/nsengine/compiler";
+import {JSExecutor} from "../src/nsengine/executor";
 import * as nenv from "../src/nsengine/nenv";
 import { builtin_module } from "../src/nenvmodules/builtin";
 
@@ -28,6 +29,18 @@ function compile(code: string) {
     return compiler.compile([ast] as any);
 }
 
+function execute(code: string) {
+    let tokenizer = new Tokenizer(code);
+    let tokens = tokenizer.tokenize();
+    let interpreter = new Interpreter(tokens);
+    let ast = interpreter.parse();
+    let program = compiler.compile([ast] as any);
+    let executor = new JSExecutor();
+    const result = executor.execute(program);
+
+    return result;
+}
+
 const myModule = {
     name: "myModule",
     exports: [
@@ -52,15 +65,66 @@ const myModule = {
 } as nenv.NenvModule;
 
 
+const validResults = [
+// 1-5
+    null,
+    0,
+    -1,
+    true,
+    false,
+// 6-10
+    2,
+    141,
+    11,
+    6,
+    10,
+// 11-15
+    100,
+    10,
+    20,
+    10,
+    'Hello world',
+// 16-20
+    'Hello world!',
+    ' Hello \' world ',
+    ' Hello John',
+    5,
+    true,
+// 21-25
+    'x is less than 10',
+    'x is less than 10',
+    undefined,
+    undefined,
+    undefined,
+// 26-30
+    1,
+    1,
+    undefined,
+    1,
+    100,
+// 31-35
+    { x: 100, y: 21, z: 20 },
+    [0,1,2,3,4],
+    [],
+    ['s','t','o','p'],
+    {},
+// 36-40
+    {},
+    120,
+    8,
+    ' Hello 1',
 
+]
 
 
 const validScripts = [
+// 1-5
 `null;`,
 `0;`,
 `-1;`,
 `true;`,
 `false;`,
+// 6-10
 `1 + 1;`,
 `1 + 1 + 3 + 5 * 5 * 5 + 4;`,
 `1 + -(-1 + 2) * 10 + 2;`,
@@ -71,6 +135,7 @@ function y(a) {
     return a + 1;
 }
 func0(x+1, y(x+2), (2+5));`,
+// 11-15
 `
 let x = 10;
 o.g.f(x.y()).bb(x);`,
@@ -80,6 +145,7 @@ o.g.f(x);`,
 `(1 + 2) * 10;`,
 `let x = 10;`,
 "'Hello world';",
+// 16-20
 "'Hello world' + '!';",
 "' Hello \\' world ';",
 "let name='john'; `Hello, ${name}`;",
@@ -93,6 +159,7 @@ if (x > 10) {
     console.log('x is greater than 10');
 }
 `,
+// 21-25
 `
 let x = 5;
 if (x > 10) {
@@ -121,6 +188,7 @@ let x = 0;
 while (x < 10) {
     x++;
 }`,
+// 26-30
 `arr[0];`,
 `arr[0];`,
 `arr[0].g;`,
@@ -131,6 +199,7 @@ while (x < 10) {
     'z': 30
 }.x;
 `,
+// 31-35
 `return {
     'x': (10**2),
     'y': 20 + 1,
@@ -141,6 +210,7 @@ while (x < 10) {
 `return [];`,
 `return ['s','t','o','p'];`,
 `return {};`,
+// 36-40
 `let x = {};
  return x;`,
  `
@@ -164,6 +234,20 @@ for (let j = 0; j < 20; j++) {
 
 
 return 8;
+`,
+`
+// comment this is a comment
+/* this is a block comment */
+
+let arr0 = [1,2,3,4,5];
+
+const s = "hello world";
+const s2 = 'hello world';
+
+let sb = \` Hello \${arr0[0]}\`;
+
+arr0[0] = 10;
+return sb;
 `
 ];
 
@@ -204,6 +288,49 @@ describe('Compile Vaild Script', () => {
         });
     }
 });
+
+describe('Execute Vaild Script (no error)', () => {
+    for (let script of validScripts) {
+        test(script, () => {
+            expect(()=>{ return execute(script)}).not.toThrow();
+        });
+    }
+});
+
+
+describe('Execute Vaild Script (correct result)', () => {
+    for (let i = 0; i < validScripts.length; i++) {
+        const script = validScripts[i];
+        const result = validResults[i];
+
+        if (typeof result === 'object') {
+            test(script, () => {
+                expect(execute(script)).toMatchObject(result as object);
+            });
+            continue;
+        }
+        else if (typeof result === 'string') {
+            test(script, () => {
+                expect(execute(script)).toMatch(result as string);
+            });
+            continue;
+        }
+        else if (Array.isArray(result)) {
+            test(script, () => {
+                expect(execute(script)).toEqual(result);
+            });
+            continue;
+        }
+        else {
+            test(script, () => {
+                expect(execute(script)).toBe(result);
+            });
+        }
+
+    }
+});
+
+
 
 
 

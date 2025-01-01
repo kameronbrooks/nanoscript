@@ -23,6 +23,7 @@ export class InterpretAddSub extends InterpreterStep {
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute(childParams);
             lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
+
         }
 
         return lnode;

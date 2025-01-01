@@ -38,23 +38,22 @@ function compile(code: string) {
     return compiler.compile([ast] as any);
 }
 
-
-
 const script = `
+for (let i = 0; i < 10; i++) { 
+    console.log(i**2); 
+}
 
-// comment this is a comment
-/* this is a block comment */
+//console.log('Hello World');
 
-let arr = [1,2,3,4,5];
+for (let j = 0; j < 20; j++) { 
+    console.log(j**2);
+}
 
-const s = "hello world";
-const s2 = 'hello world';
 
-let sb = \` Hello \${arr[0]}\`;
-
-arr[0] = 10;
-return sb;
+return 8;
 `;
+
+
 
 const tokeizer = new Tokenizer(script, {
     allowUnknown: true,

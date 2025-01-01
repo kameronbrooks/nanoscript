@@ -43,6 +43,7 @@ export class InterpretArrayLiteral extends InterpreterStep {
                 elements: elementNodes
             } as ArrayLiteralNode;
 
+
             if (this.interpreter.peek().type === 'EOS') {
                 return lnode;
             }

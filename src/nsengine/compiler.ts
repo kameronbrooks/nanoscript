@@ -348,6 +348,7 @@ export class Compiler {
     private instructionBufferTarget: prg.Instruction[];
     private functionInstructionBuffers: FunctionInstructionBuffer[] = [];
     private verboseMode: boolean = false;
+    private lastLine: number = 0;
     
 
 
@@ -367,6 +368,7 @@ export class Compiler {
 
         this.functionInstructionBuffers = [];
         this.verboseMode = params?.verboseMode || false;
+        this.lastLine = 0;
     }
 
     private init() {
@@ -382,6 +384,7 @@ export class Compiler {
         this.instructionBufferTarget = this.program.instructions;
 
         this.functionInstructionBuffers = [];
+        this.lastLine = 0;
     }
 
     /**
@@ -414,7 +417,7 @@ export class Compiler {
     }
 
     error(message: string) {
-        throw new Error(message);
+        throw new Error(`Complilation error on line ${this.lastLine} : ${message.toString()}`);
     }
 
     getTailIndex() {
@@ -458,7 +461,7 @@ export class Compiler {
     replaceLastInstruction(opcode: number, operand:any = null) {
         const lastInstruction = this.instructionBufferTarget.at(-1);
         if (!lastInstruction) {
-            throw new Error("No instructions");
+            throw this.error("No instructions");
         }
         lastInstruction.opcode = opcode;
         lastInstruction.operand = operand || lastInstruction.operand;
@@ -481,6 +484,10 @@ export class Compiler {
         this.init();
 
         this.instructionBufferTarget = this.program.instructions;
+
+        if (ast.length === 0) {
+            throw this.error("No AST nodes to compile");
+        }
 
         for (let node of ast) {
             this.compileNode(node);
@@ -541,7 +548,7 @@ export class Compiler {
                 const targetIndex = instruction.operand as string;
                 const targetInstruction = this.instructionReferenceTable.get(targetIndex);
                 if (!targetInstruction) {
-                    throw new Error(`Branch target not found: ${targetIndex}`);
+                    throw this.error(`Branch target not found: ${targetIndex}`);
                 }
                 instruction.operand = targetInstruction.index;
             }
@@ -557,6 +564,11 @@ export class Compiler {
     }
 
     compileNode(node: ast.ASTNode) {
+        // Save the last line number for error reporting
+        if(node && node.line !== undefined) {
+            this.lastLine = node.line;
+        }
+
         switch (node.type) {
             case "Assignment":
                 this.compileAssignment(node as ast.AssignmentNode);
@@ -657,7 +669,7 @@ export class Compiler {
                 break;
                 
             default:
-                throw new Error(`Unknown node type: ${node.type}`);
+                throw this.error(`Unknown node type: ${node.type}`);
         }
     }
 
@@ -676,7 +688,7 @@ export class Compiler {
             rightDataType = leftDataType = 'any';
         }
         if (leftDataType !== rightDataType) {
-            throw new Error(`Type mismatch: ${leftDataType} and ${rightDataType}`);
+            throw this.error(`Type mismatch: ${leftDataType} and ${rightDataType}`);
         }
 
         // Look up the opcode based on the left and right datatypes
@@ -695,7 +707,7 @@ export class Compiler {
         const opKey = leftDataType + node.operator + rightDataType;
         const typeOperation = this.getDataType(leftDataType).getOperation(opKey);
         if (!typeOperation) {
-            throw new Error(`Unknown operator: ${opKey}`);
+            throw this.error(`Unknown operator: ${opKey}`);
         }
         
         const resultDataType = typeOperation(this);
@@ -712,7 +724,7 @@ export class Compiler {
         const typeOperation = this.getDataType(datatype).getOperation(opKey);
         
         if (!typeOperation) {
-            throw new Error(`Unknown operator: ${opKey}`);
+            throw this.error(`Unknown operator: ${opKey}`);
         }
         console.log("opkey", opKey);    
         const result = typeOperation(this);
@@ -783,10 +795,10 @@ export class Compiler {
 
     private compileMemberAccess(node: ast.MemberAccessNode) {
         if (!node.object) {
-            throw new Error("Missing object in member access");
+            throw this.error("Missing object in member access");
         }
         if (!node.member) {
-            throw new Error("Missing member in member access");
+            throw this.error("Missing member in member access");
         }
         // Compile the object
         this.compileNode(node.object);
@@ -802,10 +814,10 @@ export class Compiler {
     private compileIndexer(node: ast.IndexerNode) {
 
         if (!node.object) {
-            throw new Error("Missing object in indexer");
+            throw this.error("Missing object in indexer");
         }
         if (!node.indices) {
-            throw new Error("Missing indices in indexer");
+            throw this.error("Missing indices in indexer");
         }
         // Compile the object
         this.compileNode(node.object);
@@ -828,7 +840,7 @@ export class Compiler {
             let target = this.state.currentScope?.getObject(node.value);
             
             if (!target) {
-                throw new Error(`Unknown identifier: ${node.value}`);
+                throw this.error(`Unknown identifier: ${node.value}`);
             }
 
             if (target.location === "external") {
@@ -843,12 +855,12 @@ export class Compiler {
 
                     // The datatype should be any if not already defined
                     if (!datatype) {
-                        throw new Error(`Unknown datatype: ${target.datatype}`);
+                        throw this.error(`Unknown datatype: ${target.datatype}`);
                     }
                     // Get the load_local operation from the datatype
                     let typeOperation = datatype.getOperation("load_local");
                     if (!typeOperation) {
-                        throw new Error(`Unknown operator: load_local ${target.datatype}`);
+                        throw this.error(`Unknown operator: load_local ${target.datatype}`);
                     }
 
                     const result = typeOperation(this, {operand: target.localStackIndex});
@@ -920,7 +932,7 @@ export class Compiler {
 
         // Update the branch instruction
         if (!branchInstruction) {
-            throw new Error("Branch instruction not found");
+            throw this.error("Branch instruction not found");
         }
 
         branchInstruction.operand = falseBranchRef || endOfConditionRef;
@@ -940,13 +952,13 @@ export class Compiler {
 
         this.compileNode(node.left);
         if (!this.state.isLValue) {
-            throw new Error("Invalid assignment target");
+            throw this.error("Invalid assignment target");
         }
         let leftDataType = this.state.currentDatatype;
 
         const lastInstruction = this.instructionBufferTarget.at(-1);
         if (!lastInstruction) {
-            throw new Error("No instructions");
+            throw this.error("No instructions");
         }
 
         // Check for type mismatch
@@ -955,14 +967,14 @@ export class Compiler {
             rightDataType = leftDataType = 'any';
         }
         if (leftDataType !== rightDataType) {
-            throw new Error(`Type mismatch: ${leftDataType} and ${rightDataType}`);
+            throw this.error(`Type mismatch: ${leftDataType} and ${rightDataType}`);
         }
 
         const opKey = leftDataType + node.operator + rightDataType;
 
         const typeOperation = this.getDataType(leftDataType).getOperation(opKey);
         if (!typeOperation) {
-            throw new Error(`Unknown operator: ${opKey}`);
+            throw this.error(`Unknown operator: ${opKey}`);
         }
 
         const result = typeOperation(this);
@@ -1012,7 +1024,7 @@ export class Compiler {
                 node.dtype = initializerDataType;
             }
             else if (initializerDataType !== node.dtype) {
-                throw new Error(`Type mismatch: ${initializerDataType} and ${node.dtype}`);
+                throw this.error(`Type mismatch: ${initializerDataType} and ${node.dtype}`);
             }
         }
 
@@ -1028,7 +1040,7 @@ export class Compiler {
         this.compileNode(node.left);
         const lastInstruction = this.instructionBufferTarget.at(-1);
         if (!lastInstruction) {
-            throw new Error("No instructions");
+            throw this.error("No instructions");
         }
 
         if (lastInstruction.opcode === prg.OP_LOAD_EXTERNAL  || 
@@ -1093,7 +1105,7 @@ export class Compiler {
             );
         }
         if (this.instructionReferenceTable.get('$' + node.name)) {
-            throw new Error(`Function ${node.name} already exists`);
+            throw this.error(`Function ${node.name} already exists`);
         }
         this.instructionReferenceTable.open(node.name);
         // Compile the function body
@@ -1109,10 +1121,10 @@ export class Compiler {
 
     private compileLoopStatement(node: ast.LoopNode) {
         if (!node.condition) {
-            throw new Error("Missing condition in while loop");
+            throw this.error("Missing condition in while loop");
         }
         if (!node.body) {
-            throw new Error("Missing body in while loop");
+            throw this.error("Missing body in while loop");
         }
         // Push a new scope for the loop
         this.state.pushScope();
@@ -1151,7 +1163,7 @@ export class Compiler {
         const endOfLoopRef = this.instructionReferenceTable.getOpenReference() || this.instructionReferenceTable.open();
 
         if (!branchInstruction) {
-            throw new Error("Branch instruction not found");
+            throw this.error("Branch instruction not found");
         }
         branchInstruction.operand = endOfLoopRef;
 
@@ -1159,7 +1171,7 @@ export class Compiler {
         // Retarget the break instructions to the end of the loop
         const breakList = this.state.breakListStack.pop();
         if (!breakList) {
-            throw new Error("Break list not found");
+            throw this.error("Break list not found");
         }
         for (let instruction of breakList.breakInstructions) {
             instruction.operand = endOfLoopRef;
@@ -1169,7 +1181,7 @@ export class Compiler {
         // Retarget the continue instructions to the end of the loop
         const continueList = this.state.continueListStack.pop();
         if (!continueList) {
-            throw new Error("Continue list not found");
+            throw this.error("Continue list not found");
         }
         for (let instruction of continueList.continueInstructions) {
             instruction.operand = endOfBodyRef;
@@ -1183,20 +1195,20 @@ export class Compiler {
         // Add the jump instruction
         const instruction = this.addInstruction(prg.OP_JUMP, null);
         if (!instruction) {
-            throw new Error("Failed to add break instruction");
+            throw this.error("Failed to add break instruction");
         }
 
         // Add the instruction to the break list
         const breakLevel = node.level;
         if (breakLevel < 0) {
-            throw new Error("Break level must be greater than or equal to 0");
+            throw this.error("Break level must be greater than or equal to 0");
         }
         if (breakLevel > this.state.breakListStack.length) {
-            throw new Error(`Cannot break out farther than loop depth, current depth: ${this.state.breakListStack.length} requested depth: ${breakLevel}`);
+            throw this.error(`Cannot break out farther than loop depth, current depth: ${this.state.breakListStack.length} requested depth: ${breakLevel}`);
         }
         const breakList = this.state.breakListStack.at(-breakLevel);
         if (!breakList) {
-            throw new Error("Break list not found at this level");
+            throw this.error("Break list not found at this level");
         }
         breakList.breakInstructions.push(instruction);
     }
@@ -1205,20 +1217,20 @@ export class Compiler {
         // Add the jump instruction
         const instruction = this.addInstruction(prg.OP_JUMP, null);
         if (!instruction) {
-            throw new Error("Failed to add break instruction");
+            throw this.error("Failed to add break instruction");
         }
 
         // Add the instruction to the break list
         const continueLevel = node.level;
         if (continueLevel < 0) {
-            throw new Error("Continue level must be greater than or equal to 0");
+            throw this.error("Continue level must be greater than or equal to 0");
         }
         if (continueLevel > this.state.continueListStack.length) {
-            throw new Error(`Cannot continue farther than loop depth, current depth: ${this.state.continueListStack.length} requested depth: ${continueLevel}`);
+            throw this.error(`Cannot continue farther than loop depth, current depth: ${this.state.continueListStack.length} requested depth: ${continueLevel}`);
         }
         const continueList = this.state.continueListStack.at(-continueLevel);
         if (!continueList) {
-            throw new Error("Break list not found at this level");
+            throw this.error("Break list not found at this level");
         }
         continueList.continueInstructions.push(instruction);
     }   
