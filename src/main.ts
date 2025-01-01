@@ -47,8 +47,13 @@ const script = `
 
 let arr = [1,2,3,4,5];
 
+const s = "hello world";
+const s2 = 'hello world';
+
+let sb = \` Hello \${arr[0]}\`;
+
 arr[0] = 10;
-return arr;
+return sb;
 `;
 
 const tokeizer = new Tokenizer(script, {

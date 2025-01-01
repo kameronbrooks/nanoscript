@@ -574,7 +574,7 @@ export class Tokenizer {
                 this.index++;
             }
             this.index++;
-            this.tokens.push({ type: "STRINGLITERAL", value: str, line: this.currentLine });
+            this.tokens.push({ type: "STRINGLITERAL", value: `"${str}"`, line: this.currentLine });
             return true;
         }
         else if (char === "'") {
@@ -589,7 +589,7 @@ export class Tokenizer {
                 this.index++;
             }
             this.index++;
-            this.tokens.push({ type: "STRINGLITERAL", value: str, line: this.currentLine });
+            this.tokens.push({ type: "STRINGLITERAL", value: `'${str}'`, line: this.currentLine });
             return true;
         }
         else if (char === "`") {
@@ -663,7 +663,7 @@ export class Tokenizer {
 
             this.tokens.push({ 
                 type: "STRINGBUILDER", 
-                value: newString,
+                value: "`"+newString+"`",
                 subExpressions: expressions.map((expression) => {
                     return new Tokenizer(expression).tokenize();
                 }),
