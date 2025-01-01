@@ -39,18 +39,12 @@ function compile(code: string) {
 }
 
 const script = `
-for (let i = 0; i < 10; i++) { 
-    console.log(i**2); 
-}
+    let o = {
+        'x': 10,
+        'y': 20,
+    };
 
-//console.log('Hello World');
-
-for (let j = 0; j < 20; j++) { 
-    console.log(j**2);
-}
-
-
-return 8;
+    return o.x;
 `;
 
 

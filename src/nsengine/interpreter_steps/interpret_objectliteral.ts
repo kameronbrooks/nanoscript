@@ -27,6 +27,9 @@ export class InterpretObjectLiteral extends InterpreterStep {
                     this.interpreter.error("Expected an identifier in object literal");
                 }
                 let key = this.interpreter.previous().value;
+                if (key) {
+                    key = key.substring(1, key.length - 1);
+                }
                 if (!this.interpreter.match("COLON")) {
                     this.interpreter.error("Expected a colon in object literal");
                 }

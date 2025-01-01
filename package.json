@@ -1,6 +1,6 @@
 {
   "name": "@creation-wasteland/nanoscript",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A server/client javascript-based interpreter for simple custom application specific scripts.",
   "main": "./dist/npm-main.js",
   "module": "./dist/npm-main.mjs",
