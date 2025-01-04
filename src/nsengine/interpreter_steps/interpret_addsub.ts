@@ -1,6 +1,6 @@
 import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
-import { ASTNode, BinaryOpNode, createBinaryOpNode } from "../ast";
+import { ASTNode, createBinaryOpNode } from "../ast";
 
 export class InterpretAddSub extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {

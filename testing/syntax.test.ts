@@ -113,6 +113,7 @@ const validResults = [
     120,
     8,
     ' Hello 1',
+    10
 
 ]
 
@@ -248,6 +249,14 @@ let sb = \` Hello \${arr0[0]}\`;
 
 arr0[0] = 10;
 return sb;
+`,
+`
+    let ob = {
+        'x': 10,
+        'y': 20,
+    };
+
+    return ob.x;
 `
 ];
 

@@ -10,7 +10,7 @@ import { IObjectGenerator } from "../utilities/object_generator";
 import { DType } from "./dtypes/dtype";
 
 
-export const COMPILER_VERSION = "0.0.9";
+export const COMPILER_VERSION = "0.0.10";
 
 
 /**
@@ -497,6 +497,11 @@ export class Compiler {
         const lastInstruction = this.program.instructions.at(-1);
         if (!lastInstruction || lastInstruction.opcode !== prg.OP_TERM) {
             this.addInstruction(prg.OP_TERM);
+        }
+
+        // Close any open references
+        if (this.instructionReferenceTable.hasOpenReference()) {
+            this.instructionReferenceTable.close(this.program.instructions.at(-1) as prg.Instruction);
         }
         
         if (this.verboseMode) {
