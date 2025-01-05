@@ -1,17 +1,22 @@
-import { ValidSyntaxTest, InvalidSyntaxTest, compile, interpret, execute, tokenize } from "./test_utils.test";
+import { ValidSyntaxTest, InvalidSyntaxTest, compile, interpret, execute, tokenize } from "./test_utils";
 import {Tokenizer}  from "../src/nsengine/tokenizer";
 import {Interpreter} from "../src/nsengine/interpreter";
 import {Compiler} from "../src/nsengine/compiler";
 import {JSExecutor} from "../src/nsengine/executor";
 import * as nenv from "../src/nsengine/nenv";
 import { builtin_module } from "../src/nenvmodules/builtin";
-import { myModule } from "./test_utils.test";
+import { myModule } from "./test_utils";
 
 let n_env = new nenv.Nenv();
 let compiler = new Compiler(n_env);
 
 
 const validTests = [
+    {
+        name: 'line comment // this is a comment',
+        code: '//this is a comment',
+        expectedResult: undefined
+    } as ValidSyntaxTest,
     {
         name: 'null literal',
         code: 'null;',
@@ -46,6 +51,50 @@ const validTests = [
         name: 'false literal',
         code: 'false;',
         expectedResult: false
+    } as ValidSyntaxTest,
+    {
+        name: 'string literal',
+        code: '"hello";',
+        expectedResult: "hello"
+
+    } as ValidSyntaxTest,
+    {
+        name: 'string literal with escape characters',
+        code: '"hello\\nworld";',
+        expectedResult: "hello\nworld"
+
+    } as ValidSyntaxTest,
+    {
+        name: 'string literal single quotes',
+        code: "'hello';",
+        expectedResult: "hello"
+    
+    } as ValidSyntaxTest,
+    {
+        name: 'string literal single quotes with escape characters',
+        code: "'hello\\\nworld';",
+        expectedResult: "hello\\nworld"
+    } as ValidSyntaxTest,
+    {
+        name: 'string literal with escaped quotes',
+        code: '"hello \\\\"world\\\\"";',
+        expectedResult: 'hello "world"'
+
+    } as ValidSyntaxTest,
+    {
+        name: 'string literal with escaped single quotes',
+        code: "'hello \\\\'world\\\\'';",
+        expectedResult: "hello 'world'"
+    } as ValidSyntaxTest,
+    {
+        name: "string builder string literal",
+        code: "let name = 'john'; `Hello, ${name}`;",
+        expectedResult: "Hello, john"
+    } as ValidSyntaxTest,
+    {
+        name: "string builder string literal with expression",
+        code: "`Hello, ${2 + 1}`;",
+        expectedResult: "Hello, 3"
     } as ValidSyntaxTest,
     {
         name: 'simple integer addition (1 + 1)',
@@ -207,6 +256,9 @@ describe('Execute Vaild Script (correct result)', () => {
     for (let t of validTests) {
         const result = t.expectedResult;
         const script = t.code;
+        if (result === undefined) {
+            continue;
+        }
         if (result === null) {
             test(script, () => {
                 expect(execute(script, compiler)).toBeNull();

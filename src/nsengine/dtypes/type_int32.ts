@@ -135,7 +135,7 @@ export class Int32Type extends DType {
                     if (!lastInstruction) {
                         throw compiler.error("No previous instruction to increment");
                     }
-                    prg.printInstruction(lastInstruction);
+
                     switch (lastInstruction.opcode) {
                         case prg.OP_LOAD_LOCAL32:
                             compiler.replaceLastInstruction(prg.OP_STORE_LOCAL32);
@@ -160,7 +160,7 @@ export class Int32Type extends DType {
                     if (!lastInstruction) {
                         throw compiler.error("No previous instruction to increment");
                     }
-                    prg.printInstruction(lastInstruction);
+
                     switch (lastInstruction.opcode) {
                         case prg.OP_LOAD_LOCAL32:
                             compiler.replaceLastInstruction(prg.OP_INCREMENT_LOCALi32);
@@ -185,7 +185,7 @@ export class Int32Type extends DType {
                     if (!lastInstruction) {
                         throw compiler.error("No previous instruction to increment");
                     }
-                    prg.printInstruction(lastInstruction);
+
                     switch (lastInstruction.opcode) {
                         case prg.OP_LOAD_LOCAL32:
                             compiler.replaceLastInstruction(prg.OP_DECREMENT_LOCALi32);

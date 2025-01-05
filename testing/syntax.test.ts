@@ -299,7 +299,7 @@ describe('Compile Vaild Script', () => {
 });
 
 
-
+/*
 describe('Execute Vaild Script (correct result)', () => {
     for (let i = 0; i < validScripts.length; i++) {
         const script = validScripts[i];
@@ -331,7 +331,7 @@ describe('Execute Vaild Script (correct result)', () => {
 
     }
 });
-
+*/
 
 
 

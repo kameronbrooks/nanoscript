@@ -9,7 +9,7 @@ import { builtin_module } from "../src/nenvmodules/builtin";
 export interface ValidSyntaxTest {
     name: string;
     code: string;
-    expectedResult: any;
+    expectedResult?: any;
 }
 
 export interface InvalidSyntaxTest {

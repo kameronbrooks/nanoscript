@@ -62,6 +62,11 @@ export class InterpretIndexer extends InterpreterStep {
             if (funcCallNode) {
                 lnode = funcCallNode;
             }
+
+            let indexerNode = this.interpreter.expressionSteps.indexer.execute({...params, backwardsLookingNode: lnode}) as ASTNode;
+            if (indexerNode) {
+                lnode = indexerNode;
+            }
         }
 
         return lnode;

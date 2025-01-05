@@ -56,6 +56,31 @@ export class BoolType extends DType {
                 "bool**bool": (compiler) => {
                     throw new Error("Cannot exponentiate two boolean values");
                 },
+                "bool=bool": (compiler) => {
+                    const lastInstruction = compiler.getLastInstruction();
+
+                    if (!lastInstruction) {
+                        throw compiler.error("No previous instruction to increment");
+                    }
+
+                    switch (lastInstruction.opcode) {
+                        case prg.OP_LOAD_LOCAL8:
+                            compiler.replaceLastInstruction(prg.OP_STORE_LOCAL8);
+                            break;
+                        case prg.OP_LOAD_MEMBER8:
+                            compiler.replaceLastInstruction(prg.OP_STORE_MEMBER8);
+                            break;
+                        case prg.OP_LOAD_ELEMENT8:
+                            compiler.replaceLastInstruction(prg.OP_STORE_ELEMENT8);
+                            break;
+                        default:
+                            throw compiler.error("Cannot increment previous instruction");
+                    }
+                    return {
+                        datatype: "int",
+                        lvalue: false
+                    }
+                },
                 "bool==bool": (compiler) => {
                     compiler.addInstruction(prg.OP_EQUALb);
                     return {

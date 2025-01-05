@@ -88,6 +88,15 @@ export class AnyType extends DType {
                     }
                     prg.printInstruction(lastInstruction);
                     switch (lastInstruction.opcode) {
+                        case prg.OP_LOAD_LOCAL8:
+                            compiler.replaceLastInstruction(prg.OP_STORE_LOCAL8);
+                            break;
+                        case prg.OP_LOAD_MEMBER8:
+                            compiler.replaceLastInstruction(prg.OP_STORE_MEMBER8);
+                            break;
+                        case prg.OP_LOAD_ELEMENT8:
+                            compiler.replaceLastInstruction(prg.OP_STORE_ELEMENT8);
+                            break;
                         case prg.OP_LOAD_LOCAL32:
                             compiler.replaceLastInstruction(prg.OP_STORE_LOCAL32);
                             break;
@@ -97,6 +106,16 @@ export class AnyType extends DType {
                         case prg.OP_LOAD_ELEMENT32:
                             compiler.replaceLastInstruction(prg.OP_STORE_ELEMENT32);
                             break;
+                        case prg.OP_LOAD_LOCAL64:
+                            compiler.replaceLastInstruction(prg.OP_STORE_LOCAL64);
+                            break;
+                        case prg.OP_LOAD_MEMBER64:
+                            compiler.replaceLastInstruction(prg.OP_STORE_MEMBER64);
+                            break;
+                        case prg.OP_LOAD_ELEMENT64:
+                            compiler.replaceLastInstruction(prg.OP_STORE_ELEMENT64);
+                            break;
+                        
                         default:
                             throw compiler.error("Cannot increment previous instruction");
                     }
@@ -113,6 +132,7 @@ export class AnyType extends DType {
                     }
                     prg.printInstruction(lastInstruction);
                     switch (lastInstruction.opcode) {
+                        
                         case prg.OP_LOAD_LOCAL32:
                             compiler.replaceLastInstruction(prg.OP_INCREMENT_LOCALi32);
                             break;
@@ -121,6 +141,15 @@ export class AnyType extends DType {
                             break;
                         case prg.OP_LOAD_ELEMENT32:
                             compiler.replaceLastInstruction(prg.OP_INCREMENT_ELEMENTi32);
+                            break;
+                        case prg.OP_LOAD_LOCAL64:
+                            compiler.replaceLastInstruction(prg.OP_INCREMENT_LOCALf64);
+                            break;
+                        case prg.OP_LOAD_MEMBER64:
+                            compiler.replaceLastInstruction(prg.OP_INCREMENT_MEMBERf64);
+                            break;
+                        case prg.OP_LOAD_ELEMENT64:
+                            compiler.replaceLastInstruction(prg.OP_INCREMENT_ELEMENTf64);
                             break;
                         default:
                             throw compiler.error("Cannot increment previous instruction");
@@ -146,6 +175,15 @@ export class AnyType extends DType {
                             break;
                         case prg.OP_LOAD_ELEMENT32:
                             compiler.replaceLastInstruction(prg.OP_DECREMENT_ELEMENTi32);
+                            break;
+                        case prg.OP_LOAD_LOCAL64:
+                            compiler.replaceLastInstruction(prg.OP_DECREMENT_LOCALf64);
+                            break;
+                        case prg.OP_LOAD_MEMBER64:
+                            compiler.replaceLastInstruction(prg.OP_DECREMENT_MEMBERf64);
+                            break;
+                        case prg.OP_LOAD_ELEMENT64:
+                            compiler.replaceLastInstruction(prg.OP_DECREMENT_ELEMENTf64);
                             break;
                         default:
                             throw compiler.error("Cannot increment previous instruction");

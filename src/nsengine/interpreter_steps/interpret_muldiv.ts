@@ -22,7 +22,7 @@ export class InterpretMulDiv extends InterpreterStep {
         let lnode = this.nextStep?.execute(params);
 
         // Loop while there are more assignments
-        while (!this.interpreter.isEOF() && this.interpreter.match("MULTIPLY", "DIVIDE")) {
+        while (!this.interpreter.isEOF() && this.interpreter.match("MULTIPLY", "DIVIDE", "MODULO")) {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute(childParams);
