@@ -40,10 +40,11 @@ function compile(code: string) {
 
 const script = `
 
-let i = 10 + 8;
-let j = [0+10,1+10,2+10,3+10,4+10, i];
+let arr = [0,1,1,2];
 
-return j[1+1];
+arr[0] += 1;
+
+return arr; 
 `;
 
 

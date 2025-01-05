@@ -547,17 +547,17 @@ export class JSExecutor {
     }
 
     op_increment_element_post() {
-        let c = this.stack.pop();
         let b = this.stack.pop();
         let a = this.stack.pop();
+        let c = this.stack.pop();
         a[b] += c;
         this.ip++;
     }
 
     op_decrement_element_post() {
-        let c = this.stack.pop();
         let b = this.stack.pop();
         let a = this.stack.pop();
+        let c = this.stack.pop();
         a[b] -= c;
         this.ip++;
     }
