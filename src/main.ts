@@ -39,10 +39,7 @@ function compile(code: string) {
 }
 
 const script = `
-
-let x = [1,2,3,4,5];
-x = [5,4,3,2,1];
-return x;
+return "mamas";
 `;
 
 
