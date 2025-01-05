@@ -38,7 +38,10 @@ export interface TypeOperationResult {
  */
 export type TypeOperationFunction = (compiler: Compiler, params?: any) => TypeOperationResult;
 
-
+export type ImplicitConversion = {
+    opcode: number;
+    resultDatatype: string;
+}
 
 export interface IDType {
     id: string;
@@ -74,6 +77,7 @@ export abstract class DType implements IDType {
     canBeIterated: boolean;
     canBeCalled: boolean;
 
+
     constructor(
         id: string,
         aliases: string[] | undefined,
@@ -106,5 +110,9 @@ export abstract class DType implements IDType {
 
     getOperation(id: string): TypeOperationFunction | undefined {
         return this.operations[id];
+    }
+
+    getImplicitConversion(otherDTypeName: string): ImplicitConversion | undefined | null {
+        return null;
     }
 }

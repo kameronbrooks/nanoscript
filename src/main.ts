@@ -39,13 +39,10 @@ function compile(code: string) {
 }
 
 const script = `
-let c = 0;
-let a = "yes";
-let b = true;
+let i = 0.1;
+let j = 2;
 
-if (1==1) {
-  return a;
-}
+return i + j;
 `;
 
 

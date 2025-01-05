@@ -3,7 +3,7 @@
  * @description Contains the definition for the 32-bit signed integer data type
  */
 import * as prg from "../program";
-import { DType } from "./dtype";
+import { DType, ImplicitConversion } from "./dtype";
 
 export class Int32Type extends DType {
     constructor() {
@@ -255,5 +255,21 @@ export class Int32Type extends DType {
                 }
             }
         );
+    }
+
+    getImplicitConversion(otherDTypeName: string): ImplicitConversion | undefined | null {
+        if (otherDTypeName === "string") {
+            return {
+                opcode: prg.OP_INT_TO_STRING,
+                resultDatatype: "string"
+            }
+        }
+        else if (otherDTypeName === "float") {
+            return {
+                opcode: prg.OP_INT_TO_FLOAT,
+                resultDatatype: "float"
+            }
+        }
+        return null;
     }
 }

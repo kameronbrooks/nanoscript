@@ -3,7 +3,7 @@
  * @description Contains the definition for the 64-bit floating point number data type
  */
 import * as prg from "../program";
-import { DType } from "./dtype";
+import { DType, ImplicitConversion } from "./dtype";
 
 export class Float64Type extends DType {
     constructor() {
@@ -256,5 +256,15 @@ export class Float64Type extends DType {
 
             }
         );
+    }
+
+    getImplicitConversion(otherDTypeName: string): ImplicitConversion | undefined | null {
+        if (otherDTypeName === "string") {
+            return {
+                opcode: prg.OP_FLOAT_TO_STRING,
+                resultDatatype: "string"
+            }
+        }
+        return null;
     }
 }

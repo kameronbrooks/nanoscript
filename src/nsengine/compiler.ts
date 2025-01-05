@@ -296,6 +296,25 @@ class InstructionReferenceTable {
     }
 
     /**
+     * Replace an instruction in the table with another instruction
+     * @param original 
+     * @param replacement 
+     */
+    replace(original: prg.Instruction, replacement: prg.Instruction) {
+        // Find the key for the instruction
+        let key = null;
+        for (let [k, v] of this.table) {
+            if (v === original) {
+                key = k;
+                break;
+            }
+        }
+        if (key) {
+            this.table.set(key, replacement);
+        }
+    }
+
+    /**
      * Set the open reference
      * This gets the program ready to assign the next instruction to the open reference
      * @param index
@@ -350,8 +369,6 @@ export class Compiler {
     private verboseMode: boolean = false;
     private lastLine: number = 0;
     
-
-
     constructor(nenv: Nenv, params?: {verboseMode?: boolean}) {
         this.nenv = nenv;
         
@@ -360,6 +377,7 @@ export class Compiler {
             nenv: this.nenv,
             instructions: [],
         };
+
         this.globalScope = new Scope(this, null, this.nenv);
         this.state = new CompilerState(this.globalScope);
         this.frameBeginIndex.push(0);
@@ -423,8 +441,12 @@ export class Compiler {
     getTailIndex() {
         return this.instructionBufferTarget.length;
     }
-
-
+    /**
+     * Add an instruction to the instruction buffer target
+     * @param opcode
+     * @param operand
+     * @param ignoreReference If true, the instruction will not be added to the reference table if there is an open reference
+     */
     addInstruction(opcode: number, operand:any = null, ignoreReference = false) {
         const instruction = {
             opcode,
@@ -440,6 +462,15 @@ export class Compiler {
         }
         return this.instructionBufferTarget.at(-1);
     }
+
+    /**
+     * Inserts an instruction at the specified index
+     * @param index 
+     * @param opcode 
+     * @param operand 
+     * @param ignoreReference If true, the instruction will not be added to the reference table if there is an open reference
+     * @returns 
+     */
     insertInstruction(index:number, opcode: number, operand:any = null, ignoreReference = false) {
         const instruction = {
             opcode,
@@ -458,6 +489,11 @@ export class Compiler {
         return this.instructionBufferTarget.at(index);
     }
 
+    /**
+     * Replaces the last instruction in the instruction buffer target with the specified opcode and operand
+     * @param opcode 
+     * @param operand 
+     */
     replaceLastInstruction(opcode: number, operand:any = null) {
         const lastInstruction = this.instructionBufferTarget.at(-1);
         if (!lastInstruction) {
@@ -467,8 +503,63 @@ export class Compiler {
         lastInstruction.operand = operand || lastInstruction.operand;
     }
 
+    /**
+     * Inserts an instruction before the specified instruction
+     * @param instruction 
+     * @param opcode 
+     * @param operand 
+     * @param assumeExistingReference Will replace the existing reference in the instruction reference table if there is one
+     */
+    insertBeforeInstruction(instruction: prg.Instruction, opcode: number, operand:any = null, assumeExistingReference = false) {
+        const index = this.instructionBufferTarget.indexOf(instruction);
+        if (index < 0) {
+            throw this.error("Instruction not found");
+        }
+
+        const newInstruction = {
+            opcode,
+            operand,
+            index: index,
+        } as prg.Instruction;
+
+        this.instructionBufferTarget.splice(index, 0, newInstruction);
+
+        if (assumeExistingReference) {
+            this.instructionReferenceTable.replace(instruction, newInstruction);
+        }
+
+    }
+
+    insertBeforeInstructionReferenceTarget(target:string, opcode: number, operand:any = null, assumeExistingReference = false) {
+        const instruction = this.instructionReferenceTable.get(target);
+        if (!instruction) {
+            throw this.error(`Instruction reference not found: ${target}`);
+        }
+        this.insertBeforeInstruction(instruction, opcode, operand, assumeExistingReference);
+    }
+
+    insertAfterInstruction(instruction: prg.Instruction, opcode: number, operand:any = null) {
+        const index = this.instructionBufferTarget.indexOf(instruction);
+        if (index < 0) {
+            throw this.error("Instruction not found");
+        }
+
+        const newInstruction = {
+            opcode,
+            operand,
+            index: index + 1,
+        } as prg.Instruction;
+
+        this.instructionBufferTarget.splice(index + 1, 0, newInstruction);
+    }
+
+
     getLastInstruction() {
         return this.instructionBufferTarget.at(-1);
+    }
+
+    getInstructionIndex(instruction: prg.Instruction) {
+        return this.instructionBufferTarget.indexOf(instruction);
     }
 
     getDataType(name: string) : DType {
@@ -531,6 +622,7 @@ export class Compiler {
     optimize() {
         // TODO: Implement optimization
     }
+
     finalize() {
         
         // Add the function instruction buffers to the main program
@@ -679,21 +771,53 @@ export class Compiler {
     }
 
     private compileBinaryOp(node: ast.BinaryOpNode) {
-        const leftInsertionIndex = this.getTailIndex();
+        
+        // Compile the left node
+        // Save the datatype of the left node
+        // Save a reference to the left node incase we need to insert a conversion after it
         this.compileNode(node.left);
         let leftDataType = this.state.currentDatatype;
+        const afterLeftNode = this.getLastInstruction();
 
-        const rightInsertionIndex = this.getTailIndex();
+        
+        // Compile the right node
+        // Save the datatype of the right node
+        // Save a reference to the right node incase we need to insert a conversion step before it
         this.compileNode(node.right);
         let rightDataType = this.state.currentDatatype;
+
+        // Get the datatype classes for the left and right datatypes
+        let leftDataTypeClass = this.getDataType(leftDataType);
+        let rightDataTypeClass = this.getDataType(rightDataType);
+
+        // Check if either of the datatypes have an implicit conversion to the other
+        let leftImplicitConversion = leftDataTypeClass.getImplicitConversion(rightDataType);
+        let rightImplicitConversion = rightDataTypeClass.getImplicitConversion(leftDataType);
+
+        // Insert the left conversion steps if necessary
+        if (leftImplicitConversion) {
+            // Only insert the new conversion step if there is actually an opcode to insert
+            if(leftImplicitConversion.opcode) {
+                this.insertAfterInstruction(afterLeftNode as prg.Instruction, leftImplicitConversion.opcode, null);
+            }
+            leftDataType = leftImplicitConversion.resultDatatype;
+            leftDataTypeClass = this.getDataType(leftDataType);
+        }
+
+        // Insert the right conversion steps if necessary
+        if (rightImplicitConversion) {
+            // Only add the new conversion step if there is actually an opcode to insert
+            if(rightImplicitConversion.opcode) {
+                this.addInstruction(rightImplicitConversion.opcode, null);
+            }
+            rightDataType = rightImplicitConversion.resultDatatype;
+            rightDataTypeClass = this.getDataType(rightDataType);
+        }
 
         // Check for type mismatch
         // TODO: Implement type coercion
         if(leftDataType==='any' || rightDataType==='any') {
             rightDataType = leftDataType = 'any';
-        }
-        if (leftDataType !== rightDataType) {
-            throw this.error(`Type mismatch: ${leftDataType} and ${rightDataType}`);
         }
 
         // Look up the opcode based on the left and right datatypes
