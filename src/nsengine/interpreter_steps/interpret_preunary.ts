@@ -4,7 +4,7 @@
  */
 import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
-import { UnaryOpNode } from "../ast";
+import { compileTimeSolve, UnaryOpNode } from "../ast";
 import { ASTNode } from "../ast";
 
 export class InterpretPreUnary extends InterpreterStep {
@@ -23,9 +23,21 @@ export class InterpretPreUnary extends InterpreterStep {
                 ...params,
                 returnFunctionCalls: true
             } as InterpreterStepParams);
-            
 
-            return { type: "UnaryOp", operator: op, operand: node as ASTNode } as UnaryOpNode;
+            if(!node) {
+                throw this.interpreter.error("Expected a node in unary operation");
+            }
+            
+            let outputNode = {
+                type: "UnaryOp",
+                operator: op,
+                operand: node as ASTNode,
+                isKnownAtCompileTime: node.isKnownAtCompileTime
+            } as UnaryOpNode;
+
+            return outputNode;
+
+            
         }
         return this.nextStep?.execute(params);
     }

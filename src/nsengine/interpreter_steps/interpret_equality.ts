@@ -23,11 +23,28 @@ export class InterpretEquality extends InterpreterStep {
         let lnode = this.nextStep?.execute(params);
 
         // Loop while there are more assignments
-        while (!this.interpreter.isEOF() && this.interpreter.match("EQUALITY", "INEQUALITY")) {
+        if (!this.interpreter.isEOF() && this.interpreter.match("EQUALITY", "INEQUALITY")) {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute(childParams);
-            lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
+            //lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
+
+            if(!lnode) {
+                throw this.interpreter.error("Expected a left node in binary operation");
+            }
+            if(!rnode) {
+                throw this.interpreter.error("Expected a right node in binary operation");
+            }
+
+            const isKnownAtCompileTime = lnode.isKnownAtCompileTime && rnode.isKnownAtCompileTime;
+
+            lnode = {
+                type: "BinaryOp",
+                operator: operator as string,
+                left: lnode,
+                right: rnode,
+                isKnownAtCompileTime: isKnownAtCompileTime
+            } as BinaryOpNode;
         }
 
         return lnode;

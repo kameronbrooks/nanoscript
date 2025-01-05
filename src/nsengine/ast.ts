@@ -2,6 +2,7 @@
 export interface ASTNode {
     type: string;
     line?: number;
+    isKnownAtCompileTime?: boolean;
 }
 
 /**
@@ -12,6 +13,7 @@ export interface NumberNode extends ASTNode {
     type: "Number";
     value: number;
     dtype?: string;
+    isKnownAtCompileTime: true;
 }
 
 /**
@@ -21,6 +23,7 @@ export interface NumberNode extends ASTNode {
 export interface StringNode extends ASTNode {
     type: "String";
     value: string;
+    isKnownAtCompileTime: true;
 }
 
 /**
@@ -31,6 +34,7 @@ export interface BooleanNode extends ASTNode {
     type: "Boolean";
     value: boolean;
     dtype: "bool";
+    isKnownAtCompileTime: true;
 }
 
 /**
@@ -39,6 +43,7 @@ export interface BooleanNode extends ASTNode {
  */
 export interface NullNode extends ASTNode {
     type: "Null";
+    isKnownAtCompileTime: true;
 }
 
 /**
@@ -238,6 +243,7 @@ export interface ArrayLiteralNode extends ASTNode {
     elements: ASTNode[];
     dtype?: string;
     isKnownAtCompileTime?: boolean;
+    compileTimeValue?: any[];
 }
 
 /**
@@ -248,6 +254,7 @@ export interface ObjectLiteralNode extends ASTNode {
     type: "ObjectLiteral";
     properties: { key: string, value: ASTNode }[];
     isKnownAtCompileTime?: boolean;
+    compileTimeValue?: any;
 }
 
 // =================================================================================================
@@ -260,7 +267,7 @@ export interface ObjectLiteralNode extends ASTNode {
  * @returns 
  */
 export function createNumberNode(value: number): NumberNode {
-    return { type: "Number", value };
+    return { type: "Number", value, isKnownAtCompileTime: true };
 }
 
 /**
@@ -299,6 +306,63 @@ export function isKnownAtCompileTime(node: ASTNode): boolean {
         return (node as ArrayLiteralNode).elements.every((el) => isKnownAtCompileTime(el));
     }
     return false;
+}
+
+export function compileTimeSolve(node: ASTNode): ASTNode {
+    if (node.type == "Number" || node.type == "String" || node.type == "Boolean" || node.type == "Null") {
+        return node;
+    }
+    if (node.type == "UnaryOp") {
+        let operand = compileTimeSolve((node as UnaryOpNode).operand);
+        if (operand.type == "Number") {
+            let value = (node as UnaryOpNode).operator == "-" ? -(operand as NumberNode).value : (operand as NumberNode).value;
+            return {
+                type: "Number",
+                value,
+                isKnownAtCompileTime: true
+            } as NumberNode;
+        }
+    }
+    if (node.type == "BinaryOp") {
+        let left = compileTimeSolve((node as BinaryOpNode).left);
+        let right = compileTimeSolve((node as BinaryOpNode).right);
+        if (left.type == "Number" && right.type == "Number") {
+            let value = 0;
+            switch ((node as BinaryOpNode).operator) {
+                case "+": value = (left as NumberNode).value + (right as NumberNode).value; break;
+                case "-": value = (left as NumberNode).value - (right as NumberNode).value; break;
+                case "*": value = (left as NumberNode).value * (right as NumberNode).value; break;
+                case "/": value = (left as NumberNode).value / (right as NumberNode).value; break;
+                case "%": value = (left as NumberNode).value % (right as NumberNode).value; break;
+            }
+            return {
+                type: "Number",
+                value,
+                isKnownAtCompileTime: true
+            } as NumberNode;
+        }
+    }
+    if (node.type == "ArrayLiteral") {
+        const elements = (node as ArrayLiteralNode).elements.map((el) => compileTimeSolve(el));
+        const elementValues = elements.map((el) => ((el as any)?.value));
+
+        return {
+            type: "ArrayLiteral",
+            elements: elements,
+            isKnownAtCompileTime: true,
+            compileTimeValue: elementValues
+        } as ArrayLiteralNode;
+    }
+    if (node.type == "ObjectLiteral") {
+        return {
+            type: "ObjectLiteral",
+            properties: (node as ObjectLiteralNode).properties.map((prop) => ({ key: prop.key, value: compileTimeSolve(prop.value) })),
+            isKnownAtCompileTime: true
+        } as ObjectLiteralNode;
+    }
+
+
+    return node;
 }
 
 

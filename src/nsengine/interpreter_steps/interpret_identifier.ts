@@ -14,7 +14,11 @@ export class InterpretIdentifier extends InterpreterStep {
     execute(params?: InterpreterStepParams): ASTNode | undefined| null {
         if(this.verboseMode) this.log();
         if (this.interpreter.match("IDENTIFIER")) {
-            return { type: "Identifier", value: this.interpreter.previous().value } as ASTNode;
+            return { 
+                type: "Identifier", 
+                value: this.interpreter.previous().value, 
+                isKnownAtCompileTime: false 
+            } as ASTNode;
         }
         else {
             return this.nextStep?.execute();

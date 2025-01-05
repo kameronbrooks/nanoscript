@@ -5,7 +5,7 @@
 import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
 import { TokenType } from "../tokenizer";
-import { ASTNode, ArrayLiteralNode } from "../ast";
+import { ASTNode, ArrayLiteralNode, compileTimeSolve } from "../ast";
 
 export class InterpretArrayLiteral extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
@@ -40,7 +40,8 @@ export class InterpretArrayLiteral extends InterpreterStep {
 
             let lnode = {
                 type: "ArrayLiteral",
-                elements: elementNodes
+                elements: elementNodes,
+                isKnownAtCompileTime: elementNodes.every(e => e.isKnownAtCompileTime)
             } as ArrayLiteralNode;
 
 

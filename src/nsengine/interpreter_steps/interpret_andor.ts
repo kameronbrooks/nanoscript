@@ -4,7 +4,7 @@
  */
 import { InterpreterStep, InterpreterStepParams } from "./interpreter_step";
 import { Interpreter } from "../interpreter";
-import { ASTNode, BinaryOpNode, createBinaryOpNode } from "../ast";
+import { ASTNode, BinaryOpNode, compileTimeSolve, createBinaryOpNode } from "../ast";
 
 export class InterpretAndOr extends InterpreterStep {
     constructor(interpreter: Interpreter, nextStep: InterpreterStep | null = null) {
@@ -26,7 +26,26 @@ export class InterpretAndOr extends InterpreterStep {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute(childParams);
-            lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
+            //lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
+
+            if(!lnode) {
+                throw this.interpreter.error("Expected a left node in binary operation");
+            }
+            if(!rnode) {
+                throw this.interpreter.error("Expected a right node in binary operation");
+            }
+
+            const isKnownAtCompileTime = lnode.isKnownAtCompileTime && rnode.isKnownAtCompileTime;
+
+            lnode = {
+                type: "BinaryOp",
+                operator: operator as string,
+                left: lnode,
+                right: rnode,
+                isKnownAtCompileTime: isKnownAtCompileTime
+            } as BinaryOpNode;
+
+
 
         }
 

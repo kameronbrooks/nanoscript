@@ -51,6 +51,9 @@ export class InterpretObjectLiteral extends InterpreterStep {
                 this.interpreter.error(`Expected a comma or closing brace, found ${this.interpreter.peek().type}`);
             }
 
+            // Determine if the object literal is known at compile time
+            lnode.isKnownAtCompileTime = lnode.properties.every(p => p.value.isKnownAtCompileTime);
+
             // TODO: Add compile-time array literal support if all the elements can be evaluated at compile time
 
             if (this.interpreter.peek().type === 'EOS') {

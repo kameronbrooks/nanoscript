@@ -25,11 +25,28 @@ export class InterpretComparison extends InterpreterStep {
         let lnode = this.nextStep?.execute(params);
 
         // Loop while there are more assignments
-        while (!this.interpreter.isEOF() && this.interpreter.match("GREATER_THAN", "LESS_THAN", "GREATER_THAN_OR_EQUAL", "LESS_THAN_OR_EQUAL")) {
+        if (!this.interpreter.isEOF() && this.interpreter.match("GREATER_THAN", "LESS_THAN", "GREATER_THAN_OR_EQUAL", "LESS_THAN_OR_EQUAL")) {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute(childParams);
-            lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
+            //lnode = createBinaryOpNode(operator as string, lnode as ASTNode, rnode as ASTNode);
+
+            if(!lnode) {
+                throw this.interpreter.error("Expected a left node in binary operation");
+            }
+            if(!rnode) {
+                throw this.interpreter.error("Expected a right node in binary operation");
+            }
+
+            const isKnownAtCompileTime = lnode.isKnownAtCompileTime && rnode.isKnownAtCompileTime;
+
+            lnode = {
+                type: "BinaryOp",
+                operator: operator as string,
+                left: lnode,
+                right: rnode,
+                isKnownAtCompileTime: isKnownAtCompileTime
+            } as BinaryOpNode;
         }
 
         return lnode;

@@ -19,7 +19,8 @@ export class InterpretPostUnary extends InterpreterStep {
                 type: "UnaryOp", 
                 operator: "++", 
                 operand: lnode,
-                postfix: true
+                postfix: true,
+                isKnownAtCompileTime: false
             } as UnaryOpNode;
         }
         else if (this.interpreter.match('DECREMENT')) {
@@ -27,7 +28,8 @@ export class InterpretPostUnary extends InterpreterStep {
                 type: "UnaryOp", 
                 operator: "--", 
                 operand: lnode,
-                postfix: true
+                postfix: true,
+                isKnownAtCompileTime: false
             } as UnaryOpNode;
         }
 

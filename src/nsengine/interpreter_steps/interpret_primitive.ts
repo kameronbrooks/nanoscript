@@ -24,7 +24,8 @@ export class InterpretPrimitive extends InterpreterStep {
             return { 
                 type: "Boolean", 
                 value: this.interpreter.previous().value === "true",
-                dtype: "bool"
+                dtype: "bool",
+                isKnownAtCompileTime: true
             } as BooleanNode;
         }
         else if (this.interpreter.match("NUMBER")) {
@@ -33,21 +34,24 @@ export class InterpretPrimitive extends InterpreterStep {
                 return { 
                     type: "Number", 
                     value: parseFloat(valueStr),
-                    dtype: "float"
+                    dtype: "float",
+                    isKnownAtCompileTime: true
                 } as NumberNode;
             }
             else {
                 return { 
                     type: "Number", 
                     value: parseInt(valueStr),
-                    dtype: "int"
+                    dtype: "int",
+                    isKnownAtCompileTime: true
                 } as NumberNode;
             }
         }
         else if(this.interpreter.match('NULL')) {
             return { 
                 type: "Null", 
-                value: null 
+                value: null,
+                isKnownAtCompileTime: true
             } as NullNode;
         }
         else {

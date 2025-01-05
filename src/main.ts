@@ -39,10 +39,11 @@ function compile(code: string) {
 }
 
 const script = `
-let i = 0.1;
-let j = 2;
 
-return i + j;
+let i = 10 + 8;
+let j = [0+10,1+10,2+10,3+10,4+10, i];
+
+return j[1+1];
 `;
 
 

@@ -27,7 +27,8 @@ export class InterpretStringLiteral extends InterpreterStep {
 
             return { 
                 type: "String", 
-                value: ""
+                value: "",
+                isKnownAtCompileTime: true
             } as StringNode;
         }
         else if (this.interpreter.match("STRINGBUILDER")) {
@@ -36,20 +37,25 @@ export class InterpretStringLiteral extends InterpreterStep {
             // This requires a new tokenizer and interpreter
             // The interpreter is a sub-interpreter generated from the current interpreter
             if (value) {
+                const interpretedSubExpressions = (subExpressions as Token[][]).map((tokens) => {
+                    const createSubInterpreter = this.interpreter.createSubInterpreter(tokens);
+                    return createSubInterpreter.parseExpression();
+                });
+
+                const areAllKnownAtCompileTime = interpretedSubExpressions.every((node) => !node || node.isKnownAtCompileTime);
                 return { 
                     type: "StringBuilder", 
                     string: value.substring(1, value.length - 1),
-                    expressions: (subExpressions as Token[][]).map((tokens) => {
-                        const createSubInterpreter = this.interpreter.createSubInterpreter(tokens);
-                        return createSubInterpreter.parseExpression();
-                    })
+                    expressions: interpretedSubExpressions,
+                    isKnownAtCompileTime: areAllKnownAtCompileTime
                 } as StringBuilderNode;
             }
 
             return { 
                 type: "StringBuilder", 
                 string: "",
-                expressions: []
+                expressions: [],
+                isKnownAtCompileTime: true
             } as StringBuilderNode;
 
             

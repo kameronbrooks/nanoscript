@@ -10,7 +10,7 @@ import { IObjectGenerator } from "../utilities/object_generator";
 import { DType } from "./dtypes/dtype";
 
 
-export const COMPILER_VERSION = "0.0.10";
+export const COMPILER_VERSION = "0.0.11";
 
 
 /**
@@ -815,23 +815,10 @@ export class Compiler {
         }
 
         // Check for type mismatch
-        // TODO: Implement type coercion
         if(leftDataType==='any' || rightDataType==='any') {
             rightDataType = leftDataType = 'any';
         }
 
-        // Look up the opcode based on the left and right datatypes
-        // This was the old way of doing it
-        /*
-        const opKey = leftDataType + node.operator + rightDataType;
-        const result = prg.searchOpMap(opKey);
-        if (!result) {
-            throw new Error(`Unknown operator: ${opKey}`);
-        }
-
-        // Add the instruction
-        this.addInstruction(result.opcode, null)
-        */
 
         const opKey = leftDataType + node.operator + rightDataType;
         const typeOperation = this.getDataType(leftDataType).getOperation(opKey);
@@ -854,24 +841,9 @@ export class Compiler {
         
         if (!typeOperation) {
             throw this.error(`Unknown operator: ${opKey}`);
-        }
-        console.log("opkey", opKey);    
+        } 
         const result = typeOperation(this);
 
-        // if this is a post increment or decrement, we need to change the last instruction
-        // need to add cases for member access and element access
-        /*
-        if (result.opcode == prg.OP_INCREMENT_LOCAL32 || result.opcode == prg.OP_DECREMENT_LOCAL32) {
-            const lastInstruction = this.instructionBufferTarget.at(-1);
-            if (!lastInstruction) {
-                throw new Error("There is no lvalue");
-            }
-            lastInstruction.opcode = result.opcode;
-        } else {
-            // Add the instruction
-            this.addInstruction(result.opcode);
-        }
-        */
         this.state.currentDatatype = result.datatype;
         this.state.isLValue = result.lvalue;
     }
@@ -1395,6 +1367,16 @@ export class Compiler {
     }
 
     private compileListLiteral(node: ast.ArrayLiteralNode) {
+        /*
+        TODO: Implement compile time list literals
+        if (node.isKnownAtCompileTime) {
+            // Resolve all the elements in the list and create a list now
+            this.addInstruction(prg.OP_LOAD_PTR, [...(node.compileTimeValue as any[])]);
+        }
+        else {
+            
+        }
+        */
         for (let element of node.elements.slice().reverse()) {
             this.compileNode(element);
         }
