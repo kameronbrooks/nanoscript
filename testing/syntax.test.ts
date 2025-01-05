@@ -298,13 +298,6 @@ describe('Compile Vaild Script', () => {
     }
 });
 
-describe('Execute Vaild Script (no error)', () => {
-    for (let script of validScripts) {
-        test(script, () => {
-            expect(()=>{ return execute(script)}).not.toThrow();
-        });
-    }
-});
 
 
 describe('Execute Vaild Script (correct result)', () => {

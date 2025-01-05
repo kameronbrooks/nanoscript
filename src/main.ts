@@ -42,7 +42,7 @@ const script = `
 
 let arr = [0,1,1,2];
 
-arr[0] += 1;
+arr[0]++;
 
 return arr; 
 `;
