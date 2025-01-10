@@ -326,6 +326,18 @@ class InstructionReferenceTable {
     }
 
     /**
+     * Get the open reference if it exists or open a new reference
+     * @param tag 
+     * @returns 
+     */
+    getOrOpen(tag?: string) {
+        if (!this.openReference) {
+            return this.open(tag);
+        }
+        return this.openReference
+    }
+
+    /**
      * This closes the open reference and assigns the instruction to the reference
      * @param instruction 
      */
@@ -765,6 +777,10 @@ export class Compiler {
                 this.compileObjectLiteral(node as ast.ObjectLiteralNode);
                 break;
                 
+            case "TernaryOp":
+                this.compileTernaryOp(node as ast.TernaryOpNode);
+                break;
+                
             default:
                 throw this.error(`Unknown node type: ${node.type}`);
         }
@@ -846,6 +862,34 @@ export class Compiler {
 
         this.state.currentDatatype = result.datatype;
         this.state.isLValue = result.lvalue;
+    }
+
+    private compileTernaryOp(node: ast.TernaryOpNode) {
+        // Compile the condition
+        this.compileNode(node.condition);
+        const branchNode = this.addInstruction(prg.OP_BRANCH_FALSE, null);
+
+        // Compile the left node
+        this.compileNode(node.left);
+        const jumpNode = this.addInstruction(prg.OP_JUMP, null);
+
+        let branchTargetRef = this.instructionReferenceTable.getOrOpen();
+        // Compile the right node
+        this.compileNode(node.right);
+
+        let endTargetRef = this.instructionReferenceTable.getOrOpen();
+
+        if (!jumpNode) {
+            throw this.error("Missing jump node");
+        }
+
+        if (!branchNode) {
+            throw this.error("Missing branch node");
+        }
+
+        jumpNode.operand = endTargetRef;
+        branchNode.operand = branchTargetRef;
+
     }
 
     private compileBoolean(node: ast.BooleanNode) {

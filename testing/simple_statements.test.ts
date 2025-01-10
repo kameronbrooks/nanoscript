@@ -60,8 +60,8 @@ const validTests = [
     } as ValidSyntaxTest,
     {
         name: 'string literal with escape characters',
-        code: '"hello\\nworld";',
-        expectedResult: "hello\nworld"
+        code: String.raw`"hello\nworld";`,
+        expectedResult: String.raw`hello\nworld`
 
     } as ValidSyntaxTest,
     {
@@ -72,19 +72,19 @@ const validTests = [
     } as ValidSyntaxTest,
     {
         name: 'string literal single quotes with escape characters',
-        code: "'hello\\\nworld';",
-        expectedResult: "hello\\nworld"
+        code: String.raw`'hello\\nworld';`,
+        expectedResult: String.raw`hello\\nworld`
     } as ValidSyntaxTest,
     {
         name: 'string literal with escaped quotes',
-        code: '"hello \\\\"world\\\\"";',
-        expectedResult: 'hello "world"'
+        code: String.raw`"hello \"world\"";`,
+        expectedResult: String.raw`hello "world"`
 
     } as ValidSyntaxTest,
     {
         name: 'string literal with escaped single quotes',
-        code: "'hello \\\\'world\\\\'';",
-        expectedResult: "hello 'world'"
+        code: String.raw`'hello \'world\'';`,
+        expectedResult: String.raw`hello 'world'`
     } as ValidSyntaxTest,
     {
         name: "string builder string literal",
@@ -211,6 +211,16 @@ const validTests = [
         name: 'simple integer and float modulo (5 % 2.2)',
         code: '5 % 2.2;',
         expectedResult: 0.6
+    },
+    {
+        name: 'ternary operator (1 < 2 ? 1 : 2)',
+        code: '1 < 2 ? 1 : 2;',
+        expectedResult: 1
+    },
+    {
+        name: 'ternary operator (1 > 2 ? 1 : 2)',
+        code: '1 > 2 ? 1 : 2;',
+        expectedResult: 2
     }
 ];
 

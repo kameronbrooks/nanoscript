@@ -39,16 +39,15 @@ function compile(code: string) {
 }
 
 const script = `
-return "mamas";
+let n = 5;
+return n < 5 ? 'less than 5' : n > 5 ? 'greater than 5' : 'equal to 5';
 `;
-
-
 
 const tokeizer = new Tokenizer(script, {
     allowUnknown: true,
-    disableReplacements: true,
-    keepComments: true,
-    keepWhitespace: true,
+    disableReplacements: false,
+    keepComments: false,
+    keepWhitespace: false,
 });
 
 const tokens = tokeizer.tokenize();

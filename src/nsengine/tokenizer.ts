@@ -57,8 +57,10 @@ export type TokenType = (
     "COMMA" |
     "COLON" |
     "ELLIPSIS" |
+    "QUESTION_MARK" |
 
     "MEMBER_ACCESS" |
+    "NULL_COALESCING" |
 
     "IF" |
     "ELSE" |
@@ -469,6 +471,20 @@ export class Tokenizer {
             }
             else {
                 this.tokens.push({ type: "NOT", value: "!", line: this.currentLine, rawValue: "!" });
+            }
+        }
+
+        if (char === "?") {
+            this.index++;
+            char = this.input[this.index];
+            if (char === ".") {
+                this.tokens.push({ type: "NULL_COALESCING", value: "?.", line: this.currentLine, rawValue: "?." });
+                this.index++;
+                return true;
+            }
+            else {
+                this.tokens.push({ type: "QUESTION_MARK", value: "?", line: this.currentLine, rawValue: "?" });
+                return true;
             }
         }
 
