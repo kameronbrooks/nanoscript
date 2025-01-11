@@ -19,7 +19,7 @@ export class InterpretMemberAccess extends InterpreterStep {
         let lnode = params?.backwardsLookingNode || this.nextStep?.execute(params);
 
         // Loop while there are more assignments
-        while (!this.interpreter.isEOF() && this.interpreter.match("MEMBER_ACCESS")) {
+        while (!this.interpreter.isEOF() && this.interpreter.match("MEMBER_ACCESS", "NULL_COALESCING")) {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
             const rnode = this.nextStep?.execute({
@@ -31,7 +31,8 @@ export class InterpretMemberAccess extends InterpreterStep {
             lnode = {
                 type: "MemberAccess",
                 object: lnode as ASTNode, 
-                member: rnode as ASTNode
+                member: rnode as ASTNode,
+                nullCoalescing: operator === '?.'
             } as MemberAccessNode;
 
             // Have to check for EOS here

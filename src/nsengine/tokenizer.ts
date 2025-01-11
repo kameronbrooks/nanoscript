@@ -70,6 +70,7 @@ export type TokenType = (
     "CONTINUE" |
     "FOR" |
     "IN" |
+    "NOT_IN" |
     "DECLARE_VARIABLE" |
     "DECLARE_CONSTANT" |
     "FUNCTION" |
@@ -139,6 +140,13 @@ export class Tokenizer {
             keepWhitespace: params?.keepWhitespace || false,
             keepComments: params?.keepComments || false
         }
+    }
+
+    replaceAlternateRepresentations(code: string) {
+        // replace ... with elipsis unicode character
+        code = code.replace(/\.\.\./g, "…");
+
+        return code;
     }
 
     tokenize(): Token[] {
@@ -225,8 +233,18 @@ export class Tokenizer {
         const char = this.input[this.index];
         if ("0123456789".includes(char)) {
             let numStr = char;
+            let hasDecimal = false;
             this.index++;
             while (this.index < this.input.length && "0123456789._".includes(this.input[this.index])) {
+                if (this.input[this.index] === ".") {
+                    // exit early if we have a decimal followed by another decimal
+                    // This is to allow for the ellipsis operator
+                    if (this.input[this.index + 1] === "." || hasDecimal) {
+                        this.tokens.push({ type: "NUMBER", value: numStr.replace('_', ''), line: this.currentLine, rawValue: numStr });
+                        break;
+                    }
+                    hasDecimal = true;
+                }
                 numStr += this.input[this.index];
                 this.index++;
             }
@@ -272,7 +290,7 @@ export class Tokenizer {
         if (char === ".") {
             this.index++;
             if ((this.index < this.input.length-3) && (this.input[this.index] === ".") && (this.input[this.index + 1] === ".")) {
-                this.tokens.push({ type: "ELLIPSIS", value: "...", line: this.currentLine, rawValue: "...", });
+                this.tokens.push({ type: "ELLIPSIS", value: "…", line: this.currentLine, rawValue: "...", });
                 this.index+=2;
                 return true;
             }
@@ -527,6 +545,24 @@ export class Tokenizer {
             this.index++;
             return true;
         }
+
+        if (char === "…") {
+            this.tokens.push({ type: "ELLIPSIS", value: "…", line: this.currentLine, rawValue: "…" });
+            this.index++;
+            return true;
+        }
+
+        if (char === "∈") {
+            this.tokens.push({ type: "IN", value: "∈", line: this.currentLine, rawValue: "∈" });
+            this.index++;
+            return true;
+        }
+
+        if (char === "∉") {
+            this.tokens.push({ type: "NOT_IN", value: "∈", line: this.currentLine, rawValue: "∈" });
+            this.index++;
+            return true;
+        } 
 
 
 

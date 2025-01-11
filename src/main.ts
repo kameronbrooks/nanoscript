@@ -39,8 +39,16 @@ function compile(code: string) {
 }
 
 const script = `
-let n = 5;
-return n < 5 ? 'less than 5' : n > 5 ? 'greater than 5' : 'equal to 5';
+const ob = {
+    'x': 1,
+    'y': 2,
+    'z': {
+        'a': 1,
+        'b': 2
+    }
+};
+
+return ob?.z?.b;
 `;
 
 const tokeizer = new Tokenizer(script, {

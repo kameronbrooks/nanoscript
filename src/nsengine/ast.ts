@@ -196,6 +196,7 @@ export interface MemberAccessNode extends ASTNode {
     type: "MemberAccess";
     object: ASTNode;
     member: ASTNode;
+    nullCoalescing?: boolean;
 }
 
 /**

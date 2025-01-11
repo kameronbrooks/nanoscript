@@ -306,3 +306,11 @@ describe('Execute Vaild Script (correct result)', () => {
         }
     }
 });
+
+
+const invalidTests = [
+    {
+        name: 'invalid number (1.1.1)',
+        code: '1.1.1;',
+    } as InvalidSyntaxTest,
+];
