@@ -252,6 +252,13 @@ export class Float64Type extends DType {
                         datatype: "int",
                         lvalue: false
                     }
+                },
+                "float…float": (compiler) => {
+                    compiler.addInstruction(prg.OP_RANGEf64);
+                    return {
+                        datatype: "list",
+                        lvalue: false
+                    }
                 }
 
             }

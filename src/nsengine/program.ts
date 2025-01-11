@@ -112,6 +112,9 @@ export const OP_ANDb                            = i++;              // Logical A
 export const OP_ORb                             = i++;              // Logical OR of two booleans
 export const OP_XORb                            = i++;              // Logical XOR of two booleans
 
+export const OP_RANGEi32                        = i++;              // Create a range of integers
+export const OP_RANGEf64                        = i++;              // Create a range of floats
+
 
 
 // ============= UNARY OPERATIONS =============
@@ -279,6 +282,9 @@ export const OP_NAMES: string[] = [
     'OP_ANDb',
     'OP_ORb',
     'OP_XORb',
+
+    'OP_RANGEi32',
+    'OP_RANGEf64',
 
     'OP_NOTb',
     'OP_NEGi',

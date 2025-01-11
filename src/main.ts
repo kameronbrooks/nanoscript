@@ -39,16 +39,11 @@ function compile(code: string) {
 }
 
 const script = `
-const ob = {
-    'x': 1,
-    'y': 2,
-    'z': {
-        'a': 1,
-        'b': 2
-    }
-};
-
-return ob?.z?.b;
+let arr = 10...20;
+for (let i = 0; i < arr.length; i++) {
+    console.log(arr[i]);
+}
+return arr[0];
 `;
 
 const tokeizer = new Tokenizer(script, {

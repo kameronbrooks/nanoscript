@@ -283,6 +283,13 @@ export class AnyType extends DType {
                         datatype: "int",
                         lvalue: false
                     }
+                },
+                "any…any": (compiler) => {
+                    compiler.addInstruction(prg.OP_RANGEi32);
+                    return {
+                        datatype: "list",
+                        lvalue: false
+                    }
                 }
             }
         );

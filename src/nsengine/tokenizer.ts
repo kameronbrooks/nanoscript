@@ -241,7 +241,7 @@ export class Tokenizer {
                     // This is to allow for the ellipsis operator
                     if (this.input[this.index + 1] === "." || hasDecimal) {
                         this.tokens.push({ type: "NUMBER", value: numStr.replace('_', ''), line: this.currentLine, rawValue: numStr });
-                        break;
+                        return true;
                     }
                     hasDecimal = true;
                 }

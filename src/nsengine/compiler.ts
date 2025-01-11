@@ -835,7 +835,6 @@ export class Compiler {
             rightDataType = leftDataType = 'any';
         }
 
-
         const opKey = leftDataType + node.operator + rightDataType;
         const typeOperation = this.getDataType(leftDataType).getOperation(opKey);
         if (!typeOperation) {

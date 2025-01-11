@@ -22,5 +22,6 @@ export { InterpretFunctionDefinition } from "./interpret_function_definition";
 export { InterpretArrayLiteral } from "./interpret_arrayliteral";
 export { InterpretObjectLiteral } from "./interpret_objectliteral";
 export { InterpretTernary } from "./interpret_ternary";
+export { InterpretBinarySpread } from "./interpret_binaryspread";
 
 
