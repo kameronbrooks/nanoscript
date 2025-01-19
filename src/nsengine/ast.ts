@@ -126,6 +126,7 @@ export interface StatementNode extends ASTNode {
 export interface BlockNode extends ASTNode {
     type: "Block";
     statements: ASTNode[];
+    sameScope?: boolean;
 }
 
 /**
@@ -158,6 +159,7 @@ export interface LoopNode extends ASTNode {
     condition?: ASTNode;
     increment?: ASTNode;
     body?: ASTNode;
+    loopType: "for" | "while" | "foreach";
 }
 
 /**

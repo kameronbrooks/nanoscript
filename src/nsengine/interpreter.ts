@@ -154,9 +154,17 @@ export class Interpreter {
         while ((patternIndex < pattern.length) && (currentIndex < this.tokens.length)) {
             const token = this.tokens[currentIndex];
 
-            if (token.type !== pattern[patternIndex]) {
-                match = false;
-                break;
+            if(Array.isArray(pattern[patternIndex])) {
+                if (!pattern[patternIndex].includes(token.type)) {
+                    match = false;
+                    break;
+                }
+            }
+            else {
+                if (token.type !== pattern[patternIndex]) {
+                    match = false;
+                    break;
+                }
             }
             currentIndex++;
             patternIndex++;
@@ -251,7 +259,8 @@ export class Interpreter {
                 type: "Loop",
                 condition,
                 body,
-                line: this.previous().line
+                line: this.previous().line,
+                loopType: "while"
             } as LoopNode;
         }
         return null;
@@ -318,31 +327,109 @@ export class Interpreter {
     }
 
     private parseForStatement(): ASTNode|null|undefined {
-        if (this.match("FOR")) {
-            this.consume("LPAREN");     // Parentheses required
-            const initializer = this.parseStatement();
-            const condition = this.parseExpression({
+        // If this is a for in loop for an object or dict
+        if (this.patternLookahead(["FOR", "LPAREN", "IDENTIFIER", "COMMA", "IDENTIFIER", "IN"])) {
+            /*
+            this.consume("FOR");
+            this.consume("LPAREN");
+            const keyASTNode = {
+                type: "Declaration",
+                identifier: this.consume("IDENTIFIER").value as string,
+                initializer: undefined,
+                dtype: 'any',
+                constant: false,
+                line: this.previous().line
+            } as DeclarationNode;
+
+            this.consume("COMMA");
+            const valueASTNode = {
+                type: "Declaration",
+                identifier: this.consume("IDENTIFIER").value as string,
+                initializer: undefined,
+                dtype: 'any',
+                constant: false,
+                line: this.previous().line
+            } as DeclarationNode;
+
+            
+            this.consume("IN");
+            const iterable = this.parseExpression({
                 returnFunctionCalls: true
             });
-            this.consume("EOS");
-            const increment = this.parseExpression();
             this.consume("RPAREN");     // Parentheses required
             const body = this.parseStatement();
-            
-            // Body
-            if (!initializer || !condition || !increment || !body) {
-                throw new Error("Invalid for statement");
-            }
 
             return {
                 type: "Loop",
-                initializer,
-                condition,
-                increment,
+                initializer: {
+                    type: "Block",
+                    statements: [keyASTNode, valueASTNode],
+                    line: this.previous().line
+                } as BlockNode,
+                iterable,
                 body,
                 line: this.previous().line
             } as LoopNode;
+             */
         }
+        // If this is a for in loop for a set or list
+        else if (this.patternLookahead(["FOR", "LPAREN", "IDENTIFIER", "IN"])) {
+            this.consume("FOR");
+            this.consume("LPAREN");
+            const declarationNode = {
+                type: "Declaration",
+                identifier: this.consume("IDENTIFIER").value as string,
+                initializer: undefined,
+                dtype: 'any',
+                constant: true,
+                line: this.previous().line
+            } as DeclarationNode;
+            this.consume("IN");
+            const iterable = this.parseExpression({
+                returnFunctionCalls: true
+            });
+            this.consume("RPAREN");     // Parentheses required
+            const body = this.parseStatement();
+
+            return {
+                type: "Loop",
+                initializer: declarationNode,
+                iterable,
+                body,
+                line: this.previous().line,
+                loopType: "foreach"
+            } as LoopNode;
+        }
+        // Otherwise it is a traditional c-style for loop
+        else {
+            if (this.match("FOR")) {
+                this.consume("LPAREN");     // Parentheses required
+                const initializer = this.parseStatement();
+                const condition = this.parseExpression({
+                    returnFunctionCalls: true
+                });
+                this.consume("EOS");
+                const increment = this.parseExpression();
+                this.consume("RPAREN");     // Parentheses required
+                const body = this.parseStatement();
+                
+                // Body
+                if (!initializer || !condition || !increment || !body) {
+                    throw new Error("Invalid for statement");
+                }
+    
+                return {
+                    type: "Loop",
+                    initializer,
+                    condition,
+                    increment,
+                    body,
+                    line: this.previous().line,
+                    loopType: "for"
+                } as LoopNode;
+            }
+        }
+        
     }
 
     private parseDeclaration(): ASTNode|null|undefined {
