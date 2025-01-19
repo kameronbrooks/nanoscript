@@ -70,6 +70,7 @@ export const OP_LOAD_INSTRUCTION_REFERENCE        = i++;            // Load an i
 export const OP_LOAD_PTR                          = i++;            // Load a pointer
 export const OP_LOAD_LITERAL_LIST                 = i++;            // Load a list literal
 export const OP_LOAD_LITERAL_OBJECT               = i++;            // Load an object literal
+export const OP_LOAD_LITERAL_SET                  = i++;            // Load a set literal
 
 // ============= BINARY OPERATIONS =============
 export const OP_ADDi                            = i++;              // Add two integers
@@ -236,6 +237,7 @@ export const OP_NAMES: string[] = [
     'OP_LOAD_PTR',
     'OP_LOAD_LITERAL_LIST',
     'OP_LOAD_CONST_OBJECT',
+    'OP_LOAD_LITERAL_SET',
 
     'OP_ADDi',
     'OP_SUBi',

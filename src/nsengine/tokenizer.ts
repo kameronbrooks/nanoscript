@@ -555,6 +555,8 @@ export class Tokenizer {
         if (char === "\\") {
             localIndex++;
             char += this.input[localIndex];
+
+            console.log('escaped character found', char);
             return char;
         }
         return null;
@@ -590,7 +592,7 @@ export class Tokenizer {
             let str = "'";
             this.index++;
             while (this.index < this.input.length) {
-                if(this.tryParseSpecialChar()=="\\'") {
+                if(this.tryParseSpecialChar()=="\'") {
                     this.index += 2;
                     str += "'";
                     continue;

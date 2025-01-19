@@ -764,6 +764,10 @@ export class Compiler {
             case "ObjectLiteral":
                 this.compileObjectLiteral(node as ast.ObjectLiteralNode);
                 break;
+
+            case "SetLiteral":
+                this.compileSetLiteral(node as ast.SetLiteralNode);
+                break;
                 
             default:
                 throw this.error(`Unknown node type: ${node.type}`);
@@ -1383,6 +1387,25 @@ export class Compiler {
         this.addInstruction(prg.OP_LOAD_LITERAL_LIST, node.elements.length);
 
         this.state.currentDatatype = 'list';
+    }
+
+    private compileSetLiteral(node: ast.SetLiteralNode) {
+        /*
+        TODO: Implement compile time list literals
+        if (node.isKnownAtCompileTime) {
+            // Resolve all the elements in the list and create a list now
+            this.addInstruction(prg.OP_LOAD_PTR, [...(node.compileTimeValue as any[])]);
+        }
+        else {
+            
+        }
+        */
+        for (let element of node.elements.slice().reverse()) {
+            this.compileNode(element);
+        }
+        this.addInstruction(prg.OP_LOAD_LITERAL_SET, node.elements.length);
+
+        this.state.currentDatatype = 'set';
     }
 
     private compileObjectLiteral(node: ast.ObjectLiteralNode) {

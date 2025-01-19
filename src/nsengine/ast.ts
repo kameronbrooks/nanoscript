@@ -257,6 +257,18 @@ export interface ObjectLiteralNode extends ASTNode {
     compileTimeValue?: any;
 }
 
+/**
+ * Set literal node
+ * When a set literal is encountered
+ */
+export interface SetLiteralNode extends ASTNode {
+    type: "SetLiteral";
+    elements: ASTNode[];
+    dtype?: string;
+    isKnownAtCompileTime?: boolean;
+    compileTimeValue?: any[];
+}
+
 // =================================================================================================
 // Helper functions to create AST nodes
 // =================================================================================================
@@ -450,6 +462,8 @@ export function astToString(node: ASTNode, level: number = 0): string {
             return indent + `[Array]:\n${(node as ArrayLiteralNode).elements.map((el) => astToString(el, level + 1)).join("")}` + postfix;
         case "ObjectLiteral":
             return indent + `[Object]:\n${(node as ObjectLiteralNode).properties.map((prop) => indent + `[${prop.key}]:\n${astToString(prop.value, level + 1)}`).join("")}` + postfix;
+        case "SetLiteral":
+            return indent + `[Set]:\n${(node as SetLiteralNode).elements.map((el) => astToString(el, level + 1)).join("")}` + postfix;
         case "UnaryOp":
             return indent + `[${(node as UnaryOpNode).operator}]:\n${astToString((node as UnaryOpNode).operand, level + 1)}` + postfix;
         case "BinaryOp":

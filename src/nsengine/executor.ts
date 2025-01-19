@@ -89,6 +89,7 @@ export class JSExecutor {
             this.op_load_ptr.bind(this),
             this.op_load_literal_list.bind(this),
             this.op_load_literal_object.bind(this),
+            this.op_load_literal_set.bind(this),
             // Integers
             this.op_add.bind(this),
             this.op_sub.bind(this),
@@ -411,6 +412,16 @@ export class JSExecutor {
         }
             
         this.stack.push(generateObject(generator, values));
+        this.ip++;
+    }
+
+    op_load_literal_set() {
+        const length = this.program?.instructions[this.ip].operand;
+        const l = new Array(length);
+        for (let i = 0; i < length; i++) {
+            l[i] = this.stack.pop();
+        }
+        this.stack.push(new Set(l));
         this.ip++;
     }
 

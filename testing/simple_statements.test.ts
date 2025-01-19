@@ -60,7 +60,7 @@ const validTests = [
     } as ValidSyntaxTest,
     {
         name: 'string literal with escape characters',
-        code: '"hello\\nworld";',
+        code: '"hello\nworld";',
         expectedResult: "hello\nworld"
 
     } as ValidSyntaxTest,
@@ -72,18 +72,18 @@ const validTests = [
     } as ValidSyntaxTest,
     {
         name: 'string literal single quotes with escape characters',
-        code: "'hello\\\nworld';",
+        code: "'hello\\nworld';",
         expectedResult: "hello\\nworld"
     } as ValidSyntaxTest,
     {
         name: 'string literal with escaped quotes',
-        code: '"hello \\\\"world\\\\"";',
+        code: '"hello \"world\"";',
         expectedResult: 'hello "world"'
 
     } as ValidSyntaxTest,
     {
         name: 'string literal with escaped single quotes',
-        code: "'hello \\\\'world\\\\'';",
+        code: "'hello \'world\'';",
         expectedResult: "hello 'world'"
     } as ValidSyntaxTest,
     {

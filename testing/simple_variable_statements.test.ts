@@ -200,8 +200,17 @@ const validTests = [
         code: `
         let x = {'a': [1,2,3], 'b': [4,5,6]};
         return x;`,
-    }
-    
+    } as ValidSyntaxTest,
+    {
+        name: "set object decalaration",
+        code: `return {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};`,
+        expectedResult: new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    } as ValidSyntaxTest,
+    {
+        name: "set object decalaration",
+        code: `return {'dog', 'cat', 'man'};`,
+        expectedResult: new Set(['dog', 'cat', 'man'])
+    } as ValidSyntaxTest,
 
 
 ];

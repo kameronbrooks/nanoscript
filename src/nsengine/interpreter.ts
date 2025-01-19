@@ -140,6 +140,25 @@ export class Interpreter {
       return false;
     }
 
+    public patternLookahead(pattern: any): boolean {
+        let currentIndex = this.current;
+        let patternIndex = 0;
+        let match = true;
+
+        while ((patternIndex < pattern.length) && (currentIndex < this.tokens.length)) {
+            const token = this.tokens[currentIndex];
+
+            if (token.type !== pattern[patternIndex]) {
+                match = false;
+                break;
+            }
+            currentIndex++;
+            patternIndex++;
+        }
+        
+        return match;
+    }
+
     public previous(): Token {
         return this.tokens[this.current - 1];
     }
