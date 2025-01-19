@@ -42,13 +42,11 @@ const script = `
 return {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 `;
 
-
-
 const tokeizer = new Tokenizer(script, {
     allowUnknown: true,
-    disableReplacements: true,
-    keepComments: true,
-    keepWhitespace: true,
+    disableReplacements: false,
+    keepComments: false,
+    keepWhitespace: false,
 });
 
 const tokens = tokeizer.tokenize();

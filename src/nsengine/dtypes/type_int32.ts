@@ -252,6 +252,13 @@ export class Int32Type extends DType {
                         datatype: "int",
                         lvalue: false
                     }
+                },
+                "int…int": (compiler) => {
+                    compiler.addInstruction(prg.OP_RANGEi32);
+                    return {
+                        datatype: "list",
+                        lvalue: false
+                    }
                 }
             }
         );

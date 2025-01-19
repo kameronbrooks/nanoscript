@@ -135,6 +135,9 @@ export class JSExecutor {
             this.op_or_b.bind(this),
             this.op_xor_b.bind(this),
 
+            this.op_range_i32.bind(this),
+            this.op_range_f64.bind(this),
+
             this.op_not_b.bind(this),
             this.op_neg.bind(this),
             this.op_neg.bind(this),
@@ -355,6 +358,31 @@ export class JSExecutor {
         let b = this.stack.pop();
         let a = this.stack.pop();
         this.stack.push(a ^ b);
+        this.ip++;
+    }
+
+    op_range_i32() {
+        let end = this.stack.pop();
+        let start = this.stack.pop();
+
+        let arr = new Array((end - start));
+        let j = 0;
+        for (let i = start; i <= end; i += 1) {
+            arr[j++] = i;
+        }
+        this.stack.push(arr);
+        this.ip++;
+    }
+
+    op_range_f64() {
+        let end = this.stack.pop();
+        let start = this.stack.pop();
+        let arr = new Array((end - start));
+        let j = 0;
+        for (let i = start; i <= end; i += 1) {
+            arr[j++] = i;
+        }
+        this.stack.push(arr);
         this.ip++;
     }
     

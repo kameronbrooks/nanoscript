@@ -10,7 +10,7 @@ import { IObjectGenerator } from "../utilities/object_generator";
 import { DType } from "./dtypes/dtype";
 
 
-export const COMPILER_VERSION = "0.0.12";
+export const COMPILER_VERSION = "0.0.13";
 
 
 /**
@@ -323,6 +323,18 @@ class InstructionReferenceTable {
     open(tag?: string) {
         this.openReference = '$' + (tag || (this.index++));
         return this.openReference;
+    }
+
+    /**
+     * Get the open reference if it exists or open a new reference
+     * @param tag 
+     * @returns 
+     */
+    getOrOpen(tag?: string) {
+        if (!this.openReference) {
+            return this.open(tag);
+        }
+        return this.openReference
     }
 
     /**
@@ -708,7 +720,7 @@ export class Compiler {
                 break;
 
             case "Program":
-                for (let statement of (node as ast.BlockNode).statements) {
+                for (let statement of (node as ast.ProgramNode).statements) {
                     this.compileNode(statement);
                 }
                 break;
@@ -768,6 +780,9 @@ export class Compiler {
             case "SetLiteral":
                 this.compileSetLiteral(node as ast.SetLiteralNode);
                 break;
+            case "TernaryOp":
+                this.compileTernaryOp(node as ast.TernaryOpNode);
+                break;
                 
             default:
                 throw this.error(`Unknown node type: ${node.type}`);
@@ -823,7 +838,6 @@ export class Compiler {
             rightDataType = leftDataType = 'any';
         }
 
-
         const opKey = leftDataType + node.operator + rightDataType;
         const typeOperation = this.getDataType(leftDataType).getOperation(opKey);
         if (!typeOperation) {
@@ -850,6 +864,34 @@ export class Compiler {
 
         this.state.currentDatatype = result.datatype;
         this.state.isLValue = result.lvalue;
+    }
+
+    private compileTernaryOp(node: ast.TernaryOpNode) {
+        // Compile the condition
+        this.compileNode(node.condition);
+        const branchNode = this.addInstruction(prg.OP_BRANCH_FALSE, null);
+
+        // Compile the left node
+        this.compileNode(node.left);
+        const jumpNode = this.addInstruction(prg.OP_JUMP, null);
+
+        let branchTargetRef = this.instructionReferenceTable.getOrOpen();
+        // Compile the right node
+        this.compileNode(node.right);
+
+        let endTargetRef = this.instructionReferenceTable.getOrOpen();
+
+        if (!jumpNode) {
+            throw this.error("Missing jump node");
+        }
+
+        if (!branchNode) {
+            throw this.error("Missing branch node");
+        }
+
+        jumpNode.operand = endTargetRef;
+        branchNode.operand = branchTargetRef;
+
     }
 
     private compileBoolean(node: ast.BooleanNode) {
@@ -905,15 +947,31 @@ export class Compiler {
         if (!node.member) {
             throw this.error("Missing member in member access");
         }
-        // Compile the object
-        this.compileNode(node.object);
+        // If this is a null coalescing operation, we need to handle it differently
+        if (node.nullCoalescing) {
+            // Compile the object
+            this.compileNode(node.object);
 
-        // Compile the member
-        // TODO: figure out the opcode based on the object type
-        this.addInstruction(prg.OP_LOAD_MEMBER32, (node.member as ast.IdentifierNode).value);
-        this.state.currentDatatype = 'any';
-        this.state.isLValue = true;
-        // Add the instruction
+            this.addInstruction(prg.OP_LOAD_MEMBER32, (node.member as ast.IdentifierNode).value);
+            const nullMemberBranch = this.addInstruction(prg.OP_BRANCH_NULL, "$null_coalesce_end");
+
+            this.state.currentDatatype = 'any';
+            this.state.isLValue = true;
+
+        }
+        // Handle the normal case
+        else {
+            // Compile the object
+            this.compileNode(node.object);
+
+            // Compile the member
+            // TODO: figure out the opcode based on the object type
+            this.addInstruction(prg.OP_LOAD_MEMBER32, (node.member as ast.IdentifierNode).value);
+            this.state.currentDatatype = 'any';
+            this.state.isLValue = true;
+            // Add the instruction
+        }
+        
     }
 
     private compileIndexer(node: ast.IndexerNode) {

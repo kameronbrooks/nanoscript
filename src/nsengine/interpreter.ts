@@ -31,7 +31,9 @@ export type ExpressionInterpreterSteps = {
     equality: InterpreterStep;
     andOr: InterpreterStep;
     functionDefinition: ist.InterpretFunctionDefinition;
+    binarySpread: ist.InterpretBinarySpread;
     assignment: InterpreterStep;
+    ternary: ist.InterpretTernary;
     expression: InterpreterStep;
 }
 
@@ -65,7 +67,9 @@ export class Interpreter {
         const equality = new ist.InterpretEquality(this, comparison);
         const andOr = new ist.InterpretAndOr(this, equality);
         const functionDefinition = new ist.InterpretFunctionDefinition(this, andOr);
-        const assignment = new ist.InterpretAssignment(this, functionDefinition);
+        const binarySpread = new ist.InterpretBinarySpread(this, functionDefinition);
+        const assignment = new ist.InterpretAssignment(this, binarySpread);
+        const ternary = new ist.InterpretTernary(this, assignment);
 
         
 
@@ -87,7 +91,9 @@ export class Interpreter {
             equality: equality,
             andOr: andOr,
             functionDefinition: functionDefinition,
-            assignment: assignment
+            binarySpread: binarySpread,
+            assignment: assignment,
+            ternary: ternary,
         } as ExpressionInterpreterSteps;
 
         for (let step in this.expressionSteps) {
@@ -164,7 +170,7 @@ export class Interpreter {
     }
 
     public parseExpression(params?: InterpreterStepParams): ASTNode | undefined | null {
-        const node = this.expressionSteps.assignment.execute(params);
+        const node = this.expressionSteps.ternary.execute(params);
         this.associateCurrentLine(node);
         return node;
     }

@@ -79,6 +79,17 @@ export interface BinaryOpNode extends ASTNode {
 }
 
 /**
+ * Ternary operation node
+ * Represents a ternary operation (a ? b : c)
+ */
+export interface TernaryOpNode extends ASTNode {
+    type: "TernaryOp";
+    condition: ASTNode;
+    left: ASTNode;
+    right: ASTNode;
+}
+
+/**
  * Identifier node
  * Represents a variable or function name
  */
@@ -185,6 +196,7 @@ export interface MemberAccessNode extends ASTNode {
     type: "MemberAccess";
     object: ASTNode;
     member: ASTNode;
+    nullCoalescing?: boolean;
 }
 
 /**
