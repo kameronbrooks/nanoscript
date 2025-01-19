@@ -23,6 +23,8 @@ export type TokenType = (
     "AND" |
     "OR" |
 
+    "INFINITY" |
+
     "BITWISE_AND" |
     "BITWISE_OR" |
 
@@ -564,6 +566,12 @@ export class Tokenizer {
             return true;
         } 
 
+        if (char === "∞") {
+            this.tokens.push({ type: "INFINITY", value: "∞", line: this.currentLine, rawValue: "∞" });
+            this.index++;
+            return true;
+        }
+
 
 
         return false;
@@ -603,12 +611,11 @@ export class Tokenizer {
     private tryParseSpecialChar(): string | null {
         let localIndex = this.index;
         let char = this.input[localIndex];
-        
-        if (char === "\\") {
+
+        if (char === String.raw`\\`) {
             localIndex++;
             char += this.input[localIndex];
 
-            console.log('escaped character found', char);
             return char;
         }
         return null;

@@ -780,6 +780,7 @@ export class Compiler {
             case "SetLiteral":
                 this.compileSetLiteral(node as ast.SetLiteralNode);
                 break;
+                
             case "TernaryOp":
                 this.compileTernaryOp(node as ast.TernaryOpNode);
                 break;

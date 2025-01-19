@@ -39,7 +39,7 @@ function compile(code: string) {
 }
 
 const script = `
-return {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+return 0...10;
 `;
 
 const tokeizer = new Tokenizer(script, {
