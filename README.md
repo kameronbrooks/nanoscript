@@ -1,6 +1,6 @@
 # nanoscript (nscript)
 
-## current version 0.0.7
+## current version 0.0.14
 
 # This is a Work in Progress (not functional yet)
 
@@ -47,7 +47,7 @@ Import NSEngine from the module
 ```typescript
 // typescript
 
-import { NSEngine } from "@creation-wasteland/nanoscript";
+import { NSEngine, NenvExport, NenvModule } from "@creation-wasteland/nanoscript";
 ```
 
 Add any required modules so that your API can be called from the engine.
@@ -65,8 +65,8 @@ const myModule = {
         { name: "myObject", type: "constant", object: {x: 1, y: 2, z: 3} },
         { name: "myFunction", type: "function", object: (a: number, b: number) => a + b },
         ...
-    ] as nenv.NenvExport[]
-} as nenv.NenvModule;
+    ] as NenvExport[]
+} as NenvModule;
 ```
 
 To add your module to the engine, use the ```addModules``` method
@@ -193,6 +193,17 @@ let arr2 = [];              // empty list
 
 ```
 
+### Set Literals
+
+Lists can be declared with list literal syntax, similar to javascript
+```javascript
+// nanoscript
+
+let set1 = {0,1,2,3,4,5};    // a set with 6 elements
+let notASet = {};            // NOT an empty set, this is an empty object
+
+```
+
 *Lists are constructed at script runtime, further optimizations will be added to allow for the creation of  compile-time lists to improve performance when possible.*
 
 ### Object Literals
@@ -202,6 +213,8 @@ Objects can be created with a familiar syntax as well.
 *Note: Object keys must be enclosed with single or double quotes like strings.*
 ```javascript
 // nanoscript
+
+let empty = {};
 
 let o = {
     'x': 1.0,

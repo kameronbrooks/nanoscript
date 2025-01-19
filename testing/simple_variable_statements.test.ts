@@ -211,6 +211,11 @@ const validTests = [
         code: `return {'dog', 'cat', 'man'};`,
         expectedResult: new Set(['dog', 'cat', 'man'])
     } as ValidSyntaxTest,
+    {
+        name: "empty object literal declaration",
+        code: `return {};`,
+        expectedResult: {}
+    } as ValidSyntaxTest,
 
 
 ];

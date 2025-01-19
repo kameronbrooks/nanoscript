@@ -19,7 +19,9 @@ export class InterpretObjectLiteral extends InterpreterStep {
             let lnode;
 
             // Check to see if this is and object literal or a set literal
-            if (this.interpreter.patternLookahead(["STRINGLITERAL", "COLON"])) {
+            // If the next token is a string literal followed by a colon, it is an object literal
+            // If the next token is a closing brace, it is also assumed to be an empty object
+            if (this.interpreter.patternLookahead(["STRINGLITERAL", "COLON"]) || this.interpreter.peek().type === "RBRACE") {
                 // Object literal
                 lnode = {
                     type: "ObjectLiteral",
@@ -56,7 +58,7 @@ export class InterpretObjectLiteral extends InterpreterStep {
                 }
 
                 // Determine if the object literal is known at compile time
-                lnode.isKnownAtCompileTime = lnode.properties.every(p => p.value.isKnownAtCompileTime);
+                lnode.isKnownAtCompileTime = (lnode.properties.length == 0) || (lnode.properties.every(p => p.value.isKnownAtCompileTime));
             }
             else {
                 // Set literal

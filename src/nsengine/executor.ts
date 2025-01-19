@@ -665,7 +665,17 @@ export class JSExecutor {
 
     op_load_member() {
         let a = this.stack.pop();
-        this.stack.push(a[this.program?.instructions[this.ip].operand]);
+        const member = a[this.program?.instructions[this.ip].operand];
+
+        if (member === undefined) {
+            throw new Error(`Member ${this.program?.instructions[this.ip].operand} is undefined`);
+        }
+        if (typeof member === 'function') {
+            this.stack.push(member.bind(a));
+        } else {
+            this.stack.push(member);
+        }
+        //this.stack.push();
         this.ip++;
     }
 
