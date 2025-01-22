@@ -39,9 +39,8 @@ function compile(code: string) {
 }
 
 const script = `
-let x = {};
 
-return x;
+return {0, 1};
 `;
 
 const tokeizer = new Tokenizer(script, {
