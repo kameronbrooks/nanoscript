@@ -1283,7 +1283,7 @@ export class Compiler {
         this.state.isInFunction--;
     }
 
-    private compileLoopStatement(node: ast.LoopNode) {
+    private compileForWhile(node: ast.LoopNode) {
         if (!node.condition) {
             throw this.error("Missing condition in while loop");
         }
@@ -1353,6 +1353,26 @@ export class Compiler {
 
         // Pop the loop scope
         this.state.popScope();
+    }
+
+    private compileForeach(node: ast.LoopNode) {
+
+        if (node.increment === undefined) {
+            throw this.error("Missing increment in foreach loop");
+        }
+
+        this.compileNode(node.increment);
+        this.addInstruction(prg.OP_WRAP_COLLECTION, 1);
+        // Do some other stuff
+    }
+
+    private compileLoopStatement(node: ast.LoopNode) {
+        if(node.loopType === 'for' || node.loopType === 'while') {
+            this.compileForWhile(node);
+        }
+        else if (node.loopType === 'foreach') {
+            this.compileForeach(node);
+        }
     }
 
     private compileBreak(node: ast.BreakNode) {

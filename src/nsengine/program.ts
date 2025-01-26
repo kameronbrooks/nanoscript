@@ -195,6 +195,9 @@ export const OP_PUSH_RETURN8                = i++;                  // Push an 8
 export const OP_PUSH_RETURN32               = i++;                  // Push a 32-bit return value onto the stack
 export const OP_PUSH_RETURN64               = i++;                  // Push a 64-bit return value onto the stack
 
+export const OP_WRAP_COLLECTION              = i++;                  // Wrap a collection in an iterator
+export const OP_INCREMENT_ITERATOR           = i++;                  // Increment an iterator
+
 
 
 
@@ -357,6 +360,9 @@ export const OP_NAMES: string[] = [
     'OP_PUSH_RETURN8',
     'OP_PUSH_RETURN32',
     'OP_PUSH_RETURN64',
+
+    'OP_WRAP_COLLECTION',
+    'OP_INCREMENT_ITERATOR',
 ];
 
 export function getOpName(opcode: number): string {

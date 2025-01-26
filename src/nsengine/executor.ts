@@ -8,6 +8,8 @@
 import * as prg from "./program";
 import { printInstruction } from "./program";
 import { generateObject, IObjectGenerator } from "../utilities/object_generator";
+import { CollectionIterator, ICollectionIterator} from "../utilities/collection_iterator";
+
 
 
 class ExternalFunction {
@@ -207,7 +209,10 @@ export class JSExecutor {
 
             this.op_push_return8.bind(this),
             this.op_push_return32.bind(this),
-            this.op_push_return64.bind(this)
+            this.op_push_return64.bind(this),
+
+            this.op_wrap_collection.bind(this),
+            this.op_increment_iterator.bind(this),
         ];
     }
 
@@ -798,6 +803,24 @@ export class JSExecutor {
     op_push_return64() {
         this.stack.push(this.ret);
         this.ip++;
+    }
+
+    op_wrap_collection() {
+        let a = this.stack.pop();
+        const collectionWrapper = new CollectionIterator(a);
+        this.stack.push(collectionWrapper);
+        this.ip++;
+    }
+
+    op_increment_iterator() {
+        const a = this.stack.at(-1) as ICollectionIterator;
+        if (!a.hasNext()) {
+            this.stack.pop();
+            this.ip = this.program?.instructions[this.ip].operand;
+        } else {
+            this.stack.push(a.next());
+            this.ip++;
+        }
     }
 
 }
