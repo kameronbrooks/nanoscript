@@ -160,6 +160,7 @@ export interface LoopNode extends ASTNode {
     increment?: ASTNode;
     body?: ASTNode;
     loopType: "for" | "while" | "foreach";
+    iterable?: ASTNode;
 }
 
 /**

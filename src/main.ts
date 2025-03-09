@@ -40,7 +40,10 @@ function compile(code: string) {
 
 const script = `
 
-return {0, 1};
+let z = [0,1,2,3,4,5,6,7,8,9];
+for (x in z) {
+    console.log(x);
+}
 `;
 
 const tokeizer = new Tokenizer(script, {

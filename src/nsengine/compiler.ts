@@ -10,7 +10,7 @@ import { IObjectGenerator } from "../utilities/object_generator";
 import { DType } from "./dtypes/dtype";
 
 
-export const COMPILER_VERSION = "0.0.14";
+export const COMPILER_VERSION = "0.0.15";
 
 
 /**
@@ -445,11 +445,17 @@ export class Compiler {
         }
         this.clearInstructionBufferTarget();
     }
-
+    /**
+     * Throw a compilation error with the specified message
+     * @param message 
+     */
     error(message: string) {
-        throw new Error(`Complilation error on line ${this.lastLine} : ${message.toString()}`);
+        throw new Error(`Compilation error on line ${this.lastLine} : ${message.toString()}`);
     }
 
+    /**
+     * Get the index of the last instruction in the instruction buffer target
+     */
     getTailIndex() {
         return this.instructionBufferTarget.length;
     }
@@ -541,7 +547,13 @@ export class Compiler {
         }
 
     }
-
+    /**
+     * Inserts an instruction before the specified instruction reference target
+     * @param target 
+     * @param opcode 
+     * @param operand 
+     * @param assumeExistingReference 
+     */
     insertBeforeInstructionReferenceTarget(target:string, opcode: number, operand:any = null, assumeExistingReference = false) {
         const instruction = this.instructionReferenceTable.get(target);
         if (!instruction) {
@@ -550,6 +562,12 @@ export class Compiler {
         this.insertBeforeInstruction(instruction, opcode, operand, assumeExistingReference);
     }
 
+    /**
+     * Inserts an instruction after the specified instruction
+     * @param instruction 
+     * @param opcode 
+     * @param operand 
+     */
     insertAfterInstruction(instruction: prg.Instruction, opcode: number, operand:any = null) {
         const index = this.instructionBufferTarget.indexOf(instruction);
         if (index < 0) {
@@ -565,24 +583,46 @@ export class Compiler {
         this.instructionBufferTarget.splice(index + 1, 0, newInstruction);
     }
 
-
+    /**
+     * Get the last instruction in the instruction buffer target
+     */
     getLastInstruction() {
         return this.instructionBufferTarget.at(-1);
     }
 
+    /**
+     * Get the index of the specified instruction
+     * @param instruction 
+     * @returns 
+     */
     getInstructionIndex(instruction: prg.Instruction) {
         return this.instructionBufferTarget.indexOf(instruction);
     }
 
+    /**
+     * Get the instruction at the specified index
+     * @param index 
+     * @returns 
+     */
     getDataType(name: string) : DType {
         return this.nenv.getDataType(name);
     }
 
+    /**
+     * Get the state of the compiler
+     * @param index 
+     * @returns 
+     */
     getState() {
         return this.state;
     }
 
-    compile(ast: ast.ASTNode[]) {
+    /**
+     * Compile an AST node into a program
+     * @param ast 
+     * @returns 
+     */
+    compile(ast: ast.ASTNode[]): prg.Program {
 
         this.init();
 
@@ -631,10 +671,17 @@ export class Compiler {
         return this.program;
     }
 
+    /**
+     * Optimize the program
+     */
     optimize() {
         // TODO: Implement optimization
     }
 
+    /**
+     * Resolve all references and finalize the program
+     * @returns 
+     */
     finalize() {
         
         // Add the function instruction buffers to the main program
@@ -652,7 +699,8 @@ export class Compiler {
                 instruction.opcode === prg.OP_BRANCH_FALSE || 
                 instruction.opcode === prg.OP_BRANCH_TRUE || 
                 instruction.opcode === prg.OP_JUMP || 
-                instruction.opcode === prg.OP_CALL_INTERNAL
+                instruction.opcode === prg.OP_CALL_INTERNAL ||
+                instruction.opcode === prg.OP_INCREMENT_ITERATOR
             ) {
                 const targetIndex = instruction.operand as string;
                 const targetInstruction = this.instructionReferenceTable.get(targetIndex);
@@ -672,6 +720,12 @@ export class Compiler {
         return this.program;
     }
 
+    /**
+     * Compile an ast node
+     * Essentially a switch statement that calls the appropriate compile function for the node type
+     * The main loop of the compiler
+     * @param node 
+     */
     compileNode(node: ast.ASTNode) {
         // Save the last line number for error reporting
         if(node && node.line !== undefined) {
@@ -1231,6 +1285,20 @@ export class Compiler {
     }
 
     private compileFunctionDefinition(node: ast.FunctionDeclarationNode) {
+
+        if (!node.body) {
+            throw this.error("Missing function body");
+        }
+
+        if (!node.name) {
+            throw this.error("Missing function name");
+        }
+
+        // This fixes an issue where the loops dont work if there is a function definition after them 
+        if (this.instructionReferenceTable.hasOpenReference()) {
+            this.addInstruction(prg.OP_NOOP);
+        }
+
         // Add the function to the scope
         const obj = this.state.currentScope?.addFunction(
             node.name, 
@@ -1357,13 +1425,82 @@ export class Compiler {
 
     private compileForeach(node: ast.LoopNode) {
 
-        if (node.increment === undefined) {
-            throw this.error("Missing increment in foreach loop");
+        if (node.iterable=== undefined) {
+            throw this.error("Missing iterable in foreach loop");
         }
 
-        this.compileNode(node.increment);
+        if (node.initializer === undefined) {
+            throw this.error("Missing initializer in foreach loop");
+        }
+
+        if (node.body === undefined) {
+            throw this.error("Missing body in foreach loop");
+        }
+
+        const declarationNode = node.initializer as ast.DeclarationNode;
+
+        // Push a new scope for the loop
+        this.state.pushScope();
+
+        // Declare the loop variable
+        this.compileNode(declarationNode);
+
+        // first we need to get the iterable and wrap with collection iterator
+        this.compileNode(node.iterable);
         this.addInstruction(prg.OP_WRAP_COLLECTION, 1);
-        // Do some other stuff
+
+        // Open a reference for the start of the loop to close on the next instruction
+        const startOfLoopRef = this.instructionReferenceTable.getOrOpen();
+
+        // Add the instruction to get the next value from the iterator
+        const incrementInstruction = this.addInstruction(prg.OP_INCREMENT_ITERATOR, null);
+        // Get the value from the iterator and store it in the loop variable
+        this.addInstruction(prg.OP_STORE_LOCAL32, this.state.currentScope?.getObject(declarationNode.identifier)?.localStackIndex);
+
+        // Push a new break list so break statements can be handled
+        this.state.breakListStack.push({ breakInstructions: [] });
+        this.state.continueListStack.push({ continueInstructions: [] });
+
+        // Compile the body
+        this.compileNode(node.body);
+        // Open a reference for the end of the body to close on the next instruction
+        const endOfBodyRef = this.instructionReferenceTable.getOrOpen();
+
+        // Jump back to the condition
+        this.addInstruction(prg.OP_JUMP, startOfLoopRef);
+
+        // Open a reference for the end of the loop to close on the next instruction
+        const endOfLoopRef = this.instructionReferenceTable.getOrOpen();
+
+        if (!incrementInstruction) {
+            throw this.error("Increment instruction not found");
+        }
+        incrementInstruction.operand = endOfLoopRef;
+
+        // Handle the break statements
+        // Retarget the break instructions to the end of the loop
+        const breakList = this.state.breakListStack.pop();
+        if (!breakList) {
+            throw this.error("Break list not found");
+        }
+        for (let instruction of breakList.breakInstructions) {
+            instruction.operand = endOfLoopRef;
+        }
+
+        // Handle the continue statements
+        // Retarget the continue instructions to the end of the loop
+        const continueList = this.state.continueListStack.pop();
+        if (!continueList) {
+            throw this.error("Continue list not found");
+        }
+        for (let instruction of continueList.continueInstructions) {
+            instruction.operand = endOfBodyRef;
+        }
+
+
+        this.state.popScope();
+
+
     }
 
     private compileLoopStatement(node: ast.LoopNode) {

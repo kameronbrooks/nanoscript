@@ -9,10 +9,6 @@ import { ASTNode, ConditionNode, BlockNode, DeclarationNode, LoopNode, ProgramNo
 import * as ist from "./interpreter_steps/interpreter_step_types";
 
 
-
-
-
-
 export type ExpressionInterpreterSteps = {
     stringLiteral: InterpreterStep;
     primative: InterpreterStep;
@@ -70,8 +66,6 @@ export class Interpreter {
         const binarySpread = new ist.InterpretBinarySpread(this, functionDefinition);
         const assignment = new ist.InterpretAssignment(this, binarySpread);
         const ternary = new ist.InterpretTernary(this, assignment);
-
-        
 
         this.expressionSteps = {
             stringLiteral: stringLiteral,
@@ -146,6 +140,11 @@ export class Interpreter {
       return false;
     }
 
+    /**
+     * Look ahead in the token stream to see if the pattern matches
+     * @param pattern 
+     * @returns 
+     */
     public patternLookahead(pattern: any): boolean {
         let currentIndex = this.current;
         let patternIndex = 0;
@@ -154,14 +153,38 @@ export class Interpreter {
         while ((patternIndex < pattern.length) && (currentIndex < this.tokens.length)) {
             const token = this.tokens[currentIndex];
 
+            // if the element is an array, then the token type must be in the array
             if(Array.isArray(pattern[patternIndex])) {
-                if (!pattern[patternIndex].includes(token.type)) {
+                if (pattern[patternIndex].includes('*')) {
+                    // wildcard match
+                }
+                // Check to see if this is a conditional collection
+                else if (pattern[patternIndex].includes('?')) {
+                    if (!pattern[patternIndex].includes(token.type)) {
+                        patternIndex++;
+                        continue;
+                    }
+                }
+                // else if not a match
+                else if (!pattern[patternIndex].includes(token.type)) {
                     match = false;
                     break;
                 }
             }
             else {
-                if (token.type !== pattern[patternIndex]) {
+                // wildcard match
+                if (pattern[patternIndex] == "*") {
+
+                }
+                // conditional match
+                else if (pattern[patternIndex].startsWith("?")) {
+                    if (token.type !== pattern[patternIndex].substring(1)) {
+                        patternIndex++;
+                        continue;
+                    }
+                }
+                // exact match
+                else if (token.type !== pattern[patternIndex]) {
                     match = false;
                     break;
                 }
@@ -173,17 +196,31 @@ export class Interpreter {
         return match;
     }
 
+    /**
+     * Get the previous token
+     * @returns
+     * 
+     */
     public previous(): Token {
         return this.tokens[this.current - 1];
     }
 
+    /**
+     * Parse an expression
+     * Currently, this starts with the ternary operator
+     * @param params 
+     * @returns 
+     */
     public parseExpression(params?: InterpreterStepParams): ASTNode | undefined | null {
         const node = this.expressionSteps.ternary.execute(params);
         this.associateCurrentLine(node);
         return node;
     }
 
-
+    /**
+     * Parse an if statement
+     * @returns 
+     */
     private parseIfStatement(): ASTNode|null|undefined {
         /// TODO: Implement the parseIfStatement method
         if (this.match("IF")) {
@@ -223,6 +260,10 @@ export class Interpreter {
         return null;
     }
 
+    /**
+     * Parse a block of statements {...}
+     * @returns 
+     */
     private parseBlock(): ASTNode|null|undefined {
         if (this.match("LBRACE")) {
             const statements = [];
@@ -241,6 +282,10 @@ export class Interpreter {
         return null;
     }
 
+    /**
+     * Parse a while statement
+     * @returns 
+     */
     private parseWhileStatement(): ASTNode|null|undefined {
         if (this.match("WHILE")) {
             this.consume("LPAREN");     // Parentheses required
@@ -266,6 +311,10 @@ export class Interpreter {
         return null;
     }
 
+    /**
+     * Parse a break statement
+     * @returns 
+     */
     private parseBreakStatement(): ASTNode|null|undefined {
         if (this.match("BREAK")) {
             if(this.match("EOS")) {
@@ -288,6 +337,10 @@ export class Interpreter {
         return null;
     }
 
+    /**
+     * Parse a continue statement
+     * @returns
+     */
     private parseContinueStatement(): ASTNode|null|undefined {
         if (this.match("CONTINUE")) {
             if(this.match("EOS")) {
@@ -304,6 +357,10 @@ export class Interpreter {
         return null;
     }
 
+    /**
+     * Parse a return statement
+     * @returns 
+     */
     private parseReturnStatement(): ASTNode|null|undefined {
         if (this.match("RETURN")) {
 
@@ -326,6 +383,11 @@ export class Interpreter {
         return null;
     }
 
+    /**
+     * Parse a for statement
+     * Either a tranditional c-style for loop or a foreach-style loop
+     * @returns
+     */
     private parseForStatement(): ASTNode|null|undefined {
         // If this is a for in loop for an object or dict
         if (this.patternLookahead(["FOR", "LPAREN", "IDENTIFIER", "COMMA", "IDENTIFIER", "IN"])) {
@@ -373,7 +435,7 @@ export class Interpreter {
              */
         }
         // If this is a for in loop for a set or list
-        else if (this.patternLookahead(["FOR", "LPAREN", "IDENTIFIER", "IN"])) {
+        else if (this.patternLookahead(["FOR", "LPAREN", ["?", "DECLARE_VARIABLE", "DECLARE_CONSTANT"], "IDENTIFIER", "IN"])) {
             this.consume("FOR");
             this.consume("LPAREN");
             const declarationNode = {
@@ -384,18 +446,24 @@ export class Interpreter {
                 constant: true,
                 line: this.previous().line
             } as DeclarationNode;
+
             this.consume("IN");
+
+            // Parse the iterable expression
             const iterable = this.parseExpression({
                 returnFunctionCalls: true
             });
+
             this.consume("RPAREN");     // Parentheses required
+
+            // Body of the loop
             const body = this.parseStatement();
 
             return {
                 type: "Loop",
                 initializer: declarationNode,
-                iterable,
-                body,
+                iterable: iterable,
+                body: body,
                 line: this.previous().line,
                 loopType: "foreach"
             } as LoopNode;
@@ -432,6 +500,10 @@ export class Interpreter {
         
     }
 
+    /**
+     * Parse a variable declaration
+     * @returns 
+     */
     private parseDeclaration(): ASTNode|null|undefined {
         if (this.match("DECLARE_VARIABLE")) {
             const name = this.consume("IDENTIFIER").value;
@@ -481,12 +553,21 @@ export class Interpreter {
         return null;
     }
 
+    /**
+     * Parse a function declaration
+     * @returns 
+     */
     public parseFunctionDeclaration(): ASTNode|null|undefined {
         return this.expressionSteps.functionDefinition.execute({
             executeInStatementMode: true
         });
     }
 
+    /**
+     * Report an error
+     * @param message 
+     * @returns 
+     */
     public error(message: string): never {
         const line = this.peek().line;
         throw new Error(`Interpreter Error on line (${line}): ` + message);
@@ -502,7 +583,12 @@ export class Interpreter {
         }
     }
 
-
+    /**
+     * Parse a statement
+     * Essentially a large switch statement that can parse all the different types of statements
+     * This is the main looping function of the interpreter
+     * @returns 
+     */
     public parseStatement(): ASTNode|null|undefined {
         let node = this.parseBlock();
         if (node) return node;
