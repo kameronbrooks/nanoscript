@@ -40,10 +40,18 @@ function compile(code: string) {
 
 const script = `
 
-let z = [0,1,2,3,4,5,6,7,8,9];
-for (x in z) {
-    console.log(x);
+
+function a_func() {
+  console.log("Called a function");
+} 
+
+a_func();  
+ 
+for(x in 1...100) {
+  console.log(x);
 }
+
+console.log('finished'); 
 `;
 
 const tokeizer = new Tokenizer(script, {

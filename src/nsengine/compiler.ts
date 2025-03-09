@@ -1200,21 +1200,6 @@ export class Compiler {
         this.state.currentDatatype = result.datatype;
         this.state.isLValue = result.lvalue;
 
-        // Switch the last load instruction to a store instruction
-        // TODO: add support for different types of stores/loads 8, 32, 64
-        /*
-        if (lastInstruction.opcode === prg.OP_LOAD_MEMBER32) {
-            lastInstruction.opcode = prg.OP_STORE_MEMBER32;
-        }
-        else if (lastInstruction.opcode === prg.OP_LOAD_LOCAL32) {
-            lastInstruction.opcode = prg.OP_STORE_LOCAL32;
-        }
-        else if (lastInstruction.opcode === prg.OP_LOAD_ELEMENT32) {
-            lastInstruction.opcode = prg.OP_STORE_ELEMENT32;
-        }
-        this.state.isLValue = false;
-        this.state.currentDatatype = rightDataType;
-        */
     }
 
     private compileDeclaration(node: ast.DeclarationNode) {
@@ -1343,7 +1328,17 @@ export class Compiler {
         // Compile the function body
         this.compileNode(node.body);
 
-
+        // Terminate the function
+        // If the last instruction is not a return instruction, add a return instruction
+        const lastInstruction = this.getLastInstruction() as prg.Instruction;
+        if (!([
+            prg.OP_STACKPOP_RET8, 
+            prg.OP_STACKPOP_RET32, 
+            prg.OP_STACKPOP_RET64, 
+            prg.OP_STACKPOP_VOID].includes(lastInstruction.opcode))
+        ) {
+            this.addInstruction(prg.OP_STACKPOP_VOID);
+        }
 
         this.clearInstructionBufferTarget();
         this.state.popScope();
