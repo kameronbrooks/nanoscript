@@ -47,7 +47,7 @@ function a_func() {
 
 a_func();  
  
-for(x in 1...100) {
+for(let x in 1...100) {
   console.log(x);
 }
 

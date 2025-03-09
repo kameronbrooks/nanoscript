@@ -125,6 +125,17 @@ export class Interpreter {
       }
       this.error(`Expected token ${type} but got ${token.type}`);
     }
+
+    /**
+     * Skips the current token if it matches any of the given types
+     * Does not throw an error if the token does not match
+     * @param types 
+     */
+    public skip(types: TokenType[]): void {
+        if (types.includes(this.peek().type)) {
+            this.current++;
+        }
+    }
     
     /**
      * Determine if the current token matches any of the given types
@@ -438,6 +449,7 @@ export class Interpreter {
         else if (this.patternLookahead(["FOR", "LPAREN", ["?", "DECLARE_VARIABLE", "DECLARE_CONSTANT"], "IDENTIFIER", "IN"])) {
             this.consume("FOR");
             this.consume("LPAREN");
+            this.skip(["DECLARE_VARIABLE", "DECLARE_CONSTANT"]);
             const declarationNode = {
                 type: "Declaration",
                 identifier: this.consume("IDENTIFIER").value as string,
