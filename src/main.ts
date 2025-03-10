@@ -39,19 +39,14 @@ function compile(code: string) {
 }
 
 const script = `
+let x = {
+    'a': 1,
+    'b': 2,
+    'c': 3,
+    'd': 4
+};
 
-
-function a_func() {
-  console.log("Called a function");
-} 
-
-a_func();  
- 
-for(let x in 1...100) {
-  console.log(x);
-}
-
-console.log('finished'); 
+return x;
 `;
 
 const tokeizer = new Tokenizer(script, {

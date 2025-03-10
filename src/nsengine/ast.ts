@@ -393,6 +393,60 @@ export function compileTimeSolve(node: ASTNode): ASTNode {
 }
 
 
+export function getCompileTimeValue(node: ASTNode): any {
+
+    if (!node.isKnownAtCompileTime) {
+        throw new Error("Node is not known at compile time");
+    }
+    if (node.type == "Number") {
+        return (node as NumberNode).value;
+    }
+    else if (node.type == "String") {
+        return (node as StringNode).value;
+    }
+    else if (node.type == "Boolean") {
+        return (node as BooleanNode).value;
+    }
+    else if (node.type == "Null") {
+        return null;
+    }
+    else if (node.type == "UnaryOp") {
+        if ((node as UnaryOpNode).operator == "-") {
+            return -getCompileTimeValue((node as UnaryOpNode).operand);
+        }
+        else if ((node as UnaryOpNode).operator == "!") {
+            return !getCompileTimeValue((node as UnaryOpNode).operand);
+        }
+    }
+    else if (node.type == "BinaryOp") {
+        const left = getCompileTimeValue((node as BinaryOpNode).left);
+        const right = getCompileTimeValue((node as BinaryOpNode).right);
+        switch ((node as BinaryOpNode).operator) {
+            case "+": return left + right;
+            case "-": return left - right;
+            case "*": return left * right;
+            case "/": return left / right;
+            case "%": return left % right;
+        }
+    }
+    else if (node.type == "TernaryOp") {
+        const condition = getCompileTimeValue((node as TernaryOpNode).condition);
+        return condition ? getCompileTimeValue((node as TernaryOpNode).left) : getCompileTimeValue((node as TernaryOpNode).right);
+    }
+    else if (node.type == "ArrayLiteral") {
+        const compileTimeElements = (node as ArrayLiteralNode).elements.map((el) => getCompileTimeValue(el));
+        return compileTimeElements;
+    }
+    else if (node.type == "SetLiteral") {
+        const compileTimeElements = (node as SetLiteralNode).elements.map((el) => getCompileTimeValue(el));
+        return new Set(compileTimeElements);
+    }
+    else if (node.type == "ObjectLiteral") {
+        const compileTimeProperties = (node as ObjectLiteralNode).properties.map((prop) => ({ key: prop.key, value: getCompileTimeValue(prop.value) }));
+        return compileTimeProperties;
+    }
+}
+
 /**
  * Estimate the number of nodes in an AST
  * @param node 

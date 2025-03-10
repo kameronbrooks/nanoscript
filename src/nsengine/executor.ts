@@ -789,7 +789,7 @@ export class JSExecutor {
         // set the new instruction pointer
         this.ip = this.stack.pop();
     }
-
+    
     op_push_return8() {
         this.stack.push(this.ret);
         this.ip++;

@@ -10,7 +10,7 @@ import { IObjectGenerator } from "../utilities/object_generator";
 import { DType } from "./dtypes/dtype";
 
 
-export const COMPILER_VERSION = "0.0.15";
+export const COMPILER_VERSION = "0.0.16";
 
 
 /**
@@ -1582,16 +1582,14 @@ export class Compiler {
     }
 
     private compileListLiteral(node: ast.ArrayLiteralNode) {
-        /*
-        TODO: Implement compile time list literals
+        
+        // if the list is known at compile time, we can resolve it now
         if (node.isKnownAtCompileTime) {
             // Resolve all the elements in the list and create a list now
-            this.addInstruction(prg.OP_LOAD_PTR, [...(node.compileTimeValue as any[])]);
+            this.addInstruction(prg.OP_LOAD_PTR, ast.getCompileTimeValue(node));
+            return;
         }
-        else {
-            
-        }
-        */
+        
         for (let element of node.elements.slice().reverse()) {
             this.compileNode(element);
         }
@@ -1611,6 +1609,15 @@ export class Compiler {
             
         }
         */
+
+        // if the list is known at compile time, we can resolve it now
+        if (node.isKnownAtCompileTime) {
+            // Resolve all the elements in the list and create a list now
+            this.addInstruction(prg.OP_LOAD_PTR, ast.getCompileTimeValue(node));
+            return;
+        }
+
+
         for (let element of node.elements.slice().reverse()) {
             this.compileNode(element);
         }
@@ -1620,6 +1627,15 @@ export class Compiler {
     }
 
     private compileObjectLiteral(node: ast.ObjectLiteralNode) {
+
+        // if the list is known at compile time, we can resolve it now
+        if (node.isKnownAtCompileTime) {
+            // Resolve all the elements in the list and create a list now
+            this.addInstruction(prg.OP_LOAD_PTR, ast.getCompileTimeValue(node));
+            return;
+        }
+        
+
         for (let element of node.properties.slice().reverse()) {
             this.compileNode(element.value);
         }

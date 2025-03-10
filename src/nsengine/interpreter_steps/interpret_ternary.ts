@@ -22,19 +22,19 @@ export class InterpretTernary extends InterpreterStep {
             // Fetch the operator and right node
             const operator = this.interpreter.previous().value;
             const nodeB = this.nextStep?.execute(childParams);
-
+            
             this.interpreter.consume("COLON");
 
             const nodeC = this.nextStep?.execute(childParams);
 
             if(!lnode) {
-                throw this.interpreter.error("Expected a left node in binary operation");
+                throw this.interpreter.error("Expected a left node in ternary operation");
             }
             if(!nodeB) {
-                throw this.interpreter.error("Expected a middle node in binary operation");
+                throw this.interpreter.error("Expected a middle node in ternary operation");
             }
             if(!nodeC) {
-                throw this.interpreter.error("Expected a right node in binary operation");
+                throw this.interpreter.error("Expected a right node in ternary operation");
             }
 
             const isKnownAtCompileTime = lnode.isKnownAtCompileTime && nodeB.isKnownAtCompileTime;

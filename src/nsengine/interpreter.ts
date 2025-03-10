@@ -449,6 +449,7 @@ export class Interpreter {
         else if (this.patternLookahead(["FOR", "LPAREN", ["?", "DECLARE_VARIABLE", "DECLARE_CONSTANT"], "IDENTIFIER", "IN"])) {
             this.consume("FOR");
             this.consume("LPAREN");
+            // skip the let or const keyword
             this.skip(["DECLARE_VARIABLE", "DECLARE_CONSTANT"]);
             const declarationNode = {
                 type: "Declaration",
@@ -530,7 +531,6 @@ export class Interpreter {
             }
             this.consume("EOS");
             
-
             return {
                 type: "Declaration",
                 identifier: name as string,
