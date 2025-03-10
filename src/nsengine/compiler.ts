@@ -10,7 +10,7 @@ import { IObjectGenerator } from "../utilities/object_generator";
 import { DType } from "./dtypes/dtype";
 
 
-export const COMPILER_VERSION = "0.0.16";
+export const COMPILER_VERSION = "0.0.17";
 
 
 /**
@@ -315,6 +315,16 @@ class InstructionReferenceTable {
     }
 
     /**
+     * Set an instruction in the table
+     * Will replace the instruction if it already exists
+     * @param index 
+     * @param instruction 
+     */
+    set(index: string, instruction: prg.Instruction) {
+        this.table.set(index, instruction);
+    }
+
+    /**
      * Set the open reference
      * This gets the program ready to assign the next instruction to the open reference
      * @param index
@@ -497,7 +507,6 @@ export class Compiler {
         } as prg.Instruction;
 
         this.instructionBufferTarget.splice(index, 0, instruction);
-
         // push the index of the new instruction to the reference table
         // if there is an open reference, this will close it
         if (!ignoreReference && this.instructionReferenceTable.hasOpenReference()) {
@@ -1279,6 +1288,8 @@ export class Compiler {
             throw this.error("Missing function name");
         }
 
+        const functionName = node.name;
+
         // This fixes an issue where the loops dont work if there is a function definition after them 
         if (this.instructionReferenceTable.hasOpenReference()) {
             this.addInstruction(prg.OP_NOOP);
@@ -1339,6 +1350,10 @@ export class Compiler {
         ) {
             this.addInstruction(prg.OP_STACKPOP_VOID);
         }
+
+        // This is incase the start of the buffer has changed during the compilation of the function body
+        // In case there are allocs, etc
+        this.instructionReferenceTable.set('$' + functionName, this.instructionBufferTarget.at(0) as prg.Instruction);
 
         this.clearInstructionBufferTarget();
         this.state.popScope();
@@ -1599,16 +1614,6 @@ export class Compiler {
     }
 
     private compileSetLiteral(node: ast.SetLiteralNode) {
-        /*
-        TODO: Implement compile time list literals
-        if (node.isKnownAtCompileTime) {
-            // Resolve all the elements in the list and create a list now
-            this.addInstruction(prg.OP_LOAD_PTR, [...(node.compileTimeValue as any[])]);
-        }
-        else {
-            
-        }
-        */
 
         // if the list is known at compile time, we can resolve it now
         if (node.isKnownAtCompileTime) {
@@ -1634,7 +1639,7 @@ export class Compiler {
             this.addInstruction(prg.OP_LOAD_PTR, ast.getCompileTimeValue(node));
             return;
         }
-        
+
 
         for (let element of node.properties.slice().reverse()) {
             this.compileNode(element.value);

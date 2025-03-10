@@ -442,7 +442,7 @@ export function getCompileTimeValue(node: ASTNode): any {
         return new Set(compileTimeElements);
     }
     else if (node.type == "ObjectLiteral") {
-        const compileTimeProperties = (node as ObjectLiteralNode).properties.map((prop) => ({ key: prop.key, value: getCompileTimeValue(prop.value) }));
+        const compileTimeProperties = Object.fromEntries((node as ObjectLiteralNode).properties.map((prop) => [prop.key, getCompileTimeValue(prop.value)]));
         return compileTimeProperties;
     }
 }

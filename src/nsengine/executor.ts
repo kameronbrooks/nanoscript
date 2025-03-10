@@ -789,7 +789,7 @@ export class JSExecutor {
         // set the new instruction pointer
         this.ip = this.stack.pop();
     }
-    
+
     op_push_return8() {
         this.stack.push(this.ret);
         this.ip++;
@@ -814,6 +814,7 @@ export class JSExecutor {
 
     op_increment_iterator() {
         const a = this.stack.at(-1) as ICollectionIterator;
+
         if (!a.hasNext()) {
             this.stack.pop();
             this.ip = this.program?.instructions[this.ip].operand;

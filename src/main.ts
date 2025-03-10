@@ -39,14 +39,23 @@ function compile(code: string) {
 }
 
 const script = `
-let x = {
-    'a': 1,
-    'b': 2,
-    'c': 3,
-    'd': 4
-};
+function f() {
+  let output = 10;
+  let e = 5;
+  for (y in 0...e) {
+    output+= y;
+  }
+  return output; 
+}
 
-return x;
+let output = 10;
+let e = 5;
+for (y in 0...e) {
+    output += y;
+}
+console.log(output);
+
+return f(5); 
 `;
 
 const tokeizer = new Tokenizer(script, {
