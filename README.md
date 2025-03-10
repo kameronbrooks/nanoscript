@@ -1,8 +1,8 @@
 # nanoscript (nscript)
 
-## current version 0.0.14
+## current version 0.0.16
 
-# This is a Work in Progress (not functional yet)
+# This is a Work in Progress
 
 ## Purpose
 nanoscript (nscript) is a lightweight, JavaScript-inspired programming language designed for simple computational tasks in the browser or on the server. Built with TypeScript, it draws inspiration from an earlier C++-based project, clx, and is tailored to address security concerns that arise with JavaScript's `eval`. nscript ensures safe execution of code by limiting access to only explicitly included features through developer-defined modules.
@@ -129,7 +129,6 @@ while (c >= 0) {
 
 One notable "new" feature, is the ability to break directly to different levels.
 
-### For and while loops
 ```javascript
 // nanoscript
 
@@ -141,6 +140,28 @@ for (let i = 0; i < 100; i++) {
     }
 }
 ```
+### For-in Style Loops
+```javascript
+// nanoscript
+
+const arr = [0,1,2,3,4,5,6];
+
+for (x in arr) {
+    ...
+}
+
+// Same thing
+for (let x in arr) {
+    ...
+}
+
+// You can also use the ∈ symbol if you want to be extra fancy
+for (x ∈ arr) {
+    ...
+}
+```
+
+You can precede the variable name with const or let if you want, it does not make a difference.
 
 
 ### Strings
@@ -193,9 +214,11 @@ let arr2 = [];              // empty list
 
 ```
 
+*Note: List literals that can be fully determined at compile-time, will be pre-compiled and result in a massive performance increase.*
+
 ### Set Literals
 
-Lists can be declared with list literal syntax, similar to javascript
+Sets can be declared with list literal syntax, similar to javascript
 ```javascript
 // nanoscript
 
@@ -204,7 +227,7 @@ let notASet = {};            // NOT an empty set, this is an empty object
 
 ```
 
-*Lists are constructed at script runtime, further optimizations will be added to allow for the creation of  compile-time lists to improve performance when possible.*
+*Note: Set literals that can be fully determined at compile-time, will be pre-compiled and result in a massive performance increase.*
 
 ### Object Literals
 
@@ -228,7 +251,7 @@ let dog = {
 
 ```
 
-*Objects are constructed at script runtime, further optimizations will be added to allow for the creation of  compile-time objects to improve performance when possible.*
+*Note: Object literals that can be fully determined at compile-time, will be pre-compiled and result in a massive performance increase.*
 
 
 
